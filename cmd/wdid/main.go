@@ -17,6 +17,7 @@ var (
 	app    = kingpin.New("wdid", "A tool to track what you did.")
 	v      = app.Flag("verbose", "Enable verbose logging.").Short('v').Bool()
 	format = app.Flag("format", "format to print in ('human' or 'text').").Default("human").Enum("human", "text")
+	scheme = app.Flag("scheme", "color scheme to use for printing").Default("default").Enum("default", "colorblind")
 
 	bump     = app.Command("bump", "Bump an item to a new time, skipping the existing and creating a new one.")
 	bumpID   = bump.Arg("id", "ID of item to bump.").Required().String()
@@ -73,6 +74,7 @@ func main() {
 	ctx := context.WithValue(context.Background(), "store", store)
 	ctx = context.WithValue(ctx, "verbose", *v)
 	ctx = context.WithValue(ctx, "format", *format)
+	ctx = context.WithValue(ctx, "scheme", *scheme) // TODO: config file
 
 	switch commandName {
 	case add.FullCommand():

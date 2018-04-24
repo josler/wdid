@@ -27,12 +27,36 @@ func GetPrintFormat(format string) PrintFormat {
 	}[format]
 }
 
-type ItemPrinter struct {
-	bumpedColor  color.Attribute
-	failColor    color.Attribute
-	waitColor    color.Attribute
-	successColor color.Attribute
+func GetColorScheme(scheme string) ColorScheme {
+	switch scheme {
+	case "colorblind":
+		return ColorScheme{
+			Bumped:  []color.Attribute{color.FgHiYellow, color.Bold},
+			Fail:    []color.Attribute{color.FgMagenta, color.Faint},
+			Success: []color.Attribute{color.FgGreen, color.Faint, color.Bold},
+			Wait:    []color.Attribute{color.FgHiCyan, color.Bold},
+		}
+	case "default":
+		fallthrough
+	default:
+		return ColorScheme{
+			Bumped:  []color.Attribute{color.FgYellow, color.Bold},
+			Fail:    []color.Attribute{color.FgRed, color.Bold},
+			Success: []color.Attribute{color.FgGreen, color.Bold},
+			Wait:    []color.Attribute{color.FgWhite, color.Bold},
+		}
+	}
+}
 
+type ColorScheme struct {
+	Bumped  []color.Attribute
+	Fail    []color.Attribute
+	Wait    []color.Attribute
+	Success []color.Attribute
+}
+
+type ItemPrinter struct {
+	ColorScheme ColorScheme
 	PrintFormat PrintFormat
 }
 
@@ -41,8 +65,16 @@ func NewItemPrinter(ctx context.Context) *ItemPrinter {
 	if format == nil {
 		format = "text"
 	}
+
+	scheme := ctx.Value("scheme")
+	if scheme == nil {
+		scheme = "default"
+	}
+
 	printFormat := GetPrintFormat(format.(string))
-	return &ItemPrinter{bumpedColor: color.FgYellow, failColor: color.FgRed, successColor: color.FgGreen, waitColor: color.FgWhite, PrintFormat: printFormat}
+	colorScheme := GetColorScheme(scheme.(string))
+
+	return &ItemPrinter{ColorScheme: colorScheme, PrintFormat: printFormat}
 }
 
 func (ip *ItemPrinter) Print(items ...*Item) {
@@ -119,14 +151,14 @@ func (ip *ItemPrinter) truncatedData(item *Item) string {
 func (ip *ItemPrinter) doneStatus(item *Item) string {
 	switch item.Status() {
 	case "bumped":
-		return color.New(ip.bumpedColor, color.Bold).Sprintf("⇒ %v", item.ID())
+		return color.New(ip.ColorScheme.Bumped...).Sprintf("⇒ %v", item.ID())
 	case "done":
-		return color.New(ip.successColor, color.Bold).Sprintf("✔ %v", item.ID())
+		return color.New(ip.ColorScheme.Success...).Sprintf("✔ %v", item.ID())
 	case "waiting":
-		return color.New(ip.waitColor, color.Bold).Sprintf("⇒ %v", item.ID())
+		return color.New(ip.ColorScheme.Wait...).Sprintf("⇒ %v", item.ID())
 	case "skipped":
-		return color.New(ip.failColor, color.Bold).Sprintf("✘ %v", item.ID())
+		return color.New(ip.ColorScheme.Fail...).Sprintf("✘ %v", item.ID())
 	default:
-		return color.New(ip.waitColor, color.Bold).Sprintf("? %v", item.ID())
+		return color.New(ip.ColorScheme.Wait...).Sprintf("? %v", item.ID())
 	}
 }
