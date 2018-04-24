@@ -29,6 +29,9 @@ var defaultConfig = `
 [store]
 type = "bolt"
 file = "~/.config/wdid/wdid.db"
+
+[color]
+scheme = "default"
 `
 
 func loadConfig() (*Config, error) {
