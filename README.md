@@ -20,6 +20,7 @@ Flags:
 
 Commands:
   help [<command>...]
+  auto [<flags>]
   bump [<flags>] <id>
   add [<flags>] [<new-item>]
   do <id>
@@ -220,7 +221,7 @@ cat file.txt | wdid import
 
 Imported items will overwrite duplicates of that item.
 
-#### Time parsing
+### Time parsing
 
 Times can be passed in the following formats:
 
@@ -233,7 +234,31 @@ Times can be passed in the following formats:
 - `YYYY-MM-DD` (`2006-01-02` in Go time format): Start of given day in your TZ.
 - `YYYY-MM-DDTHH:MM`: particular time on a day in your TZ.
 
-#### Configuration
+### Auto
+
+wdid has an `auto` command, where it can pull a list of potential items from various sources, and present them to the user. These can be selected to be turned into full items.
+
+```
+$ wdid auto
+<type to filter>
+<pick options with spacebar>
+<hit enter to finish>
+```
+
+#### Auto-Github
+
+This can be enabled by adding the relevant config:
+
+```
+[[auto]]
+type = "github"
+key = "accesstoken"
+username = "my_username"
+```
+
+Options will then be sourced from Github, any issue or PR the author was involved in that was updated in $time. Issues and PR's that are closed will be auto-marked as "done".
+
+### Configuration
 
 Wdid should work out of the box with some sensible defaults. On first run it will populate a configuration file under `~/.config/wdid/config.toml`. This, by default, sets local storage up using [boltdb](https://github.com/coreos/bbolt).
 
