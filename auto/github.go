@@ -57,7 +57,7 @@ func (ghc *GithubClient) Load(startTime time.Time, endTime time.Time) []*Option 
 			status = "done"
 		}
 		opt := Option{
-			data:     fmt.Sprintf("[%s] @%s %s %s", issueType, *issue.User.Login, *issue.Title, *issue.RepositoryURL),
+			data:     fmt.Sprintf("[%s] @%s %s %s", issueType, *issue.User.Login, *issue.Title, issue.GetHTMLURL()),
 			dateTime: *issue.UpdatedAt,
 			status:   status,
 		}
