@@ -58,7 +58,7 @@ func (ghc *GithubClient) Load(startTime time.Time, endTime time.Time) []*Option 
 		}
 		opt := Option{
 			data:     fmt.Sprintf("[%s] @%s %s %s", issueType, *issue.User.Login, *issue.Title, issue.GetHTMLURL()),
-			dateTime: *issue.UpdatedAt,
+			dateTime: issue.GetUpdatedAt(),
 			status:   status,
 		}
 		options = append(options, &opt)

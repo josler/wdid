@@ -10,5 +10,6 @@ func Rm(ctx context.Context, idString string) error {
 	if err != nil {
 		return err
 	}
+	NewItemPrinter(ctx).Print(item)
 	return store.Delete(item)
 }

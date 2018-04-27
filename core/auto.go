@@ -40,7 +40,7 @@ func Auto(ctx context.Context, timeString string, confs ...AutoConf) error {
 	savedItems := []*Item{}
 
 	for _, o := range pickedOptions {
-		item := NewItem(o.Data(), o.DateTime())
+		item := NewItem(o.Data(), o.DateTime().Local())
 		if o.Status() == "done" {
 			item.Do()
 		}
