@@ -88,10 +88,14 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s -- %v\n", ip.doneStatus(item), item.Time().Format("Mon, 02 Jan 2006 15:04:05"))
 	fmt.Fprintf(w, "InternalID: %s\n", item.internalID)
 	if item.NextID() != "" {
-		fmt.Fprintf(w, "Bumped to: %s\n", color.New(color.Bold).Sprintf("%s", item.NextID()))
+		baseColor := color.New(color.Bold)
+		baseColor.EnableColor()
+		fmt.Fprintf(w, "Bumped to: %s\n", baseColor.Sprintf("%s", item.NextID()))
 	}
 	if item.PreviousID() != "" {
-		fmt.Fprintf(w, "Bumped from: %s\n", color.New(color.Bold).Sprintf("%s", item.PreviousID()))
+		baseColor := color.New(color.Bold)
+		baseColor.EnableColor()
+		fmt.Fprintf(w, "Bumped from: %s\n", baseColor.Sprintf("%s", item.PreviousID()))
 	}
 	fmt.Fprintf(w, "Data:\n %s\n\n", item.Data())
 }
@@ -119,14 +123,24 @@ func (ip *ItemPrinter) truncatedData(item *Item) string {
 func (ip *ItemPrinter) doneStatus(item *Item) string {
 	switch item.Status() {
 	case "bumped":
-		return color.New(ip.bumpedColor, color.Bold).Sprintf("⇒ %v", item.ID())
+		baseColor := color.New(ip.bumpedColor, color.Bold)
+		baseColor.EnableColor()
+		return baseColor.Sprintf("⇒ %v", item.ID())
 	case "done":
-		return color.New(ip.successColor, color.Bold).Sprintf("✔ %v", item.ID())
+		baseColor := color.New(ip.successColor, color.Bold)
+		baseColor.EnableColor()
+		return baseColor.Sprintf("✔ %v", item.ID())
 	case "waiting":
-		return color.New(ip.waitColor, color.Bold).Sprintf("⇒ %v", item.ID())
+		baseColor := color.New(ip.waitColor, color.Bold)
+		baseColor.EnableColor()
+		return baseColor.Sprintf("⇒ %v", item.ID())
 	case "skipped":
-		return color.New(ip.failColor, color.Bold).Sprintf("✘ %v", item.ID())
+		baseColor := color.New(ip.failColor, color.Bold)
+		baseColor.EnableColor()
+		return baseColor.Sprintf("✘ %v", item.ID())
 	default:
-		return color.New(ip.waitColor, color.Bold).Sprintf("? %v", item.ID())
+		baseColor := color.New(ip.waitColor, color.Bold)
+		baseColor.EnableColor()
+		return baseColor.Sprintf("? %v", item.ID())
 	}
 }
