@@ -60,12 +60,12 @@ func TestSaveUpdate(t *testing.T) {
 
 func TestList(t *testing.T) {
 	withFreshDB(func() {
-		item := core.NewItem("some data", time.Now())
+		item := core.NewItem("some data", time.Now().Add(-1*time.Minute))
 		err := boltStore.Save(item)
 		if err != nil {
 			t.Fatalf("error %s", err)
 		}
-		items, _ := boltStore.List(time.Now())
+		items, _ := boltStore.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()))
 		if len(items) != 1 {
 			t.Fatalf("error: no items found")
 		}
@@ -76,12 +76,14 @@ func TestList(t *testing.T) {
 }
 func TestListDate(t *testing.T) {
 	withFreshDB(func() {
-		boltStore.Save(core.NewItem("1", time.Now().Add(-48*time.Hour)))
-		boltStore.Save(core.NewItem("2", time.Now().Add(-24*time.Hour)))
-		boltStore.Save(core.NewItem("3", time.Now()))
-		boltStore.Save(core.NewItem("4", time.Now().Add(24*time.Hour)))
+		now := time.Now()
+		boltStore.Save(core.NewItem("1", now.Add(-48*time.Hour)))
+		boltStore.Save(core.NewItem("2", now.Add(-24*time.Hour)))
+		boltStore.Save(core.NewItem("3", now.Add(-1*time.Minute)))
+		boltStore.Save(core.NewItem("4", now.Add(24*time.Hour)))
+		boltStore.Save(core.NewItem("5", now.Add(1*time.Second))) // should not pick this up as it's greater than end time
 
-		items, _ := boltStore.List(time.Now().Add(-36 * time.Hour))
+		items, _ := boltStore.List(core.NewTimespan(now.Add(-36*time.Hour), now))
 		if len(items) != 2 {
 			t.Fatalf("error: not all items found")
 		}
@@ -104,7 +106,7 @@ func TestListStatus(t *testing.T) {
 		skippedItem.Skip()
 		boltStore.Save(skippedItem)
 
-		items, _ := boltStore.List(time.Now().Add(-1*time.Hour), "waiting", "skipped")
+		items, _ := boltStore.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), "waiting", "skipped")
 		if len(items) != 2 {
 			t.Fatalf("error: not all items found")
 		}
@@ -115,7 +117,7 @@ func TestListStatus(t *testing.T) {
 			t.Errorf("error data not matching")
 		}
 
-		items, _ = boltStore.List(time.Now().Add(-1*time.Hour), "done")
+		items, _ = boltStore.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), "done")
 		if len(items) != 1 {
 			t.Fatalf("error: not all items found")
 		}

@@ -74,13 +74,13 @@ func (s *BoltStore) Save(item *Item) error {
 	return nil
 }
 
-func (s *BoltStore) List(t time.Time, statuses ...string) ([]*Item, error) {
+func (s *BoltStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
 	stormItems := []*StormItem{}
 	var query storm.Query
 	if len(statuses) > 0 {
-		query = s.db.Select(q.Gte("Datetime", t.Unix()), q.Lte("Datetime", time.Now().Unix()), q.In("Status", statuses))
+		query = s.db.Select(q.Gte("Datetime", t.Start.Unix()), q.Lte("Datetime", t.End.Unix()), q.In("Status", statuses))
 	} else {
-		query = s.db.Select(q.Gte("Datetime", t.Unix()), q.Lte("Datetime", time.Now().Unix()))
+		query = s.db.Select(q.Gte("Datetime", t.Start.Unix()), q.Lte("Datetime", t.End.Unix()))
 	}
 
 	query.OrderBy("Datetime")

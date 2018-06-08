@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"time"
 )
 
 func Add(ctx context.Context, description io.Reader, timeString string) error {
@@ -14,9 +13,6 @@ func Add(ctx context.Context, description io.Reader, timeString string) error {
 	if err != nil {
 		return err
 	}
-	if at.After(time.Now()) {
-		return errors.New("can't set future time")
-	}
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(description)
@@ -24,7 +20,7 @@ func Add(ctx context.Context, description io.Reader, timeString string) error {
 	if stringDescription == "" {
 		return errors.New("description missing")
 	}
-	item := NewItem(stringDescription, at)
+	item := NewItem(stringDescription, at.Start)
 	err = store.Save(item)
 	if err == nil {
 		NewItemPrinter(ctx).Print(item)

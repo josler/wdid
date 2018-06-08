@@ -16,11 +16,11 @@ func TestAddCreatesItem(t *testing.T) {
 	}
 }
 
-func TestAddPreventsFutureItem(t *testing.T) {
+func TestAddFutureItem(t *testing.T) {
 	ctx, _ := contextWithMemoryStore()
 	err := Add(ctx, strings.NewReader("my new item"), "2025-01-01")
-	if err == nil {
-		t.Errorf("item was incorrectly saved")
+	if err != nil {
+		t.Errorf("item not saved")
 	}
 }
 
@@ -31,7 +31,7 @@ func contextWithMemoryStore() (context.Context, Store) {
 }
 
 func mostRecentItem(store Store) *Item {
-	items, err := store.List(time.Unix(0, 0))
+	items, err := store.List(NewTimespan(time.Unix(0, 0), time.Now()))
 	if err != nil {
 		panic(err)
 	}

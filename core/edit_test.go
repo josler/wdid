@@ -24,7 +24,7 @@ func TestEditPreventsFutureItem(t *testing.T) {
 	Add(ctx, strings.NewReader("my new item"), "2018-04-02")
 	found := mostRecentItem(store)
 	err := Edit(ctx, found.ID(), strings.NewReader("change the message"), "2025-01-01")
-	if err == nil {
-		t.Errorf("item was incorrectly saved")
+	if err != nil {
+		t.Errorf("item not edited")
 	}
 }

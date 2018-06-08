@@ -32,7 +32,7 @@ func (ghc *GithubClient) isVerbose() bool {
 	return v != nil && v.(bool)
 }
 
-func (ghc *GithubClient) Load(startTime time.Time, endTime time.Time) []*Option {
+func (ghc *GithubClient) Load(startTime time.Time, _endTime time.Time) []*Option {
 	options := []*Option{}
 
 	// https://developer.github.com/v3/search/#search-issues

@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/AlecAivazis/survey"
@@ -30,9 +29,6 @@ func Auto(ctx context.Context, timeString string, confs ...AutoConf) error {
 	if err != nil {
 		return err
 	}
-	if at.After(time.Now()) {
-		return errors.New("can't list future time")
-	}
 
 	loader := &autoLoader{ctx: ctx, picker: &autoPicker{}}
 
@@ -55,10 +51,10 @@ func Auto(ctx context.Context, timeString string, confs ...AutoConf) error {
 	return nil
 }
 
-func (loader *autoLoader) loadOptions(startTime time.Time, confs ...AutoConf) []*auto.Option {
+func (loader *autoLoader) loadOptions(timespan *Timespan, confs ...AutoConf) []*auto.Option {
 	options := []*auto.Option{}
 	for _, c := range confs {
-		options = append(options, loader.loadAutoSource(startTime, loader.sourceFor(c))...)
+		options = append(options, loader.loadAutoSource(timespan, loader.sourceFor(c))...)
 	}
 
 	return loader.picker.Pick(options)
@@ -72,11 +68,11 @@ func (loader *autoLoader) sourceFor(conf AutoConf) AutoSource {
 	return nil
 }
 
-func (loader *autoLoader) loadAutoSource(startTime time.Time, source AutoSource) []*auto.Option {
+func (loader *autoLoader) loadAutoSource(timespan *Timespan, source AutoSource) []*auto.Option {
 	if source == nil {
 		return []*auto.Option{}
 	}
-	return source.Load(startTime, time.Now())
+	return source.Load(timespan.Start, timespan.End)
 }
 
 type picker interface {

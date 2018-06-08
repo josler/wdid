@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"time"
 )
 
 const (
@@ -14,7 +13,7 @@ type Store interface {
 	Find(id string) (*Item, error)
 	Delete(item *Item) error
 	Save(item *Item) error
-	List(t time.Time, statuses ...string) ([]*Item, error)
+	List(t *Timespan, statuses ...string) ([]*Item, error)
 	WithContext(ctx context.Context) Store
 	Close()
 }

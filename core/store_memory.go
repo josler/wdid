@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"time"
 )
 
 // MemoryStore for tests etc
@@ -43,11 +42,15 @@ func (s *MemoryStore) Save(item *Item) error {
 	return nil
 }
 
-func (s *MemoryStore) List(t time.Time, statuses ...string) ([]*Item, error) {
+func (s *MemoryStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
 	items := []*Item{}
 	for _, item := range s.itemMap {
-		if item.Time().Before(t) {
+		if item.Time().Before(t.Start) {
 			continue // if before the time, skip
+		}
+
+		if item.Time().After(t.End) {
+			continue // if after, skip
 		}
 
 		if len(statuses) > 0 && !s.includes(item.Status(), statuses...) {

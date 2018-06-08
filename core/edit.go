@@ -3,9 +3,7 @@ package core
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
-	"time"
 )
 
 // edit description and time, not status
@@ -19,13 +17,11 @@ func Edit(ctx context.Context, idString string, description io.Reader, timeStrin
 	// set a new time
 	newAt := item.Time()
 	if timeString != "" {
-		newAt, err = TimeParser{Input: timeString}.Parse()
+		span, err := TimeParser{Input: timeString}.Parse()
 		if err != nil {
 			return err
 		}
-		if newAt.After(time.Now()) {
-			return errors.New("can't set future time")
-		}
+		newAt = span.Start
 	}
 
 	// set new description

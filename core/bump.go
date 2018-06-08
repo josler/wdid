@@ -3,7 +3,6 @@ package core
 import (
 	"context"
 	"errors"
-	"time"
 )
 
 func Bump(ctx context.Context, id string, timeString string) error {
@@ -20,11 +19,8 @@ func Bump(ctx context.Context, id string, timeString string) error {
 	if err != nil {
 		return err
 	}
-	if to.After(time.Now()) {
-		return errors.New("can't set future time")
-	}
 
-	newItem := item.Bump(to) // mark old item as done
+	newItem := item.Bump(to.Start) // mark old item as done
 
 	// save old
 	err = store.WithContext(ctx).Save(item)

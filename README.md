@@ -2,9 +2,7 @@
 
 What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items.
 
-This isn't a tool for tracking what you _need_ to do, or what you're _going_ to do, or organising that. Instead, it is a place that records what you already are working on. Often when working we have goals. Goals are easy to track, there's a known outcome ahead of time. What's much harder is answering the question "where did all my time go?". Wdid aims to address that.
-
-Currently, this tool requires manual input to add items. Future additions will pull suggestions from places you may have done work, that you can selectively add.
+This tool both aims to track your most important goals, day-to-day, and help track what you have actually been working on in detail. Often when working we have goals. Goals are easy to track, there's a known outcome ahead of time. What's much harder is answering the question "where did all my time go?". Wdid aims to address that.
 
 ```
 $ wdid help
@@ -225,14 +223,19 @@ Imported items will overwrite duplicates of that item.
 
 Times can be passed in the following formats:
 
-- `now`: Now.
-- `0`: Start of today (midnight in your TZ) - equates to "today" when searching. Equivalent to `day`.
-- Integer n (e.g. `1`, `6`): start of the day, n days ago - equates to "in the last n days" when searching. 
-- `day`: Start of today (midnight in your TZ). Equivalent to `1`.
-- `week`: Start of the week (monday, midnight in your TZ) - equates to "in the last week" when searching.
-- `month`: Start of the month (first day of month, midnight in your TZ) - equates to "in the last month" when searching.
-- `YYYY-MM-DD` (`2006-01-02` in Go time format): Start of given day in your TZ.
-- `YYYY-MM-DDTHH:MM`: particular time on a day in your TZ.
+- `now`: Now until end of day.
+- `0`: Start of today (midnight in your TZ) - equates to "today" when searching. Equivalent to `day`. Ends end of today.
+- Integer n (e.g. `1`, `6`): start of the day, n days ago - equates to "in the last n days" when searching. Ends end of today.
+- `day`: Start of today (midnight in your TZ). Equivalent to `1`. Ends end of today.
+- `week`: Start of the week (monday, midnight in your TZ) - equates to "in the last week" when searching. Ends end of the week.
+- `month`: Start of the month (first day of month, midnight in your TZ) - equates to "in the last month" when searching. Ends end of the month.
+- `tomorrow`: Tomorrow. Ends end of tomorrow.
+- `YYYY-MM-DD` (`2006-01-02` in Go time format): Start of given day in your TZ. Ends end of that day.
+- `YYYY-MM-DDTHH:MM`: particular time on a day in your TZ. Ends end of that day.
+
+Note that these times cover a _range_ of values. Usually from the start of the indicated day (00:00) to the end of the day (23:59) at the end of the period, inclusive.
+
+When adding items, or setting the time for an item, wdid uses the _start_ of the period to do so. When searching for items, wdid uses the range. This sounds more complicated than it is, in practise it does what you'd expect.
 
 ### Auto
 
