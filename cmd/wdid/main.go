@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/josler/wdid/core"
+	"gitlab.com/josler/wdid/core"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -95,11 +95,7 @@ func main() {
 	case do.FullCommand():
 		err = core.Do(ctx, *doID)
 	case edit.FullCommand():
-		if *editDescription != "" {
-			err = core.Edit(ctx, *editID, strings.NewReader(*editDescription), *editTime)
-		} else {
-			err = core.Edit(ctx, *editID, os.Stdin, *editTime)
-		}
+		err = core.Edit(ctx, *editID, strings.NewReader(*editDescription), *editTime)
 	case importCmd.FullCommand():
 		err = core.Import(ctx, *importFilename)
 	case list.FullCommand():

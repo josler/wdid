@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/asdine/storm"
-	"github.com/josler/wdid/core"
+	"gitlab.com/josler/wdid/core"
 )
 
 var boltStore *core.BoltStore

@@ -1,6 +1,6 @@
 ### Overview
 
-What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items.
+What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items. Alongside this manual tracking, there's an `auto` feature that can help automate fetching information about what you've done.
 
 This tool both aims to track your most important goals, day-to-day, and help track what you have actually been working on in detail. Often when working we have goals. Goals are easy to track, there's a known outcome ahead of time. What's much harder is answering the question "where did all my time go?". Wdid aims to address that.
 
@@ -33,7 +33,7 @@ Commands:
 ### Installation
 
 ```
-go get -u github.com/josler/wdid/...
+go get -u gitlab.com/josler/wdid/...
 ```
 
 

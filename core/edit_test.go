@@ -19,7 +19,7 @@ func TestEdit(t *testing.T) {
 	}
 }
 
-func TestEditPreventsFutureItem(t *testing.T) {
+func TestEditAllowsFutureItem(t *testing.T) {
 	ctx, store := contextWithMemoryStore()
 	Add(ctx, strings.NewReader("my new item"), "2018-04-02")
 	found := mostRecentItem(store)

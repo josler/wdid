@@ -11,7 +11,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/asdine/storm"
-	"github.com/josler/wdid/core"
+	"gitlab.com/josler/wdid/core"
 )
 
 type ConfigStore struct {

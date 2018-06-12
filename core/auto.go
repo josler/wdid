@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/josler/wdid/auto"
+	"gitlab.com/josler/wdid/auto"
 )
 
 type AutoSource interface {

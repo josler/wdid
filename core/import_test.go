@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/josler/wdid/core"
+	"gitlab.com/josler/wdid/core"
 )
 
 func TestImport(t *testing.T) {
