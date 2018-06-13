@@ -229,7 +229,13 @@ Times can be passed in the following formats:
 - `day`: Start of today (midnight in your TZ). Equivalent to `1`. Ends end of today.
 - `week`: Start of the week (monday, midnight in your TZ) - equates to "in the last week" when searching. Ends end of the week.
 - `month`: Start of the month (first day of month, midnight in your TZ) - equates to "in the last month" when searching. Ends end of the month.
-- `tomorrow`: Tomorrow. Ends end of tomorrow.
+- `yesterday`: Yesterday.
+- `today`: Today.
+- `tomorrow`: Tomorrow.
+- `monday`: Start Monday of _this week_. Ends end of that day. Same for every day of the week. Can also use short forms like `tue` or `tues`.
+- `this monday`: Start Monday of _this week_. Ends that day.
+- `next monday` Start Monday of _next week_. Ends that day.
+- `last monday` Start Monday of _last week_. Ends that day.
 - `YYYY-MM-DD` (`2006-01-02` in Go time format): Start of given day in your TZ. Ends end of that day.
 - `YYYY-MM-DDTHH:MM`: particular time on a day in your TZ. Ends end of that day.
 

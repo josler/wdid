@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -35,9 +36,36 @@ func (tp TimeParser) Parse() (*Timespan, error) {
 		return NewTimespan(tp.startOfWeek(tp.startTime), tp.endOfWeek(tp.startTime)), nil
 	case "month":
 		return NewTimespan(tp.startOfMonth(tp.startTime), tp.endOfMonth(tp.startTime)), nil
+	case "today":
+		return NewTimespan(tp.startOfDay(tp.startTime), tp.endOfDay(tp.startTime)), nil
 	case "tomorrow":
 		startOfTomorrow := tp.startOfDay(tp.startTime).AddDate(0, 0, 1)
 		return NewTimespan(startOfTomorrow, tp.endOfDay(startOfTomorrow)), nil
+	case "yesterday":
+		startOfYesterday := tp.startOfDay(tp.startTime).Add(-24 * time.Hour)
+		return NewTimespan(startOfYesterday, tp.endOfDay(startOfYesterday)), nil
+	}
+
+	weekday, err := tp.getWeekday(tp.Input)
+	if err == nil {
+		return tp.nextOccuranceOfWeekday(tp.startTime, weekday, 24), nil
+	}
+
+	// try to parse a weekday phrase
+	splitStrings := strings.Split(tp.Input, " ")
+	if len(splitStrings) == 2 {
+		weekday, err := tp.getWeekday(splitStrings[1])
+		if err != nil {
+			return NewTimespan(tp.startTime, tp.startTime), errors.New(fmt.Sprintf("failed to parse time with input: %s", tp.Input))
+		}
+		switch splitStrings[0] {
+		case "last":
+			return tp.nextOccuranceOfWeekday(tp.startOfWeek(tp.startTime).AddDate(0, 0, -1), weekday, -24), nil
+		case "this":
+			return tp.nextOccuranceOfWeekday(tp.startOfWeek(tp.startTime), weekday, 24), nil
+		case "next":
+			return tp.nextOccuranceOfWeekday(tp.endOfWeek(tp.startTime).AddDate(0, 0, 1), weekday, 24), nil
+		}
 	}
 
 	// try to parse a date from a formatted input
@@ -53,6 +81,44 @@ func (tp TimeParser) Parse() (*Timespan, error) {
 	}
 
 	return NewTimespan(tp.startTime, tp.startTime), errors.New(fmt.Sprintf("failed to parse time with input: %s", tp.Input))
+}
+
+func (tp TimeParser) nextOccuranceOfWeekday(startAt time.Time, weekday time.Weekday, jump time.Duration) *Timespan {
+	startTime := startAt
+	for {
+		if startTime.Weekday() == weekday {
+			return NewTimespan(tp.startOfDay(startTime), tp.endOfDay(startTime))
+		}
+		startTime = startTime.Add(jump * time.Hour)
+	}
+}
+
+func (tp TimeParser) getWeekday(word string) (time.Weekday, error) {
+	weekdays := map[string]time.Weekday{
+		"mon":       time.Monday,
+		"monday":    time.Monday,
+		"tue":       time.Tuesday,
+		"tues":      time.Tuesday,
+		"tuesday":   time.Tuesday,
+		"wed":       time.Wednesday,
+		"weds":      time.Wednesday,
+		"wednesday": time.Wednesday,
+		"thu":       time.Thursday,
+		"thur":      time.Thursday,
+		"thurs":     time.Thursday,
+		"thursday":  time.Thursday,
+		"fri":       time.Friday,
+		"friday":    time.Friday,
+		"sat":       time.Saturday,
+		"saturday":  time.Saturday,
+		"sun":       time.Sunday,
+		"sunday":    time.Sunday,
+	}
+	found, ok := weekdays[word]
+	if !ok {
+		return time.Monday, errors.New("weekday not found")
+	}
+	return found, nil
 }
 
 func (tp TimeParser) startOfDay(t time.Time) time.Time {
