@@ -236,6 +236,10 @@ Times can be passed in the following formats:
 - `this monday`: Start Monday of _this week_. Ends that day.
 - `next monday` Start Monday of _next week_. Ends that day.
 - `last monday` Start Monday of _last week_. Ends that day.
+- `last week` Start at start of previous week, end at end of that week.
+- `next week` Start at start of next week, end at end of that week.
+- `last month` Start at start of last month, end at end of that month.
+- `next month` Start at start of next month, end at end of that month.
 - `YYYY-MM-DD` (`2006-01-02` in Go time format): Start of given day in your TZ. Ends end of that day.
 - `YYYY-MM-DDTHH:MM`: particular time on a day in your TZ. Ends end of that day.
 

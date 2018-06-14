@@ -36,6 +36,20 @@ func TestParsePhrase(t *testing.T) {
 	testInputOutput(t, ref, "next friday", timeAt("2018-03-30 00:00:00 -0400 EDT"), timeAt("2018-03-30 23:59:59 -0400 EDT"))
 }
 
+func TestParsePhraseWeek(t *testing.T) {
+	ref := timeAt("2018-03-30 17:53:30 -0400 EDT")
+	testInputOutput(t, ref, "this week", timeAt("2018-03-26 00:00:00 -0400 EDT"), timeAt("2018-04-01 23:59:59 -0400 EDT"))
+	testInputOutput(t, ref, "last week", timeAt("2018-03-19 00:00:00 -0400 EDT"), timeAt("2018-03-25 23:59:59 -0400 EDT"))
+	testInputOutput(t, ref, "next week", timeAt("2018-04-02 00:00:00 -0400 EDT"), timeAt("2018-04-08 23:59:59 -0400 EDT"))
+}
+
+func TestParsePhraseMonth(t *testing.T) {
+	ref := timeAt("2018-03-23 17:53:30 -0400 EDT")
+	testInputOutput(t, ref, "this month", timeAt("2018-03-01 00:00:00 -0500 EDT"), timeAt("2018-03-31 23:59:59 -0400 EDT"))
+	testInputOutput(t, ref, "last month", timeAt("2018-02-01 00:00:00 -0500 EDT"), timeAt("2018-02-28 23:59:59 -0500 EDT"))
+	testInputOutput(t, ref, "next month", timeAt("2018-04-01 00:00:00 -0400 EDT"), timeAt("2018-04-30 23:59:59 -0400 EDT"))
+}
+
 func TestParseFormat(t *testing.T) {
 	ref := timeAt("2018-03-23 17:53:30 -0400 EDT")
 	testInputOutput(t, ref, "2018-03-23", timeAt("2018-03-23 00:00:00 -0400 EDT"), timeAt("2018-03-23 23:59:59 -0400 EDT"))

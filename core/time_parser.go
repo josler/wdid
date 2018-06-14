@@ -55,17 +55,45 @@ func (tp TimeParser) Parse() (*Timespan, error) {
 	splitStrings := strings.Split(tp.Input, " ")
 	if len(splitStrings) == 2 {
 		weekday, err := tp.getWeekday(splitStrings[1])
-		if err != nil {
+		if err == nil {
+			// parse "<offset> <weekday>"
+			switch splitStrings[0] {
+			case "last":
+				return tp.nextOccuranceOfWeekday(tp.startOfWeek(tp.startTime).AddDate(0, 0, -1), weekday, -24), nil
+			case "this":
+				return tp.nextOccuranceOfWeekday(tp.startOfWeek(tp.startTime), weekday, 24), nil
+			case "next":
+				return tp.nextOccuranceOfWeekday(tp.endOfWeek(tp.startTime).AddDate(0, 0, 1), weekday, 24), nil
+			}
+		}
+		switch splitStrings[1] {
+		// parse "<offset> <duration>"
+		case "week":
+			switch splitStrings[0] {
+			case "last":
+				lastWeek := tp.startTime.AddDate(0, 0, -7)
+				return NewTimespan(tp.startOfWeek(lastWeek), tp.endOfWeek(lastWeek)), nil
+			case "this":
+				return NewTimespan(tp.startOfWeek(tp.startTime), tp.endOfWeek(tp.startTime)), nil
+			case "next":
+				nextWeek := tp.startTime.AddDate(0, 0, 7)
+				return NewTimespan(tp.startOfWeek(nextWeek), tp.endOfWeek(nextWeek)), nil
+			}
+		case "month":
+			switch splitStrings[0] {
+			case "last":
+				lastMonth := tp.startTime.AddDate(0, -1, 0)
+				return NewTimespan(tp.startOfMonth(lastMonth), tp.endOfMonth(lastMonth)), nil
+			case "this":
+				return NewTimespan(tp.startOfMonth(tp.startTime), tp.endOfMonth(tp.startTime)), nil
+			case "next":
+				nextMonth := tp.startTime.AddDate(0, 1, 0)
+				return NewTimespan(tp.startOfMonth(nextMonth), tp.endOfMonth(nextMonth)), nil
+			}
+		default:
 			return NewTimespan(tp.startTime, tp.startTime), errors.New(fmt.Sprintf("failed to parse time with input: %s", tp.Input))
 		}
-		switch splitStrings[0] {
-		case "last":
-			return tp.nextOccuranceOfWeekday(tp.startOfWeek(tp.startTime).AddDate(0, 0, -1), weekday, -24), nil
-		case "this":
-			return tp.nextOccuranceOfWeekday(tp.startOfWeek(tp.startTime), weekday, 24), nil
-		case "next":
-			return tp.nextOccuranceOfWeekday(tp.endOfWeek(tp.startTime).AddDate(0, 0, 1), weekday, 24), nil
-		}
+
 	}
 
 	// try to parse a date from a formatted input
