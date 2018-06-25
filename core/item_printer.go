@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"math"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -112,12 +111,7 @@ func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
 }
 
 func (ip *ItemPrinter) fPrintItem(w io.Writer, item *Item) {
-	fmt.Fprintf(w, "%s\t%q\t%v\t\n", ip.doneStatus(item), ip.truncatedData(item), item.Time().Format("15:04"))
-}
-
-func (ip *ItemPrinter) truncatedData(item *Item) string {
-	truncLen := math.Min(float64(len(item.Data())), MAX_DATA_COL_LENGTH)
-	return item.Data()[:int(truncLen)]
+	fmt.Fprintf(w, "%s\t%q\t%v\t\n", ip.doneStatus(item), TrimString(item.Data(), 20), item.Time().Format("15:04"))
 }
 
 func (ip *ItemPrinter) doneStatus(item *Item) string {
