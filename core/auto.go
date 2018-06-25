@@ -84,7 +84,7 @@ type autoPicker struct{}
 func (picker *autoPicker) Pick(options []*auto.Option) []*auto.Option {
 	optionStrings := []string{}
 	for _, opt := range options {
-		optionStrings = append(optionStrings, opt.Data())
+		optionStrings = append(optionStrings, TrimString(opt.Data(), 10))
 	}
 
 	chosen := []string{}
