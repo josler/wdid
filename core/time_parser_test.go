@@ -16,8 +16,6 @@ func TestParseWord(t *testing.T) {
 	ref := timeAt("2018-03-23 17:53:30 -0400 EDT")
 	testInputOutput(t, ref, "now", ref, ref)
 	testInputOutput(t, ref, "day", timeAt("2018-03-23 00:00:00 -0400 EDT"), timeAt("2018-03-23 23:59:59 -0400 EDT"))
-	testInputOutput(t, ref, "week", timeAt("2018-03-19 00:00:00 -0400 EDT"), timeAt("2018-03-25 23:59:59 -0400 EDT"))
-	testInputOutput(t, ref, "month", timeAt("2018-03-01 00:00:00 -0500 EDT"), timeAt("2018-03-31 23:59:59 -0400 EDT"))
 
 	testInputOutput(t, ref, "today", timeAt("2018-03-23 00:00:00 -0400 EDT"), timeAt("2018-03-23 23:59:59 -0400 EDT"))
 	testInputOutput(t, ref, "tomorrow", timeAt("2018-03-24 00:00:00 -0400 EDT"), timeAt("2018-03-24 23:59:59 -0400 EDT"))
@@ -38,16 +36,18 @@ func TestParsePhrase(t *testing.T) {
 
 func TestParsePhraseWeek(t *testing.T) {
 	ref := timeAt("2018-03-30 17:53:30 -0400 EDT")
+	testInputOutput(t, ref, "week", timeAt("2018-03-26 00:00:00 -0400 EDT"), timeAt("2018-04-01 23:59:59 -0400 EDT"))
 	testInputOutput(t, ref, "this week", timeAt("2018-03-26 00:00:00 -0400 EDT"), timeAt("2018-04-01 23:59:59 -0400 EDT"))
 	testInputOutput(t, ref, "last week", timeAt("2018-03-19 00:00:00 -0400 EDT"), timeAt("2018-03-25 23:59:59 -0400 EDT"))
 	testInputOutput(t, ref, "next week", timeAt("2018-04-02 00:00:00 -0400 EDT"), timeAt("2018-04-08 23:59:59 -0400 EDT"))
 }
 
 func TestParsePhraseMonth(t *testing.T) {
-	ref := timeAt("2018-03-23 17:53:30 -0400 EDT")
-	testInputOutput(t, ref, "this month", timeAt("2018-03-01 00:00:00 -0500 EDT"), timeAt("2018-03-31 23:59:59 -0400 EDT"))
-	testInputOutput(t, ref, "last month", timeAt("2018-02-01 00:00:00 -0500 EDT"), timeAt("2018-02-28 23:59:59 -0500 EDT"))
-	testInputOutput(t, ref, "next month", timeAt("2018-04-01 00:00:00 -0400 EDT"), timeAt("2018-04-30 23:59:59 -0400 EDT"))
+	ref := timeAt("2018-05-23 17:53:30 -0400 EDT")
+	testInputOutput(t, ref, "month", timeAt("2018-05-01 00:00:00 -0400 EDT"), timeAt("2018-05-31 23:59:59 -0400 EDT"))
+	testInputOutput(t, ref, "this month", timeAt("2018-05-01 00:00:00 -0400 EDT"), timeAt("2018-05-31 23:59:59 -0400 EDT"))
+	testInputOutput(t, ref, "last month", timeAt("2018-04-01 00:00:00 -0400 EDT"), timeAt("2018-04-30 23:59:59 -0400 EDT"))
+	testInputOutput(t, ref, "next month", timeAt("2018-06-01 00:00:00 -0400 EDT"), timeAt("2018-06-30 23:59:59 -0400 EDT"))
 }
 
 func TestParseFormat(t *testing.T) {
