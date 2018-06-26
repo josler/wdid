@@ -1,0 +1,10 @@
+image: golang:1.10.3
+
+before_script:
+  - mkdir -p /go/src/gitlab.com/josler
+  - cd /go/src/gitlab.com/josler
+  - ln -s $CI_PROJECT_DIR
+  - cd wdid
+
+test:
+  script: go test ./...
