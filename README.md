@@ -271,6 +271,22 @@ username = "my_username"
 
 Options will then be sourced from Github, any issue or PR the author was involved in that was updated in $time. Issues and PR's that are closed will be auto-marked as "done".
 
+### Auto-GoogleCalendar (WIP)
+
+Enable with the following:
+
+```
+[[auto]]
+type = "calendar"
+username = "jamie@intercom.io"
+```
+
+Where the username is the name of your calendar you want to draw events from. Events that have taken place in the past will create items marked as "done".
+
+Currently this requires a Google Calendar OAuth client secret file placed in `~/.config/wdid/client_secret.json`. You can obtain one of these from Google by setting up a project and enabling calendar API for it. In the future, wdid may provide this.
+
+The first time this runs, it will ask the user for access through OAuth to the calendar, and then save the granted token locally.
+
 ### Configuration
 
 Wdid should work out of the box with some sensible defaults. On first run it will populate a configuration file under `~/.config/wdid/config.toml`. This, by default, sets local storage up using [boltdb](https://github.com/coreos/bbolt).

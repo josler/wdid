@@ -27,6 +27,9 @@ func NewGithubClient(ctx context.Context, username, accessToken string) *GithubC
 	}
 }
 
+func (ghc *GithubClient) Precheck() {
+}
+
 func (ghc *GithubClient) isVerbose() bool {
 	v := ghc.ctx.Value("verbose")
 	return v != nil && v.(bool)

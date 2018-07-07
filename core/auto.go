@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/AlecAivazis/survey"
@@ -9,6 +10,7 @@ import (
 )
 
 type AutoSource interface {
+	Precheck()
 	Load(startTime, endTime time.Time) []*auto.Option
 }
 
@@ -53,9 +55,31 @@ func Auto(ctx context.Context, timeString string, confs ...AutoConf) error {
 
 func (loader *autoLoader) loadOptions(timespan *Timespan, confs ...AutoConf) []*auto.Option {
 	options := []*auto.Option{}
+	ch := make(chan []*auto.Option)
+
 	for _, c := range confs {
-		options = append(options, loader.loadAutoSource(timespan, loader.sourceFor(c))...)
+		loader.sourceFor(c).Precheck()
 	}
+
+	for _, c := range confs {
+		go loader.loadToChannel(ch, timespan, c)
+	}
+
+	i := 0
+OuterLoop:
+	for i < len(confs) {
+		select {
+		case loaded := <-ch:
+			options = append(options, loaded...)
+			i += 1
+		case <-time.After(5 * time.Second):
+			break OuterLoop
+		}
+	}
+
+	sort.Slice(options, func(i, j int) bool {
+		return options[i].DateTime().Before(options[j].DateTime())
+	})
 
 	return loader.picker.Pick(options)
 }
@@ -64,8 +88,14 @@ func (loader *autoLoader) sourceFor(conf AutoConf) AutoSource {
 	switch conf.AutoType() {
 	case "github":
 		return auto.NewGithubClient(loader.ctx, conf.AutoUsername(), conf.AuthKey())
+	case "calendar":
+		return auto.NewGoogleCalendar(conf.AutoUsername())
 	}
 	return nil
+}
+
+func (loader *autoLoader) loadToChannel(ch chan<- []*auto.Option, timespan *Timespan, c AutoConf) {
+	ch <- loader.loadAutoSource(timespan, loader.sourceFor(c))
 }
 
 func (loader *autoLoader) loadAutoSource(timespan *Timespan, source AutoSource) []*auto.Option {
@@ -85,6 +115,8 @@ func (picker *autoPicker) Pick(options []*auto.Option) []*auto.Option {
 	optionStrings := []string{}
 	for _, opt := range options {
 		optionStrings = append(optionStrings, TrimString(opt.Data(), 10))
+		// optionStrings = append(optionStrings, fmt.Sprintf("%s %v", TrimString(opt.Data(), 10), opt.DateTime().Local()))
+
 	}
 
 	chosen := []string{}
