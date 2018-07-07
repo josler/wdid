@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "cloud.google.com/go"
+  packages = ["compute/metadata"]
+  revision = "777200caa7fb8936aed0f12b1fd79af64cc83ec9"
+  version = "v0.24.0"
+
+[[projects]]
   name = "github.com/AlecAivazis/survey"
   packages = ["."]
   revision = "e752db451e07e09c7d7dc8cada807a44bdb0fd47"
@@ -109,7 +115,10 @@
   name = "golang.org/x/oauth2"
   packages = [
     ".",
-    "internal"
+    "google",
+    "internal",
+    "jws",
+    "jwt"
   ]
   revision = "6881fee410a5daf86371371f9ad451b95e168b71"
 
@@ -123,12 +132,26 @@
   revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
 
 [[projects]]
+  branch = "master"
+  name = "google.golang.org/api"
+  packages = [
+    "calendar/v3",
+    "gensupport",
+    "googleapi",
+    "googleapi/internal/uritemplates"
+  ]
+  revision = "e0f3bfad25321f7b0777b3ab35a0503dcb221744"
+
+[[projects]]
   name = "google.golang.org/appengine"
   packages = [
+    ".",
     "internal",
+    "internal/app_identity",
     "internal/base",
     "internal/datastore",
     "internal/log",
+    "internal/modules",
     "internal/remote_api",
     "internal/urlfetch",
     "urlfetch"
@@ -154,6 +177,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3fa60b5c384fafbb188e1500752b5cacec4aab6d90b401ee455da26028ef69ef"
+  inputs-digest = "aba912788b9a8e40e40d709ca8cf1e4e43649ebf92ed1e9337171082b4394f20"
   solver-name = "gps-cdcl"
   solver-version = 1
