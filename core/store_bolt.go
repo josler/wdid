@@ -32,6 +32,17 @@ func NewBoltStore(db *storm.DB) *BoltStore {
 }
 
 func (s *BoltStore) Find(id string) (*Item, error) {
+	items, err := s.FindAll(id)
+	if err != nil {
+		return nil, err
+	}
+	if len(items) > 1 {
+		return nil, errors.New("unable to find unique item")
+	}
+	return items[0], nil
+}
+
+func (s *BoltStore) FindAll(id string) ([]*Item, error) {
 	stormItems := []*StormItem{}
 	err := s.db.Prefix("ID", id, &stormItems)
 	if err != nil {
@@ -40,10 +51,15 @@ func (s *BoltStore) Find(id string) (*Item, error) {
 	if len(stormItems) < 1 {
 		return nil, errors.New("not found")
 	}
-	if len(stormItems) > 1 {
-		return nil, errors.New("unable to find unique item")
+
+	items := []*Item{}
+	for _, stormItem := range stormItems {
+		item, err := s.stormToItem(stormItem)
+		if err == nil {
+			items = append(items, item)
+		}
 	}
-	return s.stormToItem(stormItems[0])
+	return items, nil
 }
 
 func (s *BoltStore) Delete(item *Item) error {

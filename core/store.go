@@ -11,6 +11,7 @@ const (
 
 type Store interface {
 	Find(id string) (*Item, error)
+	FindAll(id string) ([]*Item, error)
 	Delete(item *Item) error
 	Save(item *Item) error
 	List(t *Timespan, statuses ...string) ([]*Item, error)

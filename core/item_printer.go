@@ -19,6 +19,14 @@ const (
 	MAX_DATA_COL_LENGTH             = 120
 )
 
+func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
+	format := ctx.Value("format")
+	if format == nil {
+		format = "text"
+	}
+	return GetPrintFormat(format.(string))
+}
+
 func GetPrintFormat(format string) PrintFormat {
 	return map[string]PrintFormat{
 		"human": HUMAN_PRINT_FORMAT,
@@ -36,12 +44,7 @@ type ItemPrinter struct {
 }
 
 func NewItemPrinter(ctx context.Context) *ItemPrinter {
-	format := ctx.Value("format")
-	if format == nil {
-		format = "text"
-	}
-	printFormat := GetPrintFormat(format.(string))
-	return &ItemPrinter{bumpedColor: color.FgYellow, failColor: color.FgRed, successColor: color.FgGreen, waitColor: color.FgWhite, PrintFormat: printFormat}
+	return &ItemPrinter{bumpedColor: color.FgYellow, failColor: color.FgRed, successColor: color.FgGreen, waitColor: color.FgWhite, PrintFormat: GetPrintFormatFromContext(ctx)}
 }
 
 func (ip *ItemPrinter) Print(items ...*Item) {

@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -127,13 +128,30 @@ func TestListStatus(t *testing.T) {
 	})
 }
 
-func TestShow(t *testing.T) {
+func TestFind(t *testing.T) {
 	withFreshDB(func() {
 		item := core.NewItem("some data", time.Now())
 		boltStore.Save(item)
 		found, err := boltStore.Find(item.ID())
 		if err != nil || found.ID() != item.ID() {
 			t.Errorf("error item not found correctly")
+		}
+	})
+}
+
+func TestFindAll(t *testing.T) {
+	withFreshDB(func() {
+		item := core.NewItem("to be saved twice", time.Now())
+		boltStore.Save(item)
+		item.ResetInternalID()
+		item.SetID(fmt.Sprintf("%s%s", item.ID()[:3], "yyy"))
+		err := boltStore.Save(item) // save a copy
+		if err != nil {
+			t.Fatalf("error: %s", err)
+		}
+		found, err := boltStore.FindAll(item.ID()[:2])
+		if err != nil || len(found) != 2 {
+			t.Errorf("error items not found correctly")
 		}
 	})
 }

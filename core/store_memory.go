@@ -13,24 +13,41 @@ type MemoryStore struct {
 }
 
 func (s *MemoryStore) Find(id string) (*Item, error) {
-	if len(id) < MAX_ID_LENGTH {
-		for _, item := range s.itemMap {
-			if strings.HasPrefix(item.ID(), id) {
-				return item, nil
-			}
+	items, err := s.FindAll(id)
+	if err != nil {
+		return nil, err
+	}
+	if len(items) > 1 {
+		return nil, errors.New("unable to find unique item")
+	}
+	return items[0], nil
+}
+
+func (s *MemoryStore) FindAll(id string) ([]*Item, error) {
+	// full match
+	if len(id) == MAX_ID_LENGTH {
+		found, ok := s.itemMap[id]
+		if !ok {
+			return []*Item{}, errors.New("item not found")
 		}
-		return nil, errors.New("item not found")
+		return []*Item{found}, nil
 	}
 
-	found, ok := s.itemMap[id]
-	if !ok {
+	// partial match
+	items := []*Item{}
+	for _, item := range s.itemMap {
+		if strings.HasPrefix(item.ID(), id) {
+			items = append(items, item)
+		}
+	}
+	if len(items) < 1 {
 		return nil, errors.New("item not found")
 	}
-	return found, nil
+	return items, nil
 }
 
 func (s *MemoryStore) Delete(item *Item) error {
-	s.itemMap[item.ID()] = nil
+	delete(s.itemMap, item.ID())
 	return nil
 }
 
