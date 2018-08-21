@@ -12,7 +12,7 @@ const (
 type Store interface {
 	ItemStore
 	TagStore
-	//ItemTagStore
+	ItemTagStore
 
 	WithContext(ctx context.Context) Store
 	Close()
@@ -33,5 +33,7 @@ type TagStore interface {
 }
 
 type ItemTagStore interface {
-	FindItems(tag *Tag) []*Item
+	SaveItemTag(item *Item, tag *Tag) error
+	DeleteItemTag(item *Item, Tag *Tag) error
+	FindItemsWithTag(tag *Tag) ([]*Item, error)
 }

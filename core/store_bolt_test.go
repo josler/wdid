@@ -27,6 +27,7 @@ func TestMain(m *testing.M) {
 func withFreshDB(f func()) {
 	boltStore.DropBucket("StormItem")
 	boltStore.DropBucket("StormTag")
+	boltStore.DropBucket("StormItemTag")
 	f()
 }
 
@@ -220,5 +221,60 @@ func TestListTags(t *testing.T) {
 			t.Errorf("failed to list tags in order")
 		}
 
+	})
+}
+
+func TestSaveItemTag(t *testing.T) {
+	withFreshDB(func() {
+		tag := core.NewTag("mytag")
+		item := core.NewItem("my item", time.Now())
+
+		err := boltStore.SaveItemTag(item, tag)
+		if err != nil {
+			t.Errorf("failed to save item tag")
+		}
+	})
+}
+
+func TestDeleteItemTag(t *testing.T) {
+	withFreshDB(func() {
+		tag := core.NewTag("mytag")
+		item := core.NewItem("my item", time.Now())
+
+		err := boltStore.SaveItemTag(item, tag)
+		if err != nil {
+			t.Errorf("failed to save item tag")
+		}
+		err = boltStore.DeleteItemTag(item, tag)
+		if err != nil {
+			t.Errorf("failed to delete item tag")
+		}
+	})
+}
+
+func TestFindItemsWithTag(t *testing.T) {
+	withFreshDB(func() {
+		tag := core.NewTag("mytag")
+		boltStore.SaveTag(tag)
+		item := core.NewItem("my item", time.Now())
+		boltStore.Save(item)
+		itemtwo := core.NewItem("my second item", time.Now())
+		boltStore.Save(itemtwo)
+		itemthree := core.NewItem("my third item", time.Now())
+		boltStore.Save(itemthree)
+
+		boltStore.SaveItemTag(item, tag)
+		boltStore.SaveItemTag(itemtwo, tag)
+
+		items, err := boltStore.FindItemsWithTag(tag)
+		if err != nil || len(items) != 2 {
+			t.Errorf("failed to find items with tag")
+		}
+		if items[0].Data() != "my item" {
+			t.Errorf("found wrong item through tag")
+		}
+		if items[1].Data() != "my second item" {
+			t.Errorf("found wrong item through tag")
+		}
 	})
 }

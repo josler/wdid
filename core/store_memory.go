@@ -3,14 +3,16 @@ package core
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 )
 
 // MemoryStore for tests etc
 type MemoryStore struct {
-	ctx     context.Context
-	itemMap map[string]*Item
-	tagMap  map[string]*Tag
+	ctx        context.Context
+	itemMap    map[string]*Item
+	itemTagMap map[string]*ItemTag
+	tagMap     map[string]*Tag
 }
 
 func (s *MemoryStore) Find(id string) (*Item, error) {
@@ -108,6 +110,31 @@ func (s *MemoryStore) ListTags() ([]*Tag, error) {
 		tagList = append(tagList, tag)
 	}
 	return tagList, nil
+}
+
+func (s *MemoryStore) SaveItemTag(item *Item, tag *Tag) error {
+	itemTag := NewItemTag(item, tag)
+	id := fmt.Sprintf("%s:%s", itemTag.TagID(), itemTag.ItemID())
+	s.itemTagMap[id] = itemTag
+	return nil
+}
+
+func (s *MemoryStore) DeleteItemTag(item *Item, tag *Tag) error {
+	itemTag := NewItemTag(item, tag)
+	id := fmt.Sprintf("%s:%s", itemTag.TagID(), itemTag.ItemID())
+	delete(s.itemTagMap, id)
+	return nil
+}
+
+func (s *MemoryStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
+	items := []*Item{}
+	for k, itemTag := range s.itemTagMap {
+		if strings.HasPrefix(k, tag.internalID) {
+			item := s.itemMap[itemTag.ItemID()]
+			items = append(items, item)
+		}
+	}
+	return items, nil
 }
 
 func (s *MemoryStore) WithContext(ctx context.Context) Store {
