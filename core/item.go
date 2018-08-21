@@ -64,6 +64,11 @@ func (i *Item) ResetInternalID() {
 	i.internalID = ""
 }
 
+// manually set the ID, useful for testing!
+func (i *Item) SetID(id string) {
+	i.id = id[:MAX_ID_LENGTH]
+}
+
 func NewItem(data string, at time.Time) *Item {
 	return &Item{id: GenerateID(at), data: data, status: "waiting", datetime: at}
 }

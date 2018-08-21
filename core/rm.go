@@ -2,14 +2,24 @@ package core
 
 import (
 	"context"
+	"errors"
+	"fmt"
 )
 
 func Rm(ctx context.Context, idString string) error {
 	store := ctx.Value("store").(Store)
-	item, err := store.Find(idString)
+	items, err := store.FindAll(idString)
 	if err != nil {
 		return err
 	}
-	NewItemPrinter(ctx).Print(item)
-	return store.Delete(item)
+	if len(items) > 1 {
+		printFormat := GetPrintFormatFromContext(ctx)
+		if printFormat == HUMAN_PRINT_FORMAT {
+			fmt.Println("Error: Found multiple matching items:")
+			NewItemPrinter(ctx).Print(items...)
+		}
+		return errors.New("unable to find unique item")
+	}
+	NewItemPrinter(ctx).Print(items...)
+	return store.Delete(items[0])
 }
