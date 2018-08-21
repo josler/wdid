@@ -55,6 +55,9 @@ var (
 
 	show   = app.Command("show", "Show a single item.")
 	showID = show.Arg("id", "ID of item to show.").Required().String()
+
+	tag     = app.Command("tag", "work with tags.")
+	tagList = tag.Command("ls", "List tags.").Alias("list").Default()
 )
 
 func main() {

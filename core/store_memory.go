@@ -10,6 +10,7 @@ import (
 type MemoryStore struct {
 	ctx     context.Context
 	itemMap map[string]*Item
+	tagMap  map[string]*Tag
 }
 
 func (s *MemoryStore) Find(id string) (*Item, error) {
@@ -86,6 +87,27 @@ func (s *MemoryStore) includes(status string, statuses ...string) bool {
 		}
 	}
 	return false
+}
+
+func (s *MemoryStore) FindTag(name string) (*Tag, error) {
+	found, ok := s.tagMap[name]
+	if !ok {
+		return nil, errors.New("item not found")
+	}
+	return found, nil
+}
+
+func (s *MemoryStore) SaveTag(tag *Tag) error {
+	s.tagMap[tag.Name()] = tag
+	return nil
+}
+
+func (s *MemoryStore) ListTags() ([]*Tag, error) {
+	tagList := []*Tag{}
+	for _, tag := range s.tagMap {
+		tagList = append(tagList, tag)
+	}
+	return tagList, nil
 }
 
 func (s *MemoryStore) WithContext(ctx context.Context) Store {

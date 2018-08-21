@@ -26,6 +26,7 @@ func TestMain(m *testing.M) {
 
 func withFreshDB(f func()) {
 	boltStore.DropBucket("StormItem")
+	boltStore.DropBucket("StormTag")
 	f()
 }
 
@@ -176,5 +177,48 @@ func TestDelete(t *testing.T) {
 		if err != storm.ErrNotFound {
 			t.Errorf("error item not found correctly")
 		}
+	})
+}
+
+func TestSaveTag(t *testing.T) {
+	withFreshDB(func() {
+		tag := core.NewTag("mytag")
+		err := boltStore.SaveTag(tag)
+		if err != nil {
+			t.Errorf("failed to save tag")
+		}
+	})
+}
+
+func TestFindTag(t *testing.T) {
+	withFreshDB(func() {
+		tag := core.NewTag("mytag")
+		err := boltStore.SaveTag(tag)
+		if err != nil {
+			t.Errorf("failed to save tag")
+		}
+		found, err := boltStore.FindTag("mytag")
+		if err != nil || found == nil || found.Name() != "mytag" {
+			t.Errorf("failed to find tag")
+		}
+	})
+}
+
+func TestListTags(t *testing.T) {
+	withFreshDB(func() {
+		tagone := core.NewTag("one")
+		boltStore.SaveTag(tagone)
+		tagtwo := core.NewTag("two")
+		boltStore.SaveTag(tagtwo)
+
+		found, err := boltStore.ListTags()
+		if err != nil || len(found) != 2 {
+			t.Errorf("failed to list tags")
+		}
+
+		if found[0].Name() != tagone.Name() || found[1].Name() != tagtwo.Name() {
+			t.Errorf("failed to list tags in order")
+		}
+
 	})
 }
