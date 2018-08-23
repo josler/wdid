@@ -26,7 +26,7 @@
 
 [[constraint]]
   name = "gopkg.in/alecthomas/kingpin.v2"
-  version = "2.2.6"
+  revision = "a39589180ebd6bbf43076e514b55f20a95d43086"
 
 [prune]
   go-tests = true

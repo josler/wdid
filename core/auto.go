@@ -37,15 +37,17 @@ func Auto(ctx context.Context, timeString string, confs ...AutoConf) error {
 	pickedOptions := loader.loadOptions(at, confs...)
 	savedItems := []*Item{}
 
+	ic := ItemCreator{ctx: ctx}
 	for _, o := range pickedOptions {
-		item := NewItem(o.Data(), o.DateTime().Local())
+		item, err := ic.Create(o.Data(), o.DateTime().Local())
+		if err != nil {
+			continue
+		}
 		if o.Status() == "done" {
 			item.Do()
+			store.Save(item)
 		}
-		err := store.Save(item)
-		if err == nil {
-			savedItems = append(savedItems, item)
-		}
+		savedItems = append(savedItems, item)
 	}
 
 	NewItemPrinter(ctx).Print(savedItems...)
@@ -115,8 +117,6 @@ func (picker *autoPicker) Pick(options []*auto.Option) []*auto.Option {
 	optionStrings := []string{}
 	for _, opt := range options {
 		optionStrings = append(optionStrings, TrimString(opt.Data(), 10))
-		// optionStrings = append(optionStrings, fmt.Sprintf("%s %v", TrimString(opt.Data(), 10), opt.DateTime().Local()))
-
 	}
 
 	chosen := []string{}

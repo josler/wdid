@@ -8,7 +8,6 @@ import (
 )
 
 func Add(ctx context.Context, description io.Reader, timeString string) error {
-	store := ctx.Value("store").(Store)
 	at, err := TimeParser{Input: timeString}.Parse()
 	if err != nil {
 		return err
@@ -20,10 +19,12 @@ func Add(ctx context.Context, description io.Reader, timeString string) error {
 	if stringDescription == "" {
 		return errors.New("description missing")
 	}
-	item := NewItem(stringDescription, at.Start)
-	err = store.Save(item)
-	if err == nil {
-		NewItemPrinter(ctx).Print(item)
+	itemCreator := &ItemCreator{ctx: ctx}
+	item, err := itemCreator.Create(stringDescription, at.Start)
+	if err != nil {
+		return err
 	}
-	return err
+
+	NewItemPrinter(ctx).Print(item)
+	return nil
 }

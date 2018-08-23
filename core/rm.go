@@ -20,6 +20,9 @@ func Rm(ctx context.Context, idString string) error {
 		}
 		return errors.New("unable to find unique item")
 	}
+
 	NewItemPrinter(ctx).Print(items...)
-	return store.Delete(items[0])
+
+	itemCreator := &ItemCreator{ctx: ctx}
+	return itemCreator.Delete(items[0])
 }

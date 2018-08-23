@@ -1,7 +1,7 @@
 package core
 
 import (
-	"fmt"
+	"strings"
 	"time"
 )
 
@@ -23,6 +23,16 @@ func (t *Tag) CreatedAt() time.Time {
 	return t.createdAt
 }
 
-func (t *Tag) Tag() string {
-	return fmt.Sprintf("%s: %v", t.Name(), t.CreatedAt())
+func (t *Tag) TagType() string {
+	if strings.HasPrefix(t.Name(), "#") {
+		return "hashtag"
+	} else if strings.HasPrefix(t.Name(), "@") {
+		return "mention"
+	} else {
+		return "plain"
+	}
+}
+
+func (t *Tag) String() string {
+	return t.Name()
 }

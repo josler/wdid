@@ -9,10 +9,14 @@ import (
 
 func TestAddCreatesItem(t *testing.T) {
 	ctx, store := contextWithMemoryStore()
-	Add(ctx, strings.NewReader("my new item"), "now")
+	Add(ctx, strings.NewReader("my new item #hashtag"), "now")
 	found := mostRecentItem(store)
-	if found.Data() != "my new item" {
+	if found.Data() != "my new item #hashtag" {
 		t.Errorf("item not saved")
+	}
+	tag, err := store.FindTag("#hashtag")
+	if err != nil || tag.Name() != "#hashtag" {
+		t.Errorf("tag not saved")
 	}
 }
 
@@ -26,7 +30,7 @@ func TestAddFutureItem(t *testing.T) {
 
 func contextWithMemoryStore() (context.Context, Store) {
 	ctx := context.Background()
-	store := &MemoryStore{itemMap: map[string]*Item{}}
+	store := &MemoryStore{itemMap: map[string]*Item{}, tagMap: map[string]*Tag{}, itemTagMap: map[string]*ItemTag{}}
 	return context.WithValue(ctx, "store", store), store
 }
 

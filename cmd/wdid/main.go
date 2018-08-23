@@ -64,6 +64,7 @@ func main() {
 	conf, err := loadConfig()
 	app.FatalIfError(err, "")
 	kingpin.CommandLine.HelpFlag.Short('h')
+	kingpin.EnableFileExpansion = false
 
 	app.Version(VERSION)
 	app.HelpFlag.Short('h') // allow -h for --help
@@ -122,6 +123,8 @@ func main() {
 		err = core.Skip(ctx, *skipID)
 	case show.FullCommand():
 		err = core.Show(ctx, *showID)
+	case tagList.FullCommand():
+		err = core.ListTag(ctx)
 	}
 	app.FatalIfError(err, "")
 }

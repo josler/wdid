@@ -24,14 +24,16 @@ type StormItem struct {
 type StormTag struct {
 	RowID     uint64 `storm:"id,increment"`
 	Name      string `storm:"index,unique"`
-	CreatedAt int64  `storm:"index"` // timestamp
+	CreatedAt int64  // timestamp
+	Type      string `storm:"index"`
 }
 
 type StormItemTag struct {
-	RowID     uint64 `storm:"id,increment"`
-	ItemID    string `storm:"index"`
-	TagID     string `storm:"index"`
-	CreatedAt int64  `storm:"index"` // timestamp
+	RowID        uint64 `storm:"id,increment"`
+	ItemTagIndex string `storm:"index,unique"`
+	ItemID       string `storm:"index"`
+	TagID        string `storm:"index"`
+	CreatedAt    int64  `storm:"index"` // timestamp
 }
 
 type BoltStore struct {
@@ -146,6 +148,11 @@ func (s *BoltStore) SaveTag(tag *Tag) error {
 	stormTag := s.tagToStorm(tag)
 	err := s.db.Save(stormTag)
 	if err != nil {
+		if err == storm.ErrAlreadyExists {
+			found, _ := s.FindTag(tag.Name())
+			tag.internalID = found.internalID
+			return nil
+		}
 		return err
 	}
 	tag.internalID = fmt.Sprintf("%d", stormTag.RowID)
@@ -181,6 +188,10 @@ func (s *BoltStore) SaveItemTag(item *Item, tag *Tag) error {
 	stormItemTag := s.itemTagToStorm(itemTag)
 	err := s.db.Save(stormItemTag)
 	if err != nil {
+		if err == storm.ErrAlreadyExists {
+			// already exists
+			return nil
+		}
 		return err
 	}
 	return nil
@@ -190,16 +201,12 @@ func (s *BoltStore) DeleteItemTag(item *Item, tag *Tag) error {
 	itemTag := NewItemTag(item, tag)
 
 	stormItemTags := []*StormItemTag{}
-	query := s.db.Select(q.Eq("ItemID", itemTag.ItemID()), q.Eq("TagID", itemTag.TagID()))
+	query := s.db.Select(q.Eq("ItemTagIndex", fmt.Sprintf("%s:%s", itemTag.ItemID(), itemTag.TagID())))
 	query.OrderBy("CreatedAt")
 	err := query.Find(&stormItemTags)
 	if err != nil {
 		return err
 	}
-	if len(stormItemTags) > 1 {
-		return errors.New("unable to find unique item tag")
-	}
-
 	err = s.db.DeleteStruct(stormItemTags[0])
 	if err != nil {
 		return err
@@ -213,6 +220,9 @@ func (s *BoltStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
 	query.OrderBy("CreatedAt").Limit(100).Reverse()
 	err := query.Find(&stormItemTags)
 	if err != nil {
+		if err == storm.ErrNotFound {
+			return []*Item{}, nil
+		}
 		return []*Item{}, err
 	}
 
@@ -240,6 +250,28 @@ func (s *BoltStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
 		outputItems = append(outputItems, parsed)
 	}
 	return outputItems, nil
+}
+
+func (s *BoltStore) DeleteItemTagsWithItem(item *Item) error {
+	stormItemTags := []*StormItemTag{}
+	query := s.db.Select(q.Eq("ItemID", item.ID()))
+	query.OrderBy("CreatedAt")
+	err := query.Find(&stormItemTags)
+	if err != nil {
+		if err == storm.ErrNotFound {
+			// nothing to do
+			return nil
+		}
+		return err
+	}
+	for _, stormItemTag := range stormItemTags {
+		err = s.db.DeleteStruct(stormItemTag)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *BoltStore) WithContext(ctx context.Context) Store {
@@ -282,6 +314,7 @@ func (s *BoltStore) tagToStorm(input *Tag) *StormTag {
 	return &StormTag{
 		Name:      input.Name(),
 		CreatedAt: input.CreatedAt().Unix(),
+		Type:      input.TagType(),
 	}
 }
 
@@ -296,9 +329,10 @@ func (s *BoltStore) stormToTag(input *StormTag) (*Tag, error) {
 
 func (s *BoltStore) itemTagToStorm(input *ItemTag) *StormItemTag {
 	return &StormItemTag{
-		ItemID:    input.ItemID(),
-		TagID:     input.TagID(),
-		CreatedAt: input.CreatedAt().Unix(),
+		ItemTagIndex: fmt.Sprintf("%s:%s", input.ItemID(), input.TagID()),
+		ItemID:       input.ItemID(),
+		TagID:        input.TagID(),
+		CreatedAt:    input.CreatedAt().Unix(),
 	}
 }
 

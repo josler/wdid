@@ -239,9 +239,15 @@ func (m *MultiSelect) Prompt() (interface{}, error) {
 
 // Cleanup removes the options section, and renders the ask like a normal question.
 func (m *MultiSelect) Cleanup(val interface{}) error {
-	// JO: render nothing
+	// execute the output summary template with the answer
 	return m.Render(
-		"",
-		nil,
+		MultiSelectQuestionTemplate,
+		MultiSelectTemplateData{
+			MultiSelect:   *m,
+			SelectedIndex: m.selectedIndex,
+			Checked:       m.checked,
+			Answer:        strings.Join(val.([]string), ", "),
+			ShowAnswer:    true,
+		},
 	)
 }

@@ -36,4 +36,5 @@ type ItemTagStore interface {
 	SaveItemTag(item *Item, tag *Tag) error
 	DeleteItemTag(item *Item, Tag *Tag) error
 	FindItemsWithTag(tag *Tag) ([]*Item, error)
+	DeleteItemTagsWithItem(item *Item) error
 }

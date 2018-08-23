@@ -188,6 +188,11 @@ func TestSaveTag(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to save tag")
 		}
+		tag = core.NewTag("mytag")
+		err = boltStore.SaveTag(tag)
+		if err != nil {
+			t.Errorf("failed to save tag")
+		}
 	})
 }
 
@@ -220,7 +225,6 @@ func TestListTags(t *testing.T) {
 		if found[0].Name() != tagone.Name() || found[1].Name() != tagtwo.Name() {
 			t.Errorf("failed to list tags in order")
 		}
-
 	})
 }
 
@@ -232,6 +236,11 @@ func TestSaveItemTag(t *testing.T) {
 		err := boltStore.SaveItemTag(item, tag)
 		if err != nil {
 			t.Errorf("failed to save item tag")
+		}
+
+		err = boltStore.SaveItemTag(item, tag)
+		if err != nil {
+			t.Errorf("failed to save duplicate")
 		}
 	})
 }
@@ -275,6 +284,27 @@ func TestFindItemsWithTag(t *testing.T) {
 		}
 		if items[1].Data() != "my second item" {
 			t.Errorf("found wrong item through tag")
+		}
+	})
+}
+
+func TestDeleteItemTagsWithItem(t *testing.T) {
+	withFreshDB(func() {
+		tag := core.NewTag("mytag")
+		item := core.NewItem("my item", time.Now())
+		boltStore.SaveTag(tag)
+
+		err := boltStore.SaveItemTag(item, tag)
+		if err != nil {
+			t.Errorf("failed to save item tag")
+		}
+		err = boltStore.DeleteItemTagsWithItem(item)
+		if err != nil {
+			t.Errorf("failed to delete item tag")
+		}
+		items, err := boltStore.FindItemsWithTag(tag)
+		if err != nil && len(items) != 0 {
+			t.Errorf("failed to delete all item tags!")
 		}
 	})
 }

@@ -137,6 +137,19 @@ func (s *MemoryStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
 	return items, nil
 }
 
+func (s *MemoryStore) DeleteItemTagsWithItem(item *Item) error {
+	itemTagIDs := []string{}
+	for k, _ := range s.itemTagMap {
+		if strings.HasSuffix(k, item.ID()) {
+			itemTagIDs = append(itemTagIDs, k)
+		}
+	}
+	for _, id := range itemTagIDs {
+		delete(s.itemTagMap, id)
+	}
+	return nil
+}
+
 func (s *MemoryStore) WithContext(ctx context.Context) Store {
 	return &MemoryStore{ctx: ctx}
 }
