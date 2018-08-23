@@ -11,7 +11,6 @@ import (
 )
 
 func Import(ctx context.Context, filename string) error {
-	store := ctx.Value("store").(Store)
 	var f io.Reader
 	fmt.Println(filename)
 
@@ -25,11 +24,13 @@ func Import(ctx context.Context, filename string) error {
 	} else {
 		f = os.Stdin
 	}
-	return ReadToStore(f, store)
+	return ReadToStore(ctx, f)
 }
 
-func ReadToStore(f io.Reader, store Store) error {
+func ReadToStore(ctx context.Context, f io.Reader) error {
+	store := ctx.Value("store").(Store)
 	items := []*Item{}
+	itemCreator := &ItemCreator{ctx: ctx}
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -50,6 +51,8 @@ func ReadToStore(f io.Reader, store Store) error {
 			item.previousID = refID[2:]
 		}
 
+		// not worrying about errors on metadata
+		itemCreator.GenerateAndSaveMetadata(item)
 		items = append(items, item)
 	}
 

@@ -16,26 +16,10 @@ type ItemCreator struct {
 func (ic *ItemCreator) Create(data string, at time.Time) (*Item, error) {
 	store := ic.ctx.Value("store").(Store)
 	item := NewItem(data, at)
-	tokenizer := &parser.Tokenizer{}
-	tokenResult, err := tokenizer.Tokenize(data)
+	err := ic.GenerateAndSaveMetadata(item)
 	if err != nil {
-		if ic.isVerbose() {
-			fmt.Printf("failed to generate tags, %v\n", err)
-		}
 		return nil, err
 	}
-	err = ic.saveNewTags(item, tokenResult)
-	if err != nil {
-		if ic.isVerbose() {
-			fmt.Printf("failed to save tags, %v\n", err)
-		}
-		return nil, err
-	}
-	item.tags = []*Tag{}
-	for _, resultTag := range tokenResult.Tags {
-		item.tags = append(item.tags, NewTag(resultTag))
-	}
-
 	err = store.Save(item)
 	if err != nil {
 		return nil, err
@@ -70,8 +54,16 @@ func (ic *ItemCreator) Edit(item *Item, data string, timeString string) error {
 	item.datetime = newAt
 	item.data = newDescription
 
+	err = ic.GenerateAndSaveMetadata(item)
+	if err != nil {
+		return err
+	}
+	return store.Save(item)
+}
+
+func (ic *ItemCreator) GenerateAndSaveMetadata(item *Item) error {
 	tokenizer := &parser.Tokenizer{}
-	tokenResult, err := tokenizer.Tokenize(data)
+	tokenResult, err := tokenizer.Tokenize(item.Data())
 	if err != nil {
 		if ic.isVerbose() {
 			fmt.Printf("failed to generate tags, %v\n", err)
@@ -89,8 +81,7 @@ func (ic *ItemCreator) Edit(item *Item, data string, timeString string) error {
 	for _, resultTag := range tokenResult.Tags {
 		item.tags = append(item.tags, NewTag(resultTag))
 	}
-
-	return store.Save(item)
+	return nil
 }
 
 func (ic *ItemCreator) Delete(item *Item) error {
@@ -133,6 +124,7 @@ func (ic *ItemCreator) saveNewTags(item *Item, tokenResult *parser.TokenResult) 
 
 func (ic *ItemCreator) deleteOldItemTags(item *Item) error {
 	store := ic.ctx.Value("store").(Store)
+	item.tags = []*Tag{}
 	return store.DeleteItemTagsWithItem(item)
 }
 
