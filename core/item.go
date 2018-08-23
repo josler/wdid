@@ -2,8 +2,9 @@ package core
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
+
+	"gitlab.com/josler/wdid/parser"
 )
 
 type Item struct {
@@ -12,6 +13,7 @@ type Item struct {
 	nextID     string // ref to next if bumped
 	previousID string // ref to previous if bumped
 	data       string
+	tags       []*Tag
 	status     string
 	datetime   time.Time
 }
@@ -30,6 +32,13 @@ func (i *Item) PreviousID() string {
 
 func (i *Item) Data() string {
 	return i.data
+}
+
+func (i *Item) Tags() []*Tag {
+	if i.tags == nil {
+		i.generateMetadata()
+	}
+	return i.tags
 }
 
 func (i *Item) Status() string {
@@ -69,25 +78,17 @@ func (i *Item) SetID(id string) {
 	i.id = id[:MAX_ID_LENGTH]
 }
 
+func (i *Item) generateMetadata() {
+	i.tags = []*Tag{} // always init
+	tokenizer := &parser.Tokenizer{}
+	tokenResult, err := tokenizer.Tokenize(i.data)
+	if err == nil {
+		for _, resultTag := range tokenResult.Tags {
+			i.tags = append(i.tags, NewTag(resultTag))
+		}
+	}
+}
+
 func NewItem(data string, at time.Time) *Item {
 	return &Item{id: GenerateID(at), data: data, status: "waiting", datetime: at}
-}
-
-// GenerateID generates a 6 digit ID - with the last three digits sortable by Year, Month, Day
-// Format: RRRYMD - where R is a random base36 rune.
-// This means, that in any given day, there's 36^3 chance of a random collision - acceptable for this.
-func GenerateID(at time.Time) string {
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-	return fmt.Sprintf("%c%c%c%s", Base36(r1.Intn(35)), Base36(r1.Intn(35)), Base36(r1.Intn(35)), IDSuffixForDate(at))
-}
-
-// numbers above 35 translate to the value of remainder. i.e. 36 is 0, 71 is z, 72 is 0...
-func Base36(in int) rune {
-	charMap := []rune("0123456789abcdefghijklmnopqrstuvwxyz")
-	return charMap[(in % 36)]
-}
-
-func IDSuffixForDate(t time.Time) string {
-	return fmt.Sprintf("%c%c%c", Base36(int(t.Year()-2000)), Base36(int(t.Month())), Base36(int(t.Day())))
 }

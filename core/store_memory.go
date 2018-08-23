@@ -3,13 +3,16 @@ package core
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 )
 
 // MemoryStore for tests etc
 type MemoryStore struct {
-	ctx     context.Context
-	itemMap map[string]*Item
+	ctx        context.Context
+	itemMap    map[string]*Item
+	itemTagMap map[string]*ItemTag
+	tagMap     map[string]*Tag
 }
 
 func (s *MemoryStore) Find(id string) (*Item, error) {
@@ -86,6 +89,65 @@ func (s *MemoryStore) includes(status string, statuses ...string) bool {
 		}
 	}
 	return false
+}
+
+func (s *MemoryStore) FindTag(name string) (*Tag, error) {
+	found, ok := s.tagMap[name]
+	if !ok {
+		return nil, errors.New("item not found")
+	}
+	return found, nil
+}
+
+func (s *MemoryStore) SaveTag(tag *Tag) error {
+	s.tagMap[tag.Name()] = tag
+	return nil
+}
+
+func (s *MemoryStore) ListTags() ([]*Tag, error) {
+	tagList := []*Tag{}
+	for _, tag := range s.tagMap {
+		tagList = append(tagList, tag)
+	}
+	return tagList, nil
+}
+
+func (s *MemoryStore) SaveItemTag(item *Item, tag *Tag) error {
+	itemTag := NewItemTag(item, tag)
+	id := fmt.Sprintf("%s:%s", itemTag.TagID(), itemTag.ItemID())
+	s.itemTagMap[id] = itemTag
+	return nil
+}
+
+func (s *MemoryStore) DeleteItemTag(item *Item, tag *Tag) error {
+	itemTag := NewItemTag(item, tag)
+	id := fmt.Sprintf("%s:%s", itemTag.TagID(), itemTag.ItemID())
+	delete(s.itemTagMap, id)
+	return nil
+}
+
+func (s *MemoryStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
+	items := []*Item{}
+	for k, itemTag := range s.itemTagMap {
+		if strings.HasPrefix(k, tag.internalID) {
+			item := s.itemMap[itemTag.ItemID()]
+			items = append(items, item)
+		}
+	}
+	return items, nil
+}
+
+func (s *MemoryStore) DeleteItemTagsWithItem(item *Item) error {
+	itemTagIDs := []string{}
+	for k, _ := range s.itemTagMap {
+		if strings.HasSuffix(k, item.ID()) {
+			itemTagIDs = append(itemTagIDs, k)
+		}
+	}
+	for _, id := range itemTagIDs {
+		delete(s.itemTagMap, id)
+	}
+	return nil
 }
 
 func (s *MemoryStore) WithContext(ctx context.Context) Store {

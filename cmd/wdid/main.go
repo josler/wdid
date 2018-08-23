@@ -55,12 +55,16 @@ var (
 
 	show   = app.Command("show", "Show a single item.")
 	showID = show.Arg("id", "ID of item to show.").Required().String()
+
+	tag     = app.Command("tag", "work with tags.")
+	tagList = tag.Command("ls", "List tags.").Alias("list").Default()
 )
 
 func main() {
 	conf, err := loadConfig()
 	app.FatalIfError(err, "")
 	kingpin.CommandLine.HelpFlag.Short('h')
+	kingpin.EnableFileExpansion = false
 
 	app.Version(VERSION)
 	app.HelpFlag.Short('h') // allow -h for --help
@@ -119,6 +123,8 @@ func main() {
 		err = core.Skip(ctx, *skipID)
 	case show.FullCommand():
 		err = core.Show(ctx, *showID)
+	case tagList.FullCommand():
+		err = core.ListTag(ctx)
 	}
 	app.FatalIfError(err, "")
 }

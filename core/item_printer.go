@@ -89,15 +89,16 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s -- %v\n", ip.doneStatus(item), item.Time().Format("Mon, 02 Jan 2006 15:04:05"))
 	fmt.Fprintf(w, "InternalID: %s\n", item.internalID)
+	baseColor := color.New(color.Bold)
+	baseColor.EnableColor()
 	if item.NextID() != "" {
-		baseColor := color.New(color.Bold)
-		baseColor.EnableColor()
 		fmt.Fprintf(w, "Bumped to: %s\n", baseColor.Sprintf("%s", item.NextID()))
 	}
 	if item.PreviousID() != "" {
-		baseColor := color.New(color.Bold)
-		baseColor.EnableColor()
 		fmt.Fprintf(w, "Bumped from: %s\n", baseColor.Sprintf("%s", item.PreviousID()))
+	}
+	if len(item.Tags()) != 0 {
+		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", item.Tags()))
 	}
 	fmt.Fprintf(w, "Data:\n %s\n\n", item.Data())
 }
@@ -114,7 +115,14 @@ func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
 }
 
 func (ip *ItemPrinter) fPrintItem(w io.Writer, item *Item) {
-	fmt.Fprintf(w, "%s\t%q\t%v\t\n", ip.doneStatus(item), TrimString(item.Data(), 20), item.Time().Format("15:04"))
+	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), TrimString(item.Data(), 20), ip.itemTags(item), item.Time().Format("15:04"))
+}
+
+func (ip *ItemPrinter) itemTags(item *Item) string {
+	if len(item.Tags()) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%s", item.Tags())
 }
 
 func (ip *ItemPrinter) doneStatus(item *Item) string {
