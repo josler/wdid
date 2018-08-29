@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
+	kingpin "github.com/alecthomas/kingpin"
 	"gitlab.com/josler/wdid/core"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 const (
