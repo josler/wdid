@@ -141,6 +141,28 @@ func TestFind(t *testing.T) {
 	})
 }
 
+func TestFindMultipleReturnsMostRecent(t *testing.T) {
+	withFreshDB(func() {
+		item := core.NewItem("to be saved twice", time.Now().Add(-5*time.Second))
+		firstID := item.ID()
+		boltStore.Save(item)
+
+		item = core.NewItem("to be saved twice", time.Now())
+		item.SetID(fmt.Sprintf("%s%s", firstID[:3], "yyy"))
+		err := boltStore.Save(item) // save a copy
+		if err != nil {
+			t.Fatalf("error: %s", err)
+		}
+		found, err := boltStore.Find(item.ID()[:2])
+		if err != nil {
+			t.Errorf("error item not found correctly")
+		}
+		if found.ID() != item.ID() {
+			t.Errorf("didnt return most recent item %s %s", found.ID(), item.ID())
+		}
+	})
+}
+
 func TestFindAll(t *testing.T) {
 	withFreshDB(func() {
 		item := core.NewItem("to be saved twice", time.Now())

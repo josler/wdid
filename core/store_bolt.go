@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -51,9 +52,17 @@ func (s *BoltStore) Find(id string) (*Item, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(items) > 1 {
-		return nil, errors.New("unable to find unique item")
+
+	// if there's no items, then we failed
+	if len(items) == 0 {
+		return nil, errors.New("not found")
 	}
+
+	// return most recent item
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].Time().After(items[j].Time())
+	})
+
 	return items[0], nil
 }
 
