@@ -1,9 +1,10 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 
-	"gopkg.in/jdkato/prose.v2"
+	prose "gopkg.in/jdkato/prose.v2"
 )
 
 type TokenResult struct {
@@ -20,13 +21,36 @@ func (t *Tokenizer) Tokenize(text string) (*TokenResult, error) {
 		return nil, err
 	}
 
-	result := TokenResult{Tags: []string{}}
-	result.Raw = text
+	result := TokenResult{Tags: []string{}, Raw: text}
+	tagMap := map[string]bool{}
 
+	var capturedBrackets strings.Builder
+	shouldCapture := false
 	for _, tok := range doc.Tokens() {
 		if strings.HasPrefix(tok.Text, "@") || strings.HasPrefix(tok.Text, "#") {
-			result.Tags = append(result.Tags, tok.Text)
+			tagMap[tok.Text] = true
+		} else if tok.Text == "[" {
+			shouldCapture = true
+		} else if tok.Text == "]" {
+			words := strings.Split(capturedBrackets.String(), ",")
+			for _, word := range words {
+				trimmed := strings.Trim(word, " ")
+				if trimmed == "" {
+					continue
+				}
+				if !strings.HasPrefix(trimmed, "@") && !strings.HasPrefix(trimmed, "#") {
+					tagMap[fmt.Sprintf("#%s", trimmed)] = true
+				}
+			}
+			shouldCapture = false
+			capturedBrackets.Reset()
+		} else if shouldCapture {
+			capturedBrackets.WriteString(tok.Text)
 		}
+	}
+
+	for key, _ := range tagMap {
+		result.Tags = append(result.Tags, key)
 	}
 
 	return &result, nil
