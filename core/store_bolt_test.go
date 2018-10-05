@@ -55,7 +55,7 @@ func TestSaveUpdate(t *testing.T) {
 		}
 		item.Do()
 		err = boltStore.Save(item)
-		if err != nil || item.Status() != "done" {
+		if err != nil || item.Status() != core.DoneStatus {
 			t.Fatalf("error updating item")
 		}
 	})
@@ -109,7 +109,7 @@ func TestListStatus(t *testing.T) {
 		skippedItem.Skip()
 		boltStore.Save(skippedItem)
 
-		items, _ := boltStore.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), "waiting", "skipped")
+		items, _ := boltStore.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), core.WaitingStatus, core.SkippedStatus)
 		if len(items) != 2 {
 			t.Fatalf("error: not all items found")
 		}
@@ -120,7 +120,7 @@ func TestListStatus(t *testing.T) {
 			t.Errorf("error data not matching")
 		}
 
-		items, _ = boltStore.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), "done")
+		items, _ = boltStore.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), core.DoneStatus)
 		if len(items) != 1 {
 			t.Fatalf("error: not all items found")
 		}

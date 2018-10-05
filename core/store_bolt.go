@@ -10,6 +10,7 @@ import (
 
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/q"
+	"gitlab.com/josler/wdid/filter"
 )
 
 type StormItem struct {
@@ -114,14 +115,18 @@ func (s *BoltStore) Save(item *Item) error {
 	return nil
 }
 
-func (s *BoltStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
+func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	stormItems := []*StormItem{}
-	var query storm.Query
-	if len(statuses) > 0 {
-		query = s.db.Select(q.Gte("Datetime", t.Start.Unix()), q.Lte("Datetime", t.End.Unix()), q.In("Status", statuses))
-	} else {
-		query = s.db.Select(q.Gte("Datetime", t.Start.Unix()), q.Lte("Datetime", t.End.Unix()))
+
+	queryItems := []q.Matcher{}
+	for _, filter := range filters {
+		filterQueries, err := filter.QueryItems()
+		if err != nil {
+			return []*Item{}, err
+		}
+		queryItems = append(queryItems, filterQueries...)
 	}
+	query := s.db.Select(queryItems...)
 
 	query.OrderBy("Datetime")
 	err := query.Find(&stormItems)
@@ -142,6 +147,14 @@ func (s *BoltStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
 		outputItems = append(outputItems, parsed)
 	}
 	return outputItems, nil
+}
+
+func (s *BoltStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
+	filters := []filter.Filter{NewDateFilter(t)}
+	if len(statuses) > 0 {
+		filters = append(filters, NewStatusFilter(statuses...))
+	}
+	return s.ListFilters(filters)
 }
 
 func (s *BoltStore) FindTag(name string) (*Tag, error) {
@@ -236,11 +249,11 @@ func (s *BoltStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
 	}
 
 	stormItems := []*StormItem{}
-	matchers := []q.Matcher{}
+	ids := []string{}
 	for _, stormItemTag := range stormItemTags {
-		matchers = append(matchers, q.Eq("ID", stormItemTag.ItemID))
+		ids = append(ids, stormItemTag.ItemID)
 	}
-	query = s.db.Select(q.Or(matchers...))
+	query = s.db.Select(q.In("ID", ids))
 	err = query.Find(&stormItems)
 
 	outputItems := []*Item{}

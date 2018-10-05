@@ -45,6 +45,7 @@ var (
 	listWaiting = list.Flag("waiting", "Only list items with status = waiting.").Short('w').Bool()
 	listSkipped = list.Flag("skipped", "Only list items with status = skipped.").Short('s').Bool()
 	listBumped  = list.Flag("bumped", "Only list items with status = bumped.").Short('b').Bool()
+	listFilter  = list.Flag("filter", "Filter the results").Short('f').String()
 	listTime    = list.Arg("time", "Time range to search in.").Default("0").String()
 
 	rm   = app.Command("rm", "Remove (permanently!) a single item.")
@@ -105,18 +106,18 @@ func main() {
 	case list.FullCommand():
 		statuses := []string{}
 		if *listBumped {
-			statuses = append(statuses, "bumped")
+			statuses = append(statuses, core.BumpedStatus)
 		}
 		if *listDone {
-			statuses = append(statuses, "done")
+			statuses = append(statuses, core.DoneStatus)
 		}
 		if *listWaiting {
-			statuses = append(statuses, "waiting")
+			statuses = append(statuses, core.WaitingStatus)
 		}
 		if *listSkipped {
-			statuses = append(statuses, "skipped")
+			statuses = append(statuses, core.SkippedStatus)
 		}
-		err = core.List(ctx, *listTime, statuses...)
+		err = core.List(ctx, *listTime, *listFilter, statuses...)
 	case rm.FullCommand():
 		err = core.Rm(ctx, *rmID)
 	case skip.FullCommand():
