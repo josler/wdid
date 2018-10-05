@@ -126,7 +126,7 @@ func (s *MemoryStore) DeleteItemTag(item *Item, tag *Tag) error {
 	return nil
 }
 
-func (s *MemoryStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
+func (s *MemoryStore) FindItemsWithTag(tag *Tag, limit int) ([]*Item, error) {
 	items := []*Item{}
 	for k, itemTag := range s.itemTagMap {
 		if strings.HasPrefix(k, tag.internalID) {

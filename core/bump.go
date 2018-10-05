@@ -11,7 +11,7 @@ func Bump(ctx context.Context, id string, timeString string) error {
 	if err != nil {
 		return err
 	}
-	if item.Status() != "waiting" {
+	if item.Status() != WaitingStatus {
 		return errors.New("can't bump finished item")
 	}
 

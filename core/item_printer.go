@@ -57,7 +57,7 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 	}
 
 	tw := &tabwriter.Writer{}
-	tw.Init(w, 5, 0, 1, ' ', 0)
+	tw.Init(w, 7, 0, 1, ' ', 0)
 	defer tw.Flush()
 
 	if len(items) == 1 {
@@ -77,7 +77,7 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 			ip.fPrintItemCompact(w, item)
 		case HUMAN_PRINT_FORMAT:
 			if currDay != item.Time().Day() {
-				fmt.Fprintf(tw, "\t\t\t\t\n")
+				fmt.Fprintf(tw, "\t\t\t\n")
 				fmt.Fprintf(tw, "- %s\t\t\t\n", item.Time().Format("Monday January 02"))
 				currDay = item.Time().Day()
 			}
@@ -127,19 +127,19 @@ func (ip *ItemPrinter) itemTags(item *Item) string {
 
 func (ip *ItemPrinter) doneStatus(item *Item) string {
 	switch item.Status() {
-	case "bumped":
+	case BumpedStatus:
 		baseColor := color.New(ip.bumpedColor, color.Bold)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("⇒ %v", item.ID())
-	case "done":
+	case DoneStatus:
 		baseColor := color.New(ip.successColor, color.Bold)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("✔ %v", item.ID())
-	case "waiting":
+	case WaitingStatus:
 		baseColor := color.New(ip.waitColor, color.Bold)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("⇒ %v", item.ID())
-	case "skipped":
+	case SkippedStatus:
 		baseColor := color.New(ip.failColor, color.Bold)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("✘ %v", item.ID())

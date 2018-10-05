@@ -2,6 +2,8 @@
 
 What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items. Alongside this manual tracking, there's an `auto` feature that can help automate fetching information about what you've done.
 
+There's tagging built-in, and the ability to search your items by tag. Using this simple foundational item, you can organise your data however you like.
+
 This tool both aims to track your most important goals, day-to-day, and help track what you have actually been working on in detail. Often when working we have goals. Goals are easy to track, there's a known outcome ahead of time. What's much harder is answering the question "where did all my time go?". Wdid aims to address that.
 
 ```
@@ -28,6 +30,8 @@ Commands:
   rm <id>
   skip <id>
   show <id>
+  tag
+    ls*
 ```
 
 ### Installation
@@ -88,7 +92,7 @@ $ wdid edit a9fi3q "my new description" -t day
 
 ```shell
 $ wdid
-⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40 
+⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40
 $ wdid ls # equivalent
 ⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40
 ```
@@ -97,11 +101,11 @@ You can also pass time structures to the list command.
 
 ```shell
 $ wdid list week # all tasks from this week
-⇒ a9fi3q  "my task from yesterday that I forgot."           Mon, 26 Mar 2018 00:00:00 
-⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40 
+⇒ a9fi3q  "my task from yesterday that I forgot."           Mon, 26 Mar 2018 00:00:00
+⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40
 ```
 
-You can filter by type too:
+You can list by item status too:
 
 ```shell
 $ wdid ls -d # done tasks from this week
@@ -116,13 +120,15 @@ These can also be combined:
 $ wdid list -sb month # skipped and bumped tasks from this month
 ```
 
+There's also an advanced listing filter language, please see details below.
+
 #### do
 
 Items in wdid can be in one of four states:
 
 - waiting: items to be worked on.
 - skipped: items that have been skipped/dropped and no longer are waiting to be done.
-- bumped: items that have been bumped forward (carried over) to another time. 
+- bumped: items that have been bumped forward (carried over) to another time.
 - done: items that have been completed.
 
 Items start in a waiting state, and then can be moved to done with `do`, and be marked with a green tick:
@@ -185,6 +191,19 @@ Items can also be hard deleted. Gone forever.
 $ wdid rm i3nh99
 ```
 
+#### tag list
+
+Items can be tagged, and we can use the tag list command to show all tags we've created so far (not which items were tagged, but the tags themselves).
+
+```
+$ wdid tag list
+@josler
+#pr
+#meeting
+```
+
+You can search for items by tag with our advanced listing filter language, please see below. More details of how tags work can also be found below.
+
 ### Viewing Data
 
 Data can be printed in a couple of different ways. The two supported formats are "text" and "human". The text format is tab-delimited and useful for parsing with other command line tools, whereas the human format is easier to read for humans (colored, unicode characters, more detail when viewing single items). The default is "human". To change, pass a "format" flag: `wdid list --format=text week`.
@@ -246,6 +265,37 @@ Times can be passed in the following formats:
 Note that these times cover a _range_ of values. Usually from the start of the indicated day (00:00) to the end of the day (23:59) at the end of the period, inclusive.
 
 When adding items, or setting the time for an item, wdid uses the _start_ of the period to do so. When searching for items, wdid uses the range. This sounds more complicated than it is, in practise it does what you'd expect.
+
+### Tags
+
+Wdid supports using tags to mark items, but the way it does this is not through manual tagging, but by parsing the item text itself. There are several ways to indicate through text that you'd like an item to have a tag.
+
+```shell
+$ wdid add "send invoice #project1 #billing" # two tags, "#project1" and "#billing".
+$ wdid add "ask @josler to work more" # tag "@josler"
+$ wdid add "[tag, another]" # two tags, "#tag" and "#another"
+```
+
+In general, any word with a preceeding '#' or '@' will be used as a tag, and anything within square brackets as well (anything without a leading '#' or '@' will have a '#' added). The leading '#' or '@' is part of the tag name.
+
+You can then search for items with particular tags using our advanced listing.
+
+### Advanced listing
+
+There's a basic filter/query language built into wdid. You can use it to filter results in a more powerful way that the presets. To use it, pass the `--filter, -f` flag:
+
+```shell
+$ wdid list --filter "tag=#pr,status=waiting,time=week" # show me all of the items tagged "#pr", with a status of "waiting" from this week.
+
+# we don't need the "list" command either, as it's default
+$ wdid -f "tag=#pr,tag=@josler" # show me all of the items tagged "#pr" and "@josler"
+```
+
+The format of this filter is: `{type_of_filter}={value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, and `time`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above.
+
+Currently, these filters are an AND filter - they must all be true. Furthermore, the only supported operator is `=`.
+
+Please note this is *mutually exclusive* with the flags for filtering by status directly, and the regular time filter as well.
 
 ### Auto
 

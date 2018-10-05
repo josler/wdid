@@ -43,7 +43,7 @@ func TestBump(t *testing.T) {
 	if newItem.ID() != bumpedItem.NextID() {
 		t.Errorf("Bumped item NextID %s and new item ID %s do not match", bumpedItem.NextID(), newItem.ID())
 	}
-	if bumpedItem.Status() != "bumped" {
+	if bumpedItem.Status() != BumpedStatus {
 		t.Errorf("Bumped item status was %s not bumped", bumpedItem.Status())
 	}
 }

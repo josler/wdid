@@ -7,6 +7,13 @@ import (
 	"gitlab.com/josler/wdid/parser"
 )
 
+const (
+	WaitingStatus = "waiting"
+	DoneStatus    = "done"
+	SkippedStatus = "skipped"
+	BumpedStatus  = "bumped"
+)
+
 type Item struct {
 	internalID string
 	id         string
@@ -50,15 +57,15 @@ func (i *Item) Time() time.Time {
 }
 
 func (i *Item) Do() {
-	i.status = "done"
+	i.status = DoneStatus
 }
 
 func (i *Item) Skip() {
-	i.status = "skipped"
+	i.status = SkippedStatus
 }
 
 func (i *Item) Bump(newTime time.Time) *Item {
-	i.status = "bumped"
+	i.status = BumpedStatus
 	newItem := NewItem(i.data, newTime)
 	i.nextID = newItem.ID()
 	newItem.previousID = i.ID()
@@ -90,5 +97,5 @@ func (i *Item) generateMetadata() {
 }
 
 func NewItem(data string, at time.Time) *Item {
-	return &Item{id: GenerateID(at), data: data, status: "waiting", datetime: at}
+	return &Item{id: GenerateID(at), data: data, status: WaitingStatus, datetime: at}
 }
