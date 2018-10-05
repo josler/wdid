@@ -297,7 +297,7 @@ func TestFindItemsWithTag(t *testing.T) {
 		boltStore.SaveItemTag(item, tag)
 		boltStore.SaveItemTag(itemtwo, tag)
 
-		items, err := boltStore.FindItemsWithTag(tag)
+		items, err := boltStore.FindItemsWithTag(tag, -1)
 		if err != nil || len(items) != 2 {
 			t.Errorf("failed to find items with tag")
 		}
@@ -324,7 +324,7 @@ func TestDeleteItemTagsWithItem(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed to delete item tag")
 		}
-		items, err := boltStore.FindItemsWithTag(tag)
+		items, err := boltStore.FindItemsWithTag(tag, -1)
 		if err != nil && len(items) != 0 {
 			t.Errorf("failed to delete all item tags!")
 		}

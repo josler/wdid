@@ -74,7 +74,7 @@ func (tagFilter *TagFilter) QueryItems() ([]q.Matcher, error) {
 	if err != nil {
 		return []q.Matcher{}, errors.New("failed to find tag")
 	}
-	items, err := tagFilter.store.FindItemsWithTag(tag)
+	items, err := tagFilter.store.FindItemsWithTag(tag, -1)
 	if err != nil {
 		return []q.Matcher{}, errors.New("failed to find items with tag")
 	}

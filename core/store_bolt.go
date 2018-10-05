@@ -236,10 +236,15 @@ func (s *BoltStore) DeleteItemTag(item *Item, tag *Tag) error {
 	return nil
 }
 
-func (s *BoltStore) FindItemsWithTag(tag *Tag) ([]*Item, error) {
+func (s *BoltStore) FindItemsWithTag(tag *Tag, limit int) ([]*Item, error) {
 	stormItemTags := []*StormItemTag{}
 	query := s.db.Select(q.Eq("TagID", tag.internalID))
-	query.OrderBy("CreatedAt").Limit(100).Reverse()
+	if limit > 0 {
+		query.OrderBy("CreatedAt").Limit(limit).Reverse()
+	} else {
+		query.OrderBy("CreatedAt").Reverse()
+	}
+
 	err := query.Find(&stormItemTags)
 	if err != nil {
 		if err == storm.ErrNotFound {
