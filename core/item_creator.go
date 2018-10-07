@@ -27,14 +27,14 @@ func (ic *ItemCreator) Create(data string, at time.Time) (*Item, error) {
 	return item, nil
 }
 
-func (ic *ItemCreator) Edit(item *Item, data string, timeString string) error {
+func (ic *ItemCreator) Edit(item *Item, data string, timeString string) (*Item, error) {
 	store := ic.ctx.Value("store").(Store)
 	// set a new time
 	newAt := item.Time()
 	if timeString != "" {
 		span, err := TimeParser{Input: timeString}.Parse()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		newAt = span.Start
 	}
@@ -56,9 +56,10 @@ func (ic *ItemCreator) Edit(item *Item, data string, timeString string) error {
 
 	err = ic.GenerateAndSaveMetadata(item)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return store.Save(item)
+	err = store.Save(item)
+	return item, err
 }
 
 func (ic *ItemCreator) GenerateAndSaveMetadata(item *Item) error {

@@ -31,5 +31,7 @@ func Edit(ctx context.Context, idString string, description io.Reader, timeStrin
 	stringDescription := buf.String()
 
 	itemCreator := &ItemCreator{ctx: ctx}
-	return itemCreator.Edit(item, stringDescription, timeString)
+	item, err = itemCreator.Edit(item, stringDescription, timeString)
+	NewItemPrinter(ctx).Print(item)
+	return err
 }
