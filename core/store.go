@@ -2,6 +2,8 @@ package core
 
 import (
 	"context"
+
+	"gitlab.com/josler/wdid/filter"
 )
 
 const (
@@ -24,6 +26,7 @@ type ItemStore interface {
 	Delete(item *Item) error
 	Save(item *Item) error
 	List(t *Timespan, statuses ...string) ([]*Item, error)
+	ListFilters(filters []filter.Filter) ([]*Item, error)
 }
 
 type TagStore interface {

@@ -4,7 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
+
+	"github.com/asdine/storm"
+	"gitlab.com/josler/wdid/filter"
 )
 
 // MemoryStore for tests etc
@@ -15,14 +19,26 @@ type MemoryStore struct {
 	tagMap     map[string]*Tag
 }
 
+func NewMemoryStore() *MemoryStore {
+	return &MemoryStore{itemMap: map[string]*Item{}, tagMap: map[string]*Tag{}, itemTagMap: map[string]*ItemTag{}}
+}
+
 func (s *MemoryStore) Find(id string) (*Item, error) {
 	items, err := s.FindAll(id)
 	if err != nil {
 		return nil, err
 	}
-	if len(items) > 1 {
-		return nil, errors.New("unable to find unique item")
+
+	// if there's no items, then we failed
+	if len(items) == 0 {
+		return nil, errors.New("not found")
 	}
+
+	// return most recent item
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].Time().After(items[j].Time())
+	})
+
 	return items[0], nil
 }
 
@@ -31,7 +47,7 @@ func (s *MemoryStore) FindAll(id string) ([]*Item, error) {
 	if len(id) == MAX_ID_LENGTH {
 		found, ok := s.itemMap[id]
 		if !ok {
-			return []*Item{}, errors.New("item not found")
+			return []*Item{}, storm.ErrNotFound
 		}
 		return []*Item{found}, nil
 	}
@@ -79,7 +95,13 @@ func (s *MemoryStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
 
 		items = append(items, item)
 	}
+	sort.Slice(items, func(i, j int) bool { return items[i].Time().Before(items[j].Time()) })
 	return items, nil
+}
+
+func (s *MemoryStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
+	// not implemented
+	return nil, nil
 }
 
 func (s *MemoryStore) includes(status string, statuses ...string) bool {
@@ -109,6 +131,8 @@ func (s *MemoryStore) ListTags() ([]*Tag, error) {
 	for _, tag := range s.tagMap {
 		tagList = append(tagList, tag)
 	}
+	sort.Slice(tagList, func(i, j int) bool { return tagList[i].createdAt.Before(tagList[j].createdAt) })
+
 	return tagList, nil
 }
 

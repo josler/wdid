@@ -2,73 +2,100 @@ package core_test
 
 import (
 	"bytes"
-	"context"
+	"os"
 	"testing"
 
+	"github.com/asdine/storm"
 	"gitlab.com/josler/wdid/core"
 )
 
-func contextWithBoltStore() context.Context {
-	ctx := context.Background()
-	return context.WithValue(ctx, "store", boltStore)
+func importTests() []storeTest {
+	return []storeTest{
+		testImport,
+		testImportExistingSameInternalID,
+		testImportExistingDifferentInternalID,
+		testImportExistingNoInternalID,
+	}
 }
 
-func TestImport(t *testing.T) {
-	withFreshDB(func() {
-		ctx := contextWithBoltStore()
-		f := bytes.NewBufferString("s36i4z	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
-		core.ReadToStore(ctx, f)
-		found, err := boltStore.Find("s36i4z")
-		if err != nil || found.Data() != "some change" {
-			t.Errorf("item not saved")
-		}
-	})
+func TestBoltStoreImport(t *testing.T) {
+	db, err := storm.Open("/tmp/test123.db")
+	if err != nil {
+		os.Exit(1)
+	}
+	boltStore := core.NewBoltStore(db)
+
+	for _, test := range importTests() {
+		withFreshBoltStore(boltStore, func() {
+			test(t, boltStore)
+		})
+	}
+
+	db.Close()
 }
 
-func TestImportExistingSameInternalID(t *testing.T) {
-	withFreshDB(func() {
-		ctx := contextWithBoltStore()
-		f := bytes.NewBufferString("s36i4c	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
-		core.ReadToStore(ctx, f)
-		g := bytes.NewBufferString("s36i4c	recEJFQBuZsArxrJI	done	<-4agi3u	more detail	2018-04-11T08:15:00-04:00")
-		core.ReadToStore(ctx, g)
+func TestMemoryStoreImport(t *testing.T) {
+	tests := []func(t *testing.T, store core.Store){
+		testImport,
+		testImportExistingSameInternalID,
+		testImportExistingDifferentInternalID,
+		testImportExistingNoInternalID,
+	}
 
-		found, err := boltStore.Find("s36i4c")
-		if err != nil {
-			t.Fatalf("item not saved")
-		}
-		if found.Data() != "more detail" {
-			t.Errorf("item has wrong data %s", found.Data())
-		}
-	})
+	for _, test := range tests {
+		memoryStore := core.NewMemoryStore()
+		test(t, memoryStore)
+	}
 }
 
-func TestImportExistingDifferentInternalID(t *testing.T) {
-	withFreshDB(func() {
-		ctx := contextWithBoltStore()
-		f := bytes.NewBufferString("s36i4b	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
-		core.ReadToStore(ctx, f)
-		g := bytes.NewBufferString("s36i4b	zzzzzz	done	<-4agi3u	more detail	2018-04-11T08:15:00-04:00")
-		core.ReadToStore(ctx, g)
-
-		found, err := boltStore.Find("s36i4b")
-		if err != nil || found.Data() != "more detail" {
-			t.Errorf("item not saved")
-		}
-	})
+func testImport(t *testing.T, store core.Store) {
+	ctx := contextWithStore(store)
+	f := bytes.NewBufferString("s36i4z	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
+	core.ReadToStore(ctx, f)
+	found, err := store.Find("s36i4z")
+	if err != nil || found.Data() != "some change" {
+		t.Errorf("item not saved")
+	}
 }
 
-func TestImportExistingNoInternalID(t *testing.T) {
-	withFreshDB(func() {
-		ctx := contextWithBoltStore()
-		f := bytes.NewBufferString("s36i4b	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
-		core.ReadToStore(ctx, f)
-		g := bytes.NewBufferString("s36i4b	 	done	<-4agi3u	more detail	2018-04-11T08:15:00-04:00")
-		core.ReadToStore(ctx, g)
+func testImportExistingSameInternalID(t *testing.T, store core.Store) {
+	ctx := contextWithStore(store)
+	f := bytes.NewBufferString("s36i4c	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
+	core.ReadToStore(ctx, f)
+	g := bytes.NewBufferString("s36i4c	recEJFQBuZsArxrJI	done	<-4agi3u	more detail	2018-04-11T08:15:00-04:00")
+	core.ReadToStore(ctx, g)
 
-		found, err := boltStore.Find("s36i4b")
-		if err != nil || found.Data() != "more detail" {
-			t.Errorf("item not saved")
-		}
-	})
+	found, err := store.Find("s36i4c")
+	if err != nil {
+		t.Fatalf("item not saved")
+	}
+	if found.Data() != "more detail" {
+		t.Errorf("item has wrong data %s", found.Data())
+	}
+}
+
+func testImportExistingDifferentInternalID(t *testing.T, store core.Store) {
+	ctx := contextWithStore(store)
+	f := bytes.NewBufferString("s36i4b	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
+	core.ReadToStore(ctx, f)
+	g := bytes.NewBufferString("s36i4b	zzzzzz	done	<-4agi3u	more detail	2018-04-11T08:15:00-04:00")
+	core.ReadToStore(ctx, g)
+
+	found, err := store.Find("s36i4b")
+	if err != nil || found.Data() != "more detail" {
+		t.Errorf("item not saved")
+	}
+}
+
+func testImportExistingNoInternalID(t *testing.T, store core.Store) {
+	ctx := contextWithStore(store)
+	f := bytes.NewBufferString("s36i4b	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")
+	core.ReadToStore(ctx, f)
+	g := bytes.NewBufferString("s36i4b	 	done	<-4agi3u	more detail	2018-04-11T08:15:00-04:00")
+	core.ReadToStore(ctx, g)
+
+	found, err := store.Find("s36i4b")
+	if err != nil || found.Data() != "more detail" {
+		t.Errorf("item not saved")
+	}
 }

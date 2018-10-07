@@ -2,36 +2,50 @@ package core
 
 import (
 	"context"
+	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/asdine/storm"
 )
 
 func TestAddCreatesItem(t *testing.T) {
-	ctx, store := contextWithMemoryStore()
-	Add(ctx, strings.NewReader("my new item #hashtag"), "now")
-	found := mostRecentItem(store)
-	if found.Data() != "my new item #hashtag" {
-		t.Errorf("item not saved")
-	}
-	tag, err := store.FindTag("#hashtag")
-	if err != nil || tag.Name() != "#hashtag" {
-		t.Errorf("tag not saved")
-	}
+	contextWithStore(func(ctx context.Context, store Store) {
+		Add(ctx, strings.NewReader("my new item #hashtag"), "now")
+		found := mostRecentItem(store)
+		if found.Data() != "my new item #hashtag" {
+			t.Errorf("item not saved")
+		}
+		tag, err := store.FindTag("#hashtag")
+		if err != nil || tag.Name() != "#hashtag" {
+			t.Errorf("tag not saved")
+		}
+	})
 }
 
 func TestAddFutureItem(t *testing.T) {
-	ctx, _ := contextWithMemoryStore()
-	err := Add(ctx, strings.NewReader("my new item"), "2025-01-01")
-	if err != nil {
-		t.Errorf("item not saved")
-	}
+	contextWithStore(func(ctx context.Context, store Store) {
+		err := Add(ctx, strings.NewReader("my new item"), "2025-01-01")
+		if err != nil {
+			t.Errorf("item not saved")
+		}
+	})
 }
 
-func contextWithMemoryStore() (context.Context, Store) {
+func contextWithStore(f func(ctx context.Context, store Store)) {
 	ctx := context.Background()
-	store := &MemoryStore{itemMap: map[string]*Item{}, tagMap: map[string]*Tag{}, itemTagMap: map[string]*ItemTag{}}
-	return context.WithValue(ctx, "store", store), store
+
+	db, err := storm.Open("/tmp/test123.db")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	store := NewBoltStore(db)
+	ctx = context.WithValue(ctx, "store", store)
+	f(ctx, store)
+	db.Close()
+
 }
 
 func mostRecentItem(store Store) *Item {
