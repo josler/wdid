@@ -34,20 +34,6 @@ func TestBoltStoreImport(t *testing.T) {
 	db.Close()
 }
 
-func TestMemoryStoreImport(t *testing.T) {
-	tests := []func(t *testing.T, store core.Store){
-		testImport,
-		testImportExistingSameInternalID,
-		testImportExistingDifferentInternalID,
-		testImportExistingNoInternalID,
-	}
-
-	for _, test := range tests {
-		memoryStore := core.NewMemoryStore()
-		test(t, memoryStore)
-	}
-}
-
 func testImport(t *testing.T, store core.Store) {
 	ctx := contextWithStore(store)
 	f := bytes.NewBufferString("s36i4z	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00")

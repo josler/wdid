@@ -65,15 +65,6 @@ func TestBoltStore(t *testing.T) {
 	db.Close()
 }
 
-func TestMemoryStore(t *testing.T) {
-	tests := tests()
-
-	for _, test := range tests {
-		memoryStore := core.NewMemoryStore()
-		test(t, memoryStore)
-	}
-}
-
 func saveAlreadyExists(t *testing.T, store core.Store) {
 	item := core.NewItem("some data", time.Now())
 	err := store.Save(item)
