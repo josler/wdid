@@ -40,13 +40,14 @@ var (
 	importCmd      = app.Command("import", "Import items from a file or stdin.")
 	importFilename = importCmd.Arg("in", "Filename to import from, if omitted, stdin used").String()
 
-	list        = app.Command("ls", "List the items you're tracking.").Alias("list").Default()
-	listDone    = list.Flag("done", "Only list items with status = done.").Short('d').Bool()
-	listWaiting = list.Flag("waiting", "Only list items with status = waiting.").Short('w').Bool()
-	listSkipped = list.Flag("skipped", "Only list items with status = skipped.").Short('s').Bool()
-	listBumped  = list.Flag("bumped", "Only list items with status = bumped.").Short('b').Bool()
-	listFilter  = list.Flag("filter", "Filter the results").Short('f').String()
-	listTime    = list.Arg("time", "Time range to search in.").Default("0").String()
+	list         = app.Command("ls", "List the items you're tracking.").Alias("list").Default()
+	listDone     = list.Flag("done", "Only list items with status = done.").Short('d').Bool()
+	listWaiting  = list.Flag("waiting", "Only list items with status = waiting.").Short('w').Bool()
+	listSkipped  = list.Flag("skipped", "Only list items with status = skipped.").Short('s').Bool()
+	listBumped   = list.Flag("bumped", "Only list items with status = bumped.").Short('b').Bool()
+	listFilter   = list.Flag("filter", "Filter the results").Short('f').String()
+	listTime     = list.Arg("time", "Time range to search in.").Default("0").String()
+	listTimeFlag = list.Flag("time", "Time range to search in.").Short('t').String()
 
 	rm   = app.Command("rm", "Remove (permanently!) a single item.")
 	rmID = rm.Arg("id", "ID of item to remove.").Required().String()
@@ -117,7 +118,11 @@ func main() {
 		if *listSkipped {
 			statuses = append(statuses, core.SkippedStatus)
 		}
-		err = core.List(ctx, *listTime, *listFilter, statuses...)
+		if *listTimeFlag != "" {
+			err = core.List(ctx, *listTimeFlag, *listFilter, statuses...)
+		} else {
+			err = core.List(ctx, *listTime, *listFilter, statuses...)
+		}
 	case rm.FullCommand():
 		err = core.Rm(ctx, *rmID)
 	case skip.FullCommand():
