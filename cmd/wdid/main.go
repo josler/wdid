@@ -60,6 +60,8 @@ var (
 
 	tag     = app.Command("tag", "work with tags.")
 	tagList = tag.Command("ls", "List tags.").Alias("list").Default()
+
+	bleveIngest = app.Command("bleve_ingest", "ingest bleve")
 )
 
 func main() {
@@ -79,7 +81,12 @@ func main() {
 	app.FatalIfError(err, "")
 	defer store.Close()
 
+	index, err := createIndex(conf)
+	app.FatalIfError(err, "")
+	defer index.Close()
+
 	ctx := context.WithValue(context.Background(), "store", store)
+	ctx = context.WithValue(ctx, "index", index)
 	ctx = context.WithValue(ctx, "verbose", *v)
 	ctx = context.WithValue(ctx, "format", *format)
 
@@ -131,6 +138,12 @@ func main() {
 		err = core.Show(ctx, *showID)
 	case tagList.FullCommand():
 		err = core.ListTag(ctx)
+	case bleveIngest.FullCommand():
+		from, _ := core.TimeParser{Input: "400"}.Parse()
+		items, _ := store.List(from)
+		for _, item := range items {
+			core.SaveBleve(index, store, item)
+		}
 	}
 	app.FatalIfError(err, "")
 }

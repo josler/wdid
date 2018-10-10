@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/blevesearch/bleve"
 	"gitlab.com/josler/wdid/parser"
 )
 
@@ -24,6 +25,8 @@ func (ic *ItemCreator) Create(data string, at time.Time) (*Item, error) {
 	if err != nil {
 		return nil, err
 	}
+	index := ic.ctx.Value("index").(bleve.Index)
+	SaveBleve(index, store, item)
 	return item, nil
 }
 
@@ -38,7 +41,12 @@ func (ic *ItemCreator) Edit(item *Item, data string, timeString string) (*Item, 
 		}
 		newAt = span.Start
 	}
-	err := ic.deleteOldItemTags(item)
+	err := ic.deleteBleve(item)
+	if err != nil {
+		return nil, err
+	}
+
+	err = ic.deleteOldItemTags(item)
 	if err != nil {
 		if ic.isVerbose() {
 			fmt.Printf("failed to delete old item tags, continuing. %v\n", err)
@@ -59,6 +67,9 @@ func (ic *ItemCreator) Edit(item *Item, data string, timeString string) (*Item, 
 		return nil, err
 	}
 	err = store.Save(item)
+
+	index := ic.ctx.Value("index").(bleve.Index)
+	SaveBleve(index, store, item)
 	return item, err
 }
 
@@ -87,7 +98,12 @@ func (ic *ItemCreator) GenerateAndSaveMetadata(item *Item) error {
 
 func (ic *ItemCreator) Delete(item *Item) error {
 	store := ic.ctx.Value("store").(Store)
-	err := ic.deleteOldItemTags(item)
+	err := ic.deleteBleve(item)
+	if err != nil {
+		return err
+	}
+
+	err = ic.deleteOldItemTags(item)
 	if err != nil {
 		if ic.isVerbose() {
 			fmt.Printf("failed to delete old item tags. %v\n", err)
@@ -127,6 +143,13 @@ func (ic *ItemCreator) deleteOldItemTags(item *Item) error {
 	store := ic.ctx.Value("store").(Store)
 	item.tags = []*Tag{}
 	return store.DeleteItemTagsWithItem(item)
+}
+
+func (ic *ItemCreator) deleteBleve(item *Item) error {
+	store := ic.ctx.Value("store").(Store)
+	index := ic.ctx.Value("index").(bleve.Index)
+	err := Delete(index, store, item)
+	return err
 }
 
 func (ic *ItemCreator) isVerbose() bool {
