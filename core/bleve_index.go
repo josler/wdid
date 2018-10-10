@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/analysis/analyzer/keyword"
 	"github.com/blevesearch/bleve/search/query"
 	"gitlab.com/josler/wdid/filter"
 )
@@ -15,16 +14,10 @@ type BleveItemDocument struct {
 	Data     string
 	Status   string
 	Datetime int64
-	Tag      *BleveTagDocument
-}
-
-type BleveTagDocument struct {
-	TagID string
-	Name  string
+	TagIDs   []string
 }
 
 func CreateBleveIndex(indexname string, memory bool) (bleve.Index, error) {
-	// create a mapping that's an item with a nested tag
 	indexMapping := bleve.NewIndexMapping()
 	itemMapping := bleve.NewDocumentMapping()
 	indexMapping.AddDocumentMapping("item", itemMapping)
@@ -39,13 +32,7 @@ func CreateBleveIndex(indexname string, memory bool) (bleve.Index, error) {
 	createdAtFieldMapping := bleve.NewNumericFieldMapping()
 	itemMapping.AddFieldMappingsAt("-Datetime", createdAtFieldMapping)
 
-	tagDocumentMapping := bleve.NewDocumentMapping()
-	tagNameFieldMapping := bleve.NewTextFieldMapping()
-	tagNameFieldMapping.Analyzer = keyword.Name
-	tagNameFieldMapping.IncludeTermVectors = false
-	tagDocumentMapping.AddFieldMappingsAt("Name", tagNameFieldMapping)
-
-	itemMapping.AddSubDocumentMapping("Tag", tagDocumentMapping)
+	// let TagIDs be default mapping
 
 	if memory {
 		return bleve.NewMemOnly(indexMapping)
@@ -59,61 +46,31 @@ func CreateBleveIndex(indexname string, memory bool) (bleve.Index, error) {
 }
 
 func SaveBleve(index bleve.Index, store Store, item *Item) {
-	bleveItem := &BleveItemDocument{
+	bleveItemSingle := &BleveItemDocument{
 		ItemID:   item.ID(),
 		Data:     item.Data(),
 		Status:   item.Status(),
 		Datetime: item.Time().Unix(),
 	}
-	tags := item.Tags()
-	if len(tags) == 0 {
-		// no tags, save as-is
-		err := index.Index(fmt.Sprintf("%s", bleveItem.ItemID), bleveItem)
-		if err != nil {
-			panic(err)
-		}
-	}
 
-	// save variation per-tag
+	// load TagIDs
 	for _, tag := range item.Tags() {
 		found, err := store.FindTag(tag.Name())
 		if err != nil {
-			// might not have a tag yet
+			// might not have a tag record in db
 			continue
 		}
-		bleveItem.Tag = &BleveTagDocument{
-			TagID: found.internalID,
-			Name:  found.Name(),
-		}
-		id := fmt.Sprintf("%s:%s", bleveItem.ItemID, bleveItem.Tag.TagID)
-		err = index.Index(id, bleveItem)
-		if err != nil {
-			panic(err)
-		}
+		bleveItemSingle.TagIDs = append(bleveItemSingle.TagIDs, found.internalID)
+	}
+
+	err := index.Index(fmt.Sprintf("%s", bleveItemSingle.ItemID), bleveItemSingle)
+	if err != nil {
+		panic(err)
 	}
 }
 
 func Delete(index bleve.Index, store Store, item *Item) error {
-	tags := item.Tags()
-	if len(tags) == 0 {
-		// no tags, save as-is
-		err := index.Delete(fmt.Sprintf("%s", item.ID()))
-		if err != nil {
-			return err
-		}
-	}
-
-	// delete variation per-tag
-	for _, tag := range item.Tags() {
-		found, _ := store.FindTag(tag.Name())
-		id := fmt.Sprintf("%s:%s", item.ID(), found.internalID)
-		err := index.Delete(id)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return index.Delete(fmt.Sprintf("%s", item.ID()))
 }
 
 func Query(index bleve.Index, filters ...filter.Filter) ([]*Item, error) {

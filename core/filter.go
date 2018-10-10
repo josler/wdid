@@ -114,6 +114,7 @@ func (tagFilter *TagFilter) BleveQuery() (query.Query, error) {
 		return nil, err
 	}
 	tagQuery := bleve.NewMatchQuery(found.internalID)
-	tagQuery.SetField("Tag.TagID")
+	//tagQuery.SetField("Tag.TagID")
+	tagQuery.SetField("TagIDs")
 	return tagQuery, nil
 }
