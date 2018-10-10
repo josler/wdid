@@ -76,13 +76,17 @@ func SaveBleve(index bleve.Index, store Store, item *Item) {
 
 	// save variation per-tag
 	for _, tag := range item.Tags() {
-		found, _ := store.FindTag(tag.Name())
+		found, err := store.FindTag(tag.Name())
+		if err != nil {
+			// might not have a tag yet
+			continue
+		}
 		bleveItem.Tag = &BleveTagDocument{
 			TagID: found.internalID,
 			Name:  found.Name(),
 		}
 		id := fmt.Sprintf("%s:%s", bleveItem.ItemID, bleveItem.Tag.TagID)
-		err := index.Index(id, bleveItem)
+		err = index.Index(id, bleveItem)
 		if err != nil {
 			panic(err)
 		}

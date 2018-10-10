@@ -61,7 +61,7 @@ var (
 	tag     = app.Command("tag", "work with tags.")
 	tagList = tag.Command("ls", "List tags.").Alias("list").Default()
 
-	bleveIngest = app.Command("bleve_ingest", "ingest bleve")
+	bleveIndex = app.Command("index", "index all data")
 )
 
 func main() {
@@ -138,7 +138,7 @@ func main() {
 		err = core.Show(ctx, *showID)
 	case tagList.FullCommand():
 		err = core.ListTag(ctx)
-	case bleveIngest.FullCommand():
+	case bleveIndex.FullCommand():
 		from, _ := core.TimeParser{Input: "400"}.Parse()
 		items, _ := store.List(from)
 		for _, item := range items {
