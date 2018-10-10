@@ -33,6 +33,7 @@ require (
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mingrammer/commonregex v1.0.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/mschoch/smat v0.0.0-20160514031455-90eadee771ae // indirect
 	github.com/neurosnap/sentences v1.0.6 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
