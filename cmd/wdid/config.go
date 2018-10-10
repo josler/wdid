@@ -11,11 +11,16 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/asdine/storm"
+	"github.com/blevesearch/bleve"
 	"gitlab.com/josler/wdid/core"
 )
 
 type ConfigStore struct {
 	Type string
+	File string
+}
+
+type ConfigIndex struct {
 	File string
 }
 
@@ -39,6 +44,7 @@ func (ca ConfigAuto) AutoUsername() string {
 
 type Config struct {
 	Store ConfigStore
+	Index *ConfigIndex
 	Auto  []ConfigAuto
 }
 
@@ -46,6 +52,9 @@ var defaultConfig = `
 [store]
 type = "bolt"
 file = "~/.config/wdid/wdid.db"
+
+[index]
+file = "~/.config/wdid/wdid.bleve"
 
 #[[auto]]
 #type = "github"
@@ -83,6 +92,9 @@ func loadConfig() (*Config, error) {
 	if _, err := toml.DecodeReader(file, &conf); err != nil {
 		return nil, err
 	}
+	if conf.Index == nil {
+		conf.Index = &ConfigIndex{File: "~/.config/wdid/wdid.bleve"}
+	}
 	if conf.Auto == nil {
 		conf.Auto = []ConfigAuto{}
 	}
@@ -100,6 +112,10 @@ func createStore(conf *Config) (core.Store, error) {
 	default:
 		return nil, errors.New("store not specified correctly")
 	}
+}
+
+func createIndex(conf *Config) (bleve.Index, error) {
+	return core.CreateBleveIndex(parseConfigPath(conf.Index.File), false)
 }
 
 func parseConfigPath(filepath string) string {
