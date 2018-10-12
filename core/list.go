@@ -3,32 +3,31 @@ package core
 import (
 	"context"
 
-	"github.com/blevesearch/bleve"
 	"gitlab.com/josler/wdid/parser"
 )
 
 func List(ctx context.Context, timeString string, filterString string, statuses ...string) error {
 	store := ctx.Value("store").(Store)
-	index := ctx.Value("index").(bleve.Index)
 	itemPrinter := NewItemPrinter(ctx)
 
 	var items []*Item
 	var err error
 
 	if filterString != "" {
-		items, err = listFromFilters(index, store, filterString)
+		items, err = listFromFilters(store, filterString)
 	} else {
 		items, err = listFromFlags(store, timeString, statuses...)
 	}
 
 	itemPrinter.Print(items...)
-	index.Close()
 	return err
 }
 
-func listFromFilters(index bleve.Index, store Store, filterString string) ([]*Item, error) {
+func listFromFilters(store Store, filterString string) ([]*Item, error) {
+	bs := store.(*BoltStore)
+
 	p := &parser.Parser{}
-	p.RegisterToFilter("tag", TagFilterFn(store))
+	p.RegisterToFilter("tag", TagFilterFn(bs))
 	p.RegisterToFilter("status", StatusFilterFn)
 	p.RegisterToFilter("time", DateFilterFn)
 
@@ -36,7 +35,8 @@ func listFromFilters(index bleve.Index, store Store, filterString string) ([]*It
 	if err != nil {
 		return []*Item{}, err
 	}
-	return Query(index, filters...)
+
+	return bs.ListFilters(filters)
 }
 
 func listFromFlags(store Store, timeString string, statuses ...string) ([]*Item, error) {

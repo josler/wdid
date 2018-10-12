@@ -5,24 +5,16 @@ require (
 	github.com/AlecAivazis/survey v1.5.3
 	github.com/BurntSushi/toml v0.3.0
 	github.com/DataDog/zstd v1.3.4 // indirect
-	github.com/RoaringBitmap/roaring v0.4.16 // indirect
 	github.com/Sereal/Sereal v0.0.0-20180727013122-68c42fd7bfdf // indirect
-	github.com/Smerity/govarint v0.0.0-20150407073650-7265e41f48f1 // indirect
 	github.com/alecthomas/kingpin v2.2.7-0.20180312062423-a39589180ebd+incompatible
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/asdine/storm v2.1.0+incompatible
-	github.com/blevesearch/bleve v0.7.1-0.20180912193416-f9afd92d0dc4
-	github.com/blevesearch/go-porterstemmer v1.0.1 // indirect
-	github.com/blevesearch/segment v0.0.0-20160915185041-762005e7a34f // indirect
 	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/coreos/bbolt v1.3.0 // indirect
-	github.com/couchbase/vellum v0.0.0-20180910213445-01d5c56e6095 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v0.0.0-20171013212420-1d4478f51bed // indirect
-	github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712 // indirect
 	github.com/fatih/color v1.6.0
-	github.com/glycerine/go-unsnap-stream v0.0.0-20180323001048-9f0cb55181dd // indirect
 	github.com/golang/protobuf v1.0.0 // indirect
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/go-github v15.0.0+incompatible
@@ -33,15 +25,10 @@ require (
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mingrammer/commonregex v1.0.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
-	github.com/mschoch/smat v0.0.0-20160514031455-90eadee771ae // indirect
 	github.com/neurosnap/sentences v1.0.6 // indirect
-	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/steveyen/gtreap v0.0.0-20150807155958-0abe01ef9be2 // indirect
 	github.com/stretchr/testify v1.2.2 // indirect
-	github.com/tinylib/msgp v1.0.2 // indirect
 	github.com/vmihailenco/msgpack v4.0.0+incompatible // indirect
-	github.com/willf/bitset v1.1.9 // indirect
 	golang.org/x/crypto v0.0.0-20180621125126-a49355c7e3f8
 	golang.org/x/net v0.0.0-20180420171651-5f9ae10d9af5
 	golang.org/x/oauth2 v0.0.0-20180416194528-6881fee410a5

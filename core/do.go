@@ -1,10 +1,6 @@
 package core
 
-import (
-	"context"
-
-	"github.com/blevesearch/bleve"
-)
+import "context"
 
 func Do(ctx context.Context, id string) error {
 	store := ctx.Value("store").(Store)
@@ -14,11 +10,6 @@ func Do(ctx context.Context, id string) error {
 	}
 	item.Do()
 	err = store.WithContext(ctx).Save(item)
-	if err != nil {
-		return err
-	}
-	index := ctx.Value("index").(bleve.Index)
-	SaveBleve(index, store, item)
 	NewItemPrinter(ctx).Print(item)
 	return err
 }
