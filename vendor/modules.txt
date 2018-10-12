@@ -4,8 +4,6 @@ cloud.google.com/go/compute/metadata
 github.com/AlecAivazis/survey
 # github.com/BurntSushi/toml v0.3.0
 github.com/BurntSushi/toml
-# github.com/RoaringBitmap/roaring v0.4.16
-github.com/RoaringBitmap/roaring
 # github.com/alecthomas/kingpin v2.2.7-0.20180312062423-a39589180ebd+incompatible
 github.com/alecthomas/kingpin
 # github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
@@ -20,68 +18,14 @@ github.com/asdine/storm/codec
 github.com/asdine/storm/codec/json
 github.com/asdine/storm/index
 github.com/asdine/storm/internal
-# github.com/blevesearch/bleve v0.7.1-0.20180912193416-f9afd92d0dc4
-github.com/blevesearch/bleve
-github.com/blevesearch/bleve/search/query
-github.com/blevesearch/bleve/analysis
-github.com/blevesearch/bleve/analysis/datetime/optional
-github.com/blevesearch/bleve/document
-github.com/blevesearch/bleve/index
-github.com/blevesearch/bleve/index/scorch
-github.com/blevesearch/bleve/index/store
-github.com/blevesearch/bleve/index/store/boltdb
-github.com/blevesearch/bleve/index/store/gtreap
-github.com/blevesearch/bleve/index/upsidedown
-github.com/blevesearch/bleve/mapping
-github.com/blevesearch/bleve/registry
-github.com/blevesearch/bleve/search
-github.com/blevesearch/bleve/search/collector
-github.com/blevesearch/bleve/search/facet
-github.com/blevesearch/bleve/search/highlight
-github.com/blevesearch/bleve/search/highlight/highlighter/html
-github.com/blevesearch/bleve/size
-github.com/blevesearch/bleve/geo
-github.com/blevesearch/bleve/numeric
-github.com/blevesearch/bleve/search/searcher
-github.com/blevesearch/bleve/analysis/datetime/flexible
-github.com/blevesearch/bleve/index/scorch/mergeplan
-github.com/blevesearch/bleve/index/scorch/segment
-github.com/blevesearch/bleve/index/scorch/segment/zap
-github.com/blevesearch/bleve/analysis/analyzer/standard
-github.com/blevesearch/bleve/search/highlight/format/html
-github.com/blevesearch/bleve/search/highlight/fragmenter/simple
-github.com/blevesearch/bleve/search/highlight/highlighter/simple
-github.com/blevesearch/bleve/search/scorer
-github.com/blevesearch/bleve/analysis/lang/en
-github.com/blevesearch/bleve/analysis/token/lowercase
-github.com/blevesearch/bleve/analysis/tokenizer/unicode
-github.com/blevesearch/bleve/analysis/token/porter
-github.com/blevesearch/bleve/analysis/token/stop
-# github.com/blevesearch/go-porterstemmer v1.0.1
-github.com/blevesearch/go-porterstemmer
-# github.com/blevesearch/segment v0.0.0-20160915185041-762005e7a34f
-github.com/blevesearch/segment
-# github.com/boltdb/bolt v1.3.1
-github.com/boltdb/bolt
 # github.com/coreos/bbolt v1.3.0
 github.com/coreos/bbolt
-# github.com/couchbase/vellum v0.0.0-20180910213445-01d5c56e6095
-github.com/couchbase/vellum/levenshtein
-github.com/couchbase/vellum
-github.com/couchbase/vellum/regexp
-github.com/couchbase/vellum/utf8
 # github.com/deckarep/golang-set v0.0.0-20171013212420-1d4478f51bed
 github.com/deckarep/golang-set
-# github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712
-github.com/edsrzf/mmap-go
 # github.com/fatih/color v1.6.0
 github.com/fatih/color
-# github.com/glycerine/go-unsnap-stream v0.0.0-20180323001048-9f0cb55181dd
-github.com/glycerine/go-unsnap-stream
 # github.com/golang/protobuf v1.0.0
 github.com/golang/protobuf/proto
-# github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db
-github.com/golang/snappy
 # github.com/google/go-github v15.0.0+incompatible
 github.com/google/go-github/github
 # github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
@@ -96,16 +40,6 @@ github.com/mgutz/ansi
 github.com/mingrammer/commonregex
 # github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe
 github.com/montanaflynn/stats
-# github.com/mschoch/smat v0.0.0-20160514031455-90eadee771ae
-github.com/mschoch/smat
-# github.com/philhofer/fwd v1.0.0
-github.com/philhofer/fwd
-# github.com/steveyen/gtreap v0.0.0-20150807155958-0abe01ef9be2
-github.com/steveyen/gtreap
-# github.com/tinylib/msgp v1.0.2
-github.com/tinylib/msgp/msgp
-# github.com/willf/bitset v1.1.9
-github.com/willf/bitset
 # golang.org/x/crypto v0.0.0-20180621125126-a49355c7e3f8
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20180420171651-5f9ae10d9af5

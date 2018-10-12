@@ -47,13 +47,8 @@ func contextWithStore(f func(ctx context.Context, store Store)) {
 	store.DropBucket("StormItemTag")
 
 	ctx = context.WithValue(ctx, "store", store)
-
-	index, _ := CreateBleveIndex("wdid.test", true)
-	ctx = context.WithValue(ctx, "index", index)
-
 	f(ctx, store)
 	db.Close()
-	index.Close()
 
 }
 

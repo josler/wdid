@@ -4,8 +4,6 @@ import (
 	"errors"
 
 	"github.com/asdine/storm/q"
-	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/search/query"
 	"gitlab.com/josler/wdid/filter"
 	"gitlab.com/josler/wdid/parser"
 )
@@ -33,15 +31,6 @@ func (dateFilter *DateFilter) QueryItems() ([]q.Matcher, error) {
 	}, nil
 }
 
-func (dateFilter *DateFilter) BleveQuery() (query.Query, error) {
-	start := float64(dateFilter.timespan.Start.Unix())
-	end := float64(dateFilter.timespan.End.Unix())
-	inc := true
-	dateQuery := bleve.NewNumericRangeInclusiveQuery(&start, &end, &inc, &inc)
-	dateQuery.SetField("Datetime")
-	return dateQuery, nil
-}
-
 type StatusFilter struct {
 	statuses []string
 }
@@ -62,12 +51,6 @@ func (statusFilter *StatusFilter) QueryItems() ([]q.Matcher, error) {
 	return []q.Matcher{
 		q.In("Status", statusFilter.statuses),
 	}, nil
-}
-
-func (statusFilter *StatusFilter) BleveQuery() (query.Query, error) {
-	statusQuery := bleve.NewMatchQuery(statusFilter.statuses[0])
-	statusQuery.SetField("Status")
-	return statusQuery, nil
 }
 
 type TagFilter struct {
@@ -106,15 +89,4 @@ func (tagFilter *TagFilter) QueryItems() ([]q.Matcher, error) {
 	return []q.Matcher{
 		q.In("ID", ids),
 	}, nil
-}
-
-func (tagFilter *TagFilter) BleveQuery() (query.Query, error) {
-	found, err := tagFilter.store.FindTag(tagFilter.tagName)
-	if err != nil {
-		return nil, err
-	}
-	tagQuery := bleve.NewMatchQuery(found.internalID)
-	//tagQuery.SetField("Tag.TagID")
-	tagQuery.SetField("TagIDs")
-	return tagQuery, nil
 }
