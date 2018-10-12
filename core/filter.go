@@ -68,6 +68,24 @@ func TagFilterFn(store Store) parser.ToFilterFn {
 	}
 }
 
+type MapMatcher struct {
+	elements map[string]bool
+}
+
+func (mm *MapMatcher) Add(element string) {
+	if mm.elements == nil {
+		mm.elements = map[string]bool{}
+	}
+	mm.elements[element] = true
+}
+
+func (mm *MapMatcher) Match(i interface{}) (bool, error) {
+	storeItem := i.(StormItem)
+	_, ok := mm.elements[storeItem.ID]
+
+	return ok, nil
+}
+
 func (tagFilter *TagFilter) QueryItems() ([]q.Matcher, error) {
 	// find tag id
 	tag, err := tagFilter.store.FindTag(tagFilter.tagName)
@@ -78,15 +96,18 @@ func (tagFilter *TagFilter) QueryItems() ([]q.Matcher, error) {
 	if err != nil {
 		return []q.Matcher{}, errors.New("failed to find items with tag")
 	}
-	ids := []string{}
-
-	for _, item := range items {
-		ids = append(ids, item.ID())
-	}
-	if len(ids) == 0 {
+	if len(items) == 0 {
 		return []q.Matcher{}, errors.New("failed to find items with tag")
 	}
-	return []q.Matcher{
-		q.In("ID", ids),
-	}, nil
+	mm := &MapMatcher{}
+
+	//ids := []string{}
+	for _, item := range items {
+		//ids = append(ids, item.ID())
+		mm.Add(item.ID())
+	}
+	return []q.Matcher{mm}, nil
+	//return []q.Matcher{
+	//q.In("ID", ids),
+	//}, nil
 }
