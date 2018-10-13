@@ -17,6 +17,7 @@ const (
 	lexItemError lexedItemType = iota
 	lexItemEOF
 	lexItemEq
+	lexItemNe
 	lexItemString
 	lexItemIdentifier
 	lexItemComma

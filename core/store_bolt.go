@@ -115,37 +115,55 @@ func (s *BoltStore) Save(item *Item) error {
 	return nil
 }
 
+func (s *BoltStore) findFirstDateFilter(filters []filter.Filter) (*DateFilter, []filter.Filter) {
+	rest := []filter.Filter{}
+	for i, f := range filters {
+		switch df := f.(type) {
+		case *DateFilter:
+			rest = append(filters[:i], filters[i+1:]...)
+			return df, rest
+		}
+	}
+	return nil, filters
+}
+
 func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	stormItems := []*StormItem{}
-
-	queryItems := []q.Matcher{}
-	for _, filter := range filters {
-		filterQueries, err := filter.QueryItems()
-		if err != nil {
-			return []*Item{}, err
-		}
-		queryItems = append(queryItems, filterQueries...)
-	}
-	query := s.db.Select(queryItems...)
-
-	query.OrderBy("Datetime")
-	err := query.Find(&stormItems)
-
 	outputItems := []*Item{}
-	if err != nil {
-		if err == storm.ErrNotFound {
-			return outputItems, nil
-		}
-		return outputItems, err
+
+	firstDateFilter, rest := s.findFirstDateFilter(filters)
+	if firstDateFilter == nil {
+		t, _ := TimeParser{Input: "0"}.Parse()
+		firstDateFilter = NewDateFilter(t)
 	}
 
-	for _, item := range stormItems {
-		parsed, err := s.stormToItem(item)
-		if err != nil {
-			return outputItems, err
-		}
-		outputItems = append(outputItems, parsed)
+	err := s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
+	if err != nil {
+		return nil, err
 	}
+
+	for _, stormItem := range stormItems {
+		match := true
+		for _, filter := range rest {
+			ok, err := filter.Match(*stormItem)
+			if !ok || err != nil {
+				match = false
+				break
+			}
+		}
+
+		if match {
+			parsed, err := s.stormToItem(stormItem)
+			if err != nil {
+				return outputItems, err
+			}
+			outputItems = append(outputItems, parsed)
+		}
+	}
+	sort.Slice(outputItems, func(i, j int) bool {
+		return outputItems[i].Time().Before(outputItems[j].Time())
+	})
+
 	return outputItems, nil
 }
 

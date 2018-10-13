@@ -13,7 +13,7 @@ func TestListFromFiltersTag(t *testing.T) {
 		Add(ctx, strings.NewReader("another item @josler"), "now")
 		Add(ctx, strings.NewReader("same #hashtag"), "2018-08-10")
 
-		filterString := "tag=#hashtag,time=now"
+		filterString := "tag=#hashtag,time=0"
 		items := getItemsFromFilters(t, store, filterString)
 		if len(items) != 1 || items[0].Data() != "my item #hashtag" {
 			t.Errorf("item not found")
@@ -43,7 +43,7 @@ func TestListFromFiltersTime(t *testing.T) {
 		Add(ctx, strings.NewReader("another item @josler"), "now")
 		Add(ctx, strings.NewReader("same #hashtag"), "2018-08-10")
 
-		filterString := "time=now"
+		filterString := "time=0"
 		items := getItemsFromFilters(t, store, filterString)
 		if len(items) != 2 {
 			t.Errorf("item not found")

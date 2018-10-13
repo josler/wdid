@@ -161,10 +161,10 @@ func listFilters(t *testing.T, store core.Store) {
 
 	item := core.NewItem("my item", time.Now())
 	store.Save(item)
-	doneItem := core.NewItem("done", time.Now())
+	doneItem := core.NewItem("#mytag done", time.Now())
 	doneItem.Do()
 	store.Save(doneItem)
-	skippedItem := core.NewItem("skipped", time.Now())
+	skippedItem := core.NewItem("#mytag skipped", time.Now())
 	skippedItem.Skip()
 	store.Save(skippedItem)
 
@@ -177,10 +177,11 @@ func listFilters(t *testing.T, store core.Store) {
 	}
 	items, _ := store.ListFilters(filters)
 
+	fmt.Println(items)
 	if len(items) != 1 {
 		t.Fatalf("error: not all items found")
 	}
-	if items[0].Data() != "skipped" {
+	if items[0].Data() != "#mytag skipped" {
 		t.Errorf("data not matching")
 	}
 }
