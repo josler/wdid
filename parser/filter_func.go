@@ -54,7 +54,7 @@ func (p *Parser) parseIdentifier(identifier lexedItem) error {
 	if !ok {
 		return fmt.Errorf("failed to parse, unrecognized filter: %q", identifier.val)
 	}
-	_, ok = <-p.itemchan // drain the "eq"
+	_, ok = <-p.itemchan // drain the comparison
 	if !ok {
 		return fmt.Errorf("failed to parse %q, missing eq", identifier.val)
 	}

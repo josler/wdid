@@ -3,7 +3,6 @@ package core
 import (
 	"errors"
 
-	"github.com/asdine/storm/q"
 	"gitlab.com/josler/wdid/filter"
 	"gitlab.com/josler/wdid/parser"
 )
@@ -24,11 +23,9 @@ func DateFilterFn(val string) (filter.Filter, error) {
 	return NewDateFilter(from), nil
 }
 
-func (dateFilter *DateFilter) QueryItems() ([]q.Matcher, error) {
-	return []q.Matcher{
-		q.Gte("Datetime", dateFilter.timespan.Start.Unix()),
-		q.Lte("Datetime", dateFilter.timespan.End.Unix()),
-	}, nil
+func (dateFilter *DateFilter) Match(i interface{}) (bool, error) {
+	stormItem := i.(StormItem)
+	return (stormItem.Datetime >= dateFilter.timespan.Start.Unix() && stormItem.Datetime <= dateFilter.timespan.End.Unix()), nil
 }
 
 type StatusFilter struct {
@@ -47,10 +44,14 @@ func StatusFilterFn(val string) (filter.Filter, error) {
 	return NewStatusFilter(val), nil
 }
 
-func (statusFilter *StatusFilter) QueryItems() ([]q.Matcher, error) {
-	return []q.Matcher{
-		q.In("Status", statusFilter.statuses),
-	}, nil
+func (statusFilter *StatusFilter) Match(i interface{}) (bool, error) {
+	stormItem := i.(StormItem)
+	for _, okStatus := range statusFilter.statuses {
+		if stormItem.Status == okStatus {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 type TagFilter struct {
@@ -68,25 +69,18 @@ func TagFilterFn(store Store) parser.ToFilterFn {
 	}
 }
 
-func (tagFilter *TagFilter) QueryItems() ([]q.Matcher, error) {
-	// find tag id
-	tag, err := tagFilter.store.FindTag(tagFilter.tagName)
+func (tagFilter *TagFilter) Match(i interface{}) (bool, error) {
+	stormItem := i.(StormItem)
+	tokenizer := &parser.Tokenizer{}
+	tokenResult, err := tokenizer.Tokenize(stormItem.Data)
 	if err != nil {
-		return []q.Matcher{}, errors.New("failed to find tag")
+		return false, err
 	}
-	items, err := tagFilter.store.FindItemsWithTag(tag, -1)
-	if err != nil {
-		return []q.Matcher{}, errors.New("failed to find items with tag")
-	}
-	ids := []string{}
 
-	for _, item := range items {
-		ids = append(ids, item.ID())
+	for _, res := range tokenResult.Tags {
+		if res == tagFilter.tagName {
+			return true, nil
+		}
 	}
-	if len(ids) == 0 {
-		return []q.Matcher{}, errors.New("failed to find items with tag")
-	}
-	return []q.Matcher{
-		q.In("ID", ids),
-	}, nil
+	return false, nil
 }
