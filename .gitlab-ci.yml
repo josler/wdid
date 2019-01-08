@@ -1,4 +1,5 @@
 image: golang:1.11
 
 test:
-  script: go test -mod=vendor ./...
+  script:
+  - go test -mod=vendor ./...
