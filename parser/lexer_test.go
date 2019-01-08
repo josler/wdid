@@ -62,16 +62,8 @@ func TestLexerMissingValueComma(t *testing.T) {
 
 func drainLexedItems(itemchan chan lexedItem) []lexedItem {
 	lexItems := []lexedItem{}
-Loop:
-	for {
-		select {
-		case i, ok := <-itemchan:
-			if !ok {
-				break Loop
-			}
-			lexItems = append(lexItems, i)
-		default:
-		}
+	for i := range itemchan {
+		lexItems = append(lexItems, i)
 	}
 	return lexItems
 }

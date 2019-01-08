@@ -16,10 +16,10 @@ func Import(ctx context.Context, filename string) error {
 
 	if filename != "" {
 		file, err := os.Open(filename)
-		defer file.Close()
 		if err != nil {
 			return err
 		}
+		defer file.Close()
 		f = file
 	} else {
 		f = os.Stdin

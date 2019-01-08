@@ -49,7 +49,7 @@ func (t *Tokenizer) Tokenize(text string) (*TokenResult, error) {
 		}
 	}
 
-	for key, _ := range tagMap {
+	for key := range tagMap {
 		result.Tags = append(result.Tags, key)
 	}
 

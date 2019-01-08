@@ -17,7 +17,6 @@ const (
 	lexItemError lexedItemType = iota
 	lexItemEOF
 	lexItemEq
-	lexItemNe
 	lexItemString
 	lexItemIdentifier
 	lexItemComma
@@ -78,14 +77,6 @@ func (l *lexer) next() (r rune) {
 	r, l.width = utf8.DecodeRuneInString(l.input[l.pos:])
 	l.pos += l.width
 	return r
-}
-
-func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	l.items <- lexedItem{
-		lexItemError,
-		fmt.Sprintf(format, args...),
-	}
-	return nil
 }
 
 func lexIdentifier(l *lexer) stateFn {
