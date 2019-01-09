@@ -91,7 +91,7 @@ func (tp TimeParser) Parse() (*Timespan, error) {
 				return NewTimespan(tp.startOfMonth(nextMonth), tp.endOfMonth(nextMonth)), nil
 			}
 		default:
-			return NewTimespan(tp.startTime, tp.startTime), errors.New(fmt.Sprintf("failed to parse time with input: %s", tp.Input))
+			return NewTimespan(tp.startTime, tp.startTime), fmt.Errorf("failed to parse time with input: %s", tp.Input)
 		}
 
 	}
@@ -108,7 +108,7 @@ func (tp TimeParser) Parse() (*Timespan, error) {
 		return NewTimespan(tp.startOfDay(found), tp.endOfDay(found)), nil
 	}
 
-	return NewTimespan(tp.startTime, tp.startTime), errors.New(fmt.Sprintf("failed to parse time with input: %s", tp.Input))
+	return NewTimespan(tp.startTime, tp.startTime), fmt.Errorf("failed to parse time with input: %s", tp.Input)
 }
 
 func (tp TimeParser) nextOccuranceOfWeekday(startAt time.Time, weekday time.Weekday, jump time.Duration) *Timespan {

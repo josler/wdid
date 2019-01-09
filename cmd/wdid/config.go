@@ -75,10 +75,10 @@ func loadConfig() (*Config, error) {
 	}
 
 	file, err := os.Open(filename)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 	var conf Config
 	if _, err := toml.DecodeReader(file, &conf); err != nil {
 		return nil, err

@@ -39,9 +39,8 @@ type StormItemTag struct {
 }
 
 type BoltStore struct {
-	db      *storm.DB
-	ctx     context.Context
-	itemMap map[string]*Item
+	db  *storm.DB
+	ctx context.Context
 }
 
 func NewBoltStore(db *storm.DB) *BoltStore {
@@ -116,7 +115,7 @@ func (s *BoltStore) Save(item *Item) error {
 }
 
 func (s *BoltStore) findFirstDateFilter(filters []filter.Filter) (*DateFilter, []filter.Filter) {
-	rest := []filter.Filter{}
+	var rest []filter.Filter
 	for i, f := range filters {
 		switch df := f.(type) {
 		case *DateFilter:
@@ -379,13 +378,4 @@ func (s *BoltStore) itemTagToStorm(input *ItemTag) *StormItemTag {
 		TagID:        input.TagID(),
 		CreatedAt:    input.CreatedAt().Unix(),
 	}
-}
-
-func (s *BoltStore) stormToItemTag(input *StormItemTag) (*ItemTag, error) {
-	parsedTime := time.Unix(input.CreatedAt, 0)
-	return &ItemTag{
-		itemID:    input.ItemID,
-		tagID:     input.TagID,
-		createdAt: parsedTime,
-	}, nil
 }

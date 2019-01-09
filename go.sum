@@ -69,6 +69,7 @@ golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f h1:wMNYb4v58l5UBM7MYRLPG6Zh
 golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20180322165403-91ee8cde4354 h1:m30AMpZnWY037UcT8SaLDzIVJADUqWyNfqLKjrfyoRg=
 golang.org/x/sys v0.0.0-20180322165403-91ee8cde4354/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/tools v0.0.0-20180525024113-a5b4c53f6e8b h1:7tibmaEqrQYA+q6ri7NQjuxqSwechjtDHKq6/e85S38=
 golang.org/x/tools v0.0.0-20180525024113-a5b4c53f6e8b/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 gonum.org/v1/gonum v0.0.0-20180814074008-f4b55da7eefa h1:Ar1q0DYcA6CNGEt+zmmyaT0LRA0aKH7GmM9rsW95EYA=
 gonum.org/v1/gonum v0.0.0-20180814074008-f4b55da7eefa/go.mod h1:Y+Yx5eoAFn32cQvJDxZx5Dpnq+c3wtXuadVZAcxbbBo=

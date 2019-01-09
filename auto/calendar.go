@@ -97,7 +97,7 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		log.Fatalf("Unable to read authorization code: %v", err)
 	}
 
-	tok, err := config.Exchange(oauth2.NoContext, authCode)
+	tok, err := config.Exchange(context.TODO(), authCode)
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
@@ -107,10 +107,10 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 // Retrieves a token from a local file.
 func (gc *GoogleCalendar) tokenFromFile(path string) (*oauth2.Token, error) {
 	f, err := os.Open(filepath.Join(configDir(), path))
-	defer f.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 	tok := &oauth2.Token{}
 	err = json.NewDecoder(f).Decode(tok)
 	return tok, err
@@ -119,10 +119,10 @@ func (gc *GoogleCalendar) tokenFromFile(path string) (*oauth2.Token, error) {
 // Saves a token to a file path.
 func (gc *GoogleCalendar) saveToken(path string, token *oauth2.Token) {
 	f, err := os.OpenFile(filepath.Join(configDir(), path), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	defer f.Close()
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
+	defer f.Close()
 	json.NewEncoder(f).Encode(token)
 }
 
