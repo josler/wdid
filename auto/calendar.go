@@ -41,7 +41,7 @@ func (gc *GoogleCalendar) Load(startTime, endTime time.Time) []*Option {
 		SingleEvents(true).
 		TimeMin(startTime.Format(time.RFC3339)).
 		TimeMax(endTime.Format(time.RFC3339)).
-		MaxResults(10).
+		MaxResults(20).
 		OrderBy("startTime").
 		Do()
 
