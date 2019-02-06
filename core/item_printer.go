@@ -128,23 +128,23 @@ func (ip *ItemPrinter) itemTags(item *Item) string {
 func (ip *ItemPrinter) doneStatus(item *Item) string {
 	switch item.Status() {
 	case BumpedStatus:
-		baseColor := color.New(ip.bumpedColor, color.Bold)
+		baseColor := color.New(ip.bumpedColor)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("⇒ %v", item.ID())
 	case DoneStatus:
-		baseColor := color.New(ip.successColor, color.Bold)
+		baseColor := color.New(ip.successColor)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("✔ %v", item.ID())
 	case WaitingStatus:
-		baseColor := color.New(ip.waitColor, color.Bold)
+		baseColor := color.New(ip.waitColor)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("⇒ %v", item.ID())
 	case SkippedStatus:
-		baseColor := color.New(ip.failColor, color.Bold)
+		baseColor := color.New(ip.failColor)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("✘ %v", item.ID())
 	default:
-		baseColor := color.New(ip.waitColor, color.Bold)
+		baseColor := color.New(ip.waitColor)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("? %v", item.ID())
 	}
