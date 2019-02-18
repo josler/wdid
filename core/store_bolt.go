@@ -10,7 +10,7 @@ import (
 
 	"github.com/asdine/storm"
 	"github.com/asdine/storm/q"
-	"gitlab.com/josler/wdid/filter"
+	"github.com/josler/wdid/filter"
 )
 
 type StormItem struct {

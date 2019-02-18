@@ -1,4 +1,4 @@
-module gitlab.com/josler/wdid
+module github.com/josler/wdid
 
 require (
 	cloud.google.com/go v0.24.0 // indirect

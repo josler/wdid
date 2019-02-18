@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/josler/wdid/parser"
+	"github.com/josler/wdid/parser"
 )
 
 const (

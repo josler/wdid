@@ -3,8 +3,8 @@ package core
 import (
 	"errors"
 
-	"gitlab.com/josler/wdid/filter"
-	"gitlab.com/josler/wdid/parser"
+	"github.com/josler/wdid/filter"
+	"github.com/josler/wdid/parser"
 )
 
 type DateFilter struct {

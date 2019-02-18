@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/asdine/storm"
-	"gitlab.com/josler/wdid/core"
-	"gitlab.com/josler/wdid/filter"
+	"github.com/josler/wdid/core"
+	"github.com/josler/wdid/filter"
 )
 
 func contextWithStore(store core.Store) context.Context {

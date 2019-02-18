@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 
-	"gitlab.com/josler/wdid/parser"
+	"github.com/josler/wdid/parser"
 )
 
 func List(ctx context.Context, timeString string, filterString string, statuses ...string) error {
