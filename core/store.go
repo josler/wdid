@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 
-	"gitlab.com/josler/wdid/filter"
+	"github.com/josler/wdid/filter"
 )
 
 const (

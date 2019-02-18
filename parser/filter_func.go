@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"gitlab.com/josler/wdid/filter"
+	"github.com/josler/wdid/filter"
 )
 
 type ToFilterFn func(val string) (filter.Filter, error)

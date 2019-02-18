@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	kingpin "github.com/alecthomas/kingpin"
-	"gitlab.com/josler/wdid/core"
+	"github.com/josler/wdid/core"
 )
 
 const (

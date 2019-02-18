@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	"gitlab.com/josler/wdid/parser"
+	"github.com/josler/wdid/parser"
 )
 
 type ItemCreator struct {

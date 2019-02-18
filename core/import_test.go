@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/asdine/storm"
-	"gitlab.com/josler/wdid/core"
+	"github.com/josler/wdid/core"
 )
 
 func importTests() []storeTest {

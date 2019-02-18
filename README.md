@@ -37,7 +37,7 @@ Commands:
 ### Installation
 
 ```
-go get -u gitlab.com/josler/wdid/...
+go get -u github.com/josler/wdid/...
 ```
 
 
