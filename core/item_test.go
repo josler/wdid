@@ -48,6 +48,40 @@ func TestBump(t *testing.T) {
 	}
 }
 
+func TestDo(t *testing.T) {
+	item := NewItem("foobar", time.Now())
+	item.Do()
+	if item.Status() != DoneStatus {
+		t.Errorf("item was not marked done")
+	}
+}
+
+func TestDoBumped(t *testing.T) {
+	bumpedItem := NewItem("foobar", time.Now())
+	bumpedItem.Bump(time.Now())
+	bumpedItem.Do()
+	if bumpedItem.Status() != BumpedStatus {
+		t.Errorf("Bumped item could be marked as done")
+	}
+}
+
+func TestSkip(t *testing.T) {
+	item := NewItem("foobar", time.Now())
+	item.Skip()
+	if item.Status() != SkippedStatus {
+		t.Errorf("item was not marked skipped")
+	}
+}
+
+func TestSkipBumped(t *testing.T) {
+	bumpedItem := NewItem("foobar", time.Now())
+	bumpedItem.Bump(time.Now())
+	bumpedItem.Skip()
+	if bumpedItem.Status() != BumpedStatus {
+		t.Errorf("Bumped item could be marked as skipped")
+	}
+}
+
 func testBase36Matches(t *testing.T, input int, expected rune) {
 	output := Base36(input)
 	if output != expected {
