@@ -57,11 +57,15 @@ func (i *Item) Time() time.Time {
 }
 
 func (i *Item) Do() {
-	i.status = DoneStatus
+	if i.status != BumpedStatus {
+		i.status = DoneStatus
+	}
 }
 
 func (i *Item) Skip() {
-	i.status = SkippedStatus
+	if i.status != BumpedStatus {
+		i.status = SkippedStatus
+	}
 }
 
 func (i *Item) Bump(newTime time.Time) *Item {
