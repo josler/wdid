@@ -65,7 +65,7 @@ func (gc *GoogleCalendar) Load(startTime, endTime time.Time) []*Option {
 			status = "done"
 		}
 		opt := Option{
-			data:     fmt.Sprintf("[%s] %s %s", "meeting", item.Summary, item.HangoutLink),
+			data:     fmt.Sprintf("[%s] %s %s %s", "meeting", parsedTime.Format("Jan 2 15:04"), item.Summary, item.HangoutLink),
 			dateTime: parsedTime,
 			status:   status,
 		}
