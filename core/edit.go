@@ -17,7 +17,7 @@ func Edit(ctx context.Context, idString string, description io.Reader, timeStrin
 	}
 	if len(items) > 1 {
 		printFormat := GetPrintFormatFromContext(ctx)
-		if printFormat == HUMAN_PRINT_FORMAT {
+		if printFormat == HumanPrintFormat {
 			fmt.Println("Error: Found multiple matching items:")
 			NewItemPrinter(ctx).Print(items...)
 		}

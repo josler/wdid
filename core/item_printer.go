@@ -14,9 +14,8 @@ import (
 type PrintFormat int
 
 const (
-	HUMAN_PRINT_FORMAT  PrintFormat = 0
-	TEXT_PRINT_FORMAT   PrintFormat = 1
-	MAX_DATA_COL_LENGTH             = 120
+	HumanPrintFormat PrintFormat = 0
+	TextPrintFormat  PrintFormat = 1
 )
 
 func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
@@ -29,8 +28,8 @@ func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
 
 func GetPrintFormat(format string) PrintFormat {
 	return map[string]PrintFormat{
-		"human": HUMAN_PRINT_FORMAT,
-		"text":  TEXT_PRINT_FORMAT,
+		"human": HumanPrintFormat,
+		"text":  TextPrintFormat,
 	}[format]
 }
 
@@ -62,9 +61,9 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 
 	if len(items) == 1 {
 		switch ip.PrintFormat {
-		case TEXT_PRINT_FORMAT:
+		case TextPrintFormat:
 			ip.fPrintItemCompact(w, items[0])
-		case HUMAN_PRINT_FORMAT:
+		case HumanPrintFormat:
 			ip.fPrintItemDetail(tw, items[0])
 		}
 		return
@@ -73,9 +72,9 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 	currDay := items[0].Time().Day() - 1 // set to something different
 	for _, item := range items {
 		switch ip.PrintFormat {
-		case TEXT_PRINT_FORMAT:
+		case TextPrintFormat:
 			ip.fPrintItemCompact(w, item)
-		case HUMAN_PRINT_FORMAT:
+		case HumanPrintFormat:
 			if currDay != item.Time().Day() {
 				fmt.Fprintf(tw, "\t\t\t\n")
 				fmt.Fprintf(tw, "- %s\t\t\t\n", item.Time().Format("Monday January 02"))

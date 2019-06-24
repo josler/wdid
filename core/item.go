@@ -86,7 +86,7 @@ func (i *Item) ResetInternalID() {
 
 // manually set the ID, useful for testing!
 func (i *Item) SetID(id string) {
-	i.id = id[:MAX_ID_LENGTH]
+	i.id = id[:MaxIDLength]
 }
 
 func (i *Item) generateMetadata() {

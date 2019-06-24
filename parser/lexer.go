@@ -23,9 +23,8 @@ const (
 )
 
 const EOF rune = 0
-const EQUAL_SIGN string = "="
-const COMMA string = ","
-const NEWLINE string = "\n"
+const EqualSign string = "="
+const Comma string = ","
 
 func (i lexedItem) String() string {
 	switch i.typ {
@@ -81,7 +80,7 @@ func (l *lexer) next() (r rune) {
 
 func lexIdentifier(l *lexer) stateFn {
 	for {
-		if strings.HasPrefix(l.input[l.pos:], EQUAL_SIGN) {
+		if strings.HasPrefix(l.input[l.pos:], EqualSign) {
 			if l.pos > l.start {
 				l.emit(lexItemIdentifier)
 			}
@@ -100,14 +99,14 @@ func lexIdentifier(l *lexer) stateFn {
 }
 
 func lexEq(l *lexer) stateFn {
-	l.pos += len(EQUAL_SIGN)
+	l.pos += len(EqualSign)
 	l.emit(lexItemEq)
 	return lexString // now inside value
 }
 
 func lexString(l *lexer) stateFn {
 	for {
-		if strings.HasPrefix(l.input[l.pos:], COMMA) {
+		if strings.HasPrefix(l.input[l.pos:], Comma) {
 			if l.pos > l.start {
 				l.emit(lexItemString)
 			}
@@ -126,7 +125,7 @@ func lexString(l *lexer) stateFn {
 }
 
 func lexComma(l *lexer) stateFn {
-	l.pos += len(COMMA)
+	l.pos += len(Comma)
 	l.emit(lexItemComma)
 	return lexIdentifier // now looking for another identifier
 }
