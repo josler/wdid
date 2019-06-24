@@ -7,8 +7,7 @@ import (
 )
 
 const (
-	MAX_ID_LENGTH = 6
-	SCAN_LIMIT    = 14
+	MaxIDLength = 6
 )
 
 type Store interface {
