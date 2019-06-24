@@ -138,6 +138,9 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 
 	err := s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
 	if err != nil {
+		if err == storm.ErrNotFound {
+			return outputItems, nil
+		}
 		return nil, err
 	}
 
