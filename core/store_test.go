@@ -31,6 +31,7 @@ func tests() []storeTest {
 		saveAlreadyExists,
 		saveUpdate,
 		list,
+		listEmptyShouldNotError,
 		listDate,
 		listStatus,
 		listFilters,
@@ -103,6 +104,20 @@ func list(t *testing.T, store core.Store) {
 	}
 	if items[0].ID() != item.ID() {
 		t.Errorf("error id not matching")
+	}
+}
+
+func listEmptyShouldNotError(t *testing.T, store core.Store) {
+	// interestingly, this test doesn't fail when the database is completely empty
+	// it only fails when there has been at least one write.
+	item := core.NewItem("some data", time.Now().Add(-1*time.Minute))
+	store.Save(item)
+	items, err := store.List(core.NewTimespan(time.Now().Add(24*time.Hour), time.Now().Add(48*time.Hour)))
+	if len(items) != 0 {
+		t.Fatalf("error: items found when they shouldn't have been")
+	}
+	if err != nil {
+		t.Errorf("error returned for empty list, %v", err)
 	}
 }
 
