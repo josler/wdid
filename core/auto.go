@@ -116,7 +116,7 @@ type autoPicker struct{}
 func (picker *autoPicker) Pick(options []*auto.Option) []*auto.Option {
 	optionStrings := []string{}
 	for _, opt := range options {
-		optionStrings = append(optionStrings, TrimString(opt.Data(), 10))
+		optionStrings = append(optionStrings, picker.trimData(opt))
 	}
 
 	chosen := []string{}
@@ -131,11 +131,15 @@ func (picker *autoPicker) Pick(options []*auto.Option) []*auto.Option {
 	// we won't have many options so this is OK (low n)
 	for _, c := range chosen {
 		for _, o := range options {
-			if c == o.Data() {
+			if c == picker.trimData(o) {
 				pickedOptions = append(pickedOptions, o)
 			}
 		}
 	}
 
 	return pickedOptions
+}
+
+func (picker *autoPicker) trimData(opt *auto.Option) string {
+	return TrimString(opt.Data(), 10)
 }
