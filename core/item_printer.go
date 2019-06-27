@@ -114,7 +114,7 @@ func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
 }
 
 func (ip *ItemPrinter) fPrintItem(w io.Writer, item *Item) {
-	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), TrimString(item.Data(), 20), ip.itemTags(item), item.Time().Format("15:04"))
+	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), TrimString(item.Data(), 60), ip.itemTags(item), item.Time().Format("15:04"))
 }
 
 func (ip *ItemPrinter) itemTags(item *Item) string {
