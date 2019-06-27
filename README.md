@@ -291,11 +291,23 @@ $ wdid list --filter "tag=#pr,status=waiting,time=week" # show me all of the ite
 $ wdid -f "tag=#pr,tag=@josler" # show me all of the items tagged "#pr" and "@josler"
 ```
 
-The format of this filter is: `{type_of_filter}={value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, and `time`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above.
+The format of this filter is: `{type_of_filter}{conditional}{value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, and `time`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above.
 
-Currently, these filters are an AND filter - they must all be true. Furthermore, the only supported operator is `=`.
+Currently, these filters are an AND filter - they must all be true. Further, the conditional can be `=` or `!=` for all `tag` and `status`, but only `=` is supported for `date`. For example:
+
+```shell
+$ wdid -f "tag!=#pr,tag=@josler" # show me all of the items _not_ tagged #pr but tagged @josler.
+```
 
 Please note this is *mutually exclusive* with the flags for filtering by status directly, and the regular time filter as well.
+
+#### [Beta Feature] Status OR
+
+Currently testing OR filtering for statuses as a shorthand:
+
+```shell
+$ wdid -f "status=done|skipped|bumped" # functionally equivalent to "status!=waiting"
+```
 
 ### Auto
 

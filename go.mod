@@ -14,6 +14,7 @@ require (
 	github.com/fatih/color v1.6.0
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/google/go-github v15.0.0+incompatible
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
@@ -23,13 +24,14 @@ require (
 	github.com/mingrammer/commonregex v1.0.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/neurosnap/sentences v1.0.6 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
-	golang.org/x/crypto v0.0.0-20180621125126-a49355c7e3f8
-	golang.org/x/net v0.0.0-20180420171651-5f9ae10d9af5
+	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	golang.org/x/oauth2 v0.0.0-20180416194528-6881fee410a5
-	golang.org/x/sys v0.0.0-20180322165403-91ee8cde4354 // indirect
+	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
 	gonum.org/v1/gonum v0.0.0-20180814074008-f4b55da7eefa // indirect
 	gonum.org/v1/netlib v0.0.0-20180816165226-ebcc3d2662d3 // indirect
 	google.golang.org/api v0.0.0-20180702000508-e0f3bfad2532
@@ -38,6 +40,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/jdkato/prose.v2 v2.0.0-20180723191954-597d4355f5c8
 	gopkg.in/neurosnap/sentences.v1 v1.0.6 // indirect
+	gotest.tools v2.2.0+incompatible
 )
 
 replace github.com/asdine/storm => github.com/asdine/storm v0.0.0-20190418133842-e0f77eada154

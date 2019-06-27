@@ -133,7 +133,7 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	firstDateFilter, rest := s.findFirstDateFilter(filters)
 	if firstDateFilter == nil {
 		t, _ := TimeParser{Input: "0"}.Parse()
-		firstDateFilter = NewDateFilter(t)
+		firstDateFilter = NewDateFilter(filter.FilterEq, t)
 	}
 
 	err := s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
@@ -170,9 +170,9 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 }
 
 func (s *BoltStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
-	filters := []filter.Filter{NewDateFilter(t)}
+	filters := []filter.Filter{NewDateFilter(filter.FilterEq, t)}
 	if len(statuses) > 0 {
-		filters = append(filters, NewStatusFilter(statuses...))
+		filters = append(filters, NewStatusFilter(filter.FilterEq, statuses...))
 	}
 	return s.ListFilters(filters)
 }
