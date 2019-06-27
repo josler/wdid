@@ -17,6 +17,7 @@ const (
 	lexItemError lexedItemType = iota
 	lexItemEOF
 	lexItemEq
+	lexItemNe
 	lexItemString
 	lexItemIdentifier
 	lexItemComma
@@ -24,6 +25,7 @@ const (
 
 const EOF rune = 0
 const EqualSign string = "="
+const NotEqualSign string = "!="
 const Comma string = ","
 
 func (i lexedItem) String() string {
@@ -85,6 +87,11 @@ func lexIdentifier(l *lexer) stateFn {
 				l.emit(lexItemIdentifier)
 			}
 			return lexEq
+		} else if strings.HasPrefix(l.input[l.pos:], NotEqualSign) {
+			if l.pos > l.start {
+				l.emit(lexItemIdentifier)
+			}
+			return lexNe
 		}
 		if l.next() == EOF {
 			break
@@ -102,6 +109,12 @@ func lexEq(l *lexer) stateFn {
 	l.pos += len(EqualSign)
 	l.emit(lexItemEq)
 	return lexString // now inside value
+}
+
+func lexNe(l *lexer) stateFn {
+	l.pos += len(NotEqualSign)
+	l.emit(lexItemNe)
+	return lexString
 }
 
 func lexString(l *lexer) stateFn {

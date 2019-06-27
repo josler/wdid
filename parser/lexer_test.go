@@ -27,6 +27,21 @@ func TestLexerMultiple(t *testing.T) {
 	assertLexedItemTypeValue(t, lexItems[6], lexItemString, "#hashtag")
 }
 
+func TestLexerNotEqual(t *testing.T) {
+	_, itemchan := lex("tag!=@josler,tag=#hashtag")
+	lexItems := drainLexedItems(itemchan)
+	if len(lexItems) != 8 {
+		t.Errorf("failed to lex correct number of items")
+	}
+	assertLexedItemTypeValue(t, lexItems[0], lexItemIdentifier, "tag")
+	assertLexedItemTypeValue(t, lexItems[1], lexItemNe, "!=")
+	assertLexedItemTypeValue(t, lexItems[2], lexItemString, "@josler")
+	assertLexedItemTypeValue(t, lexItems[3], lexItemComma, ",")
+	assertLexedItemTypeValue(t, lexItems[4], lexItemIdentifier, "tag")
+	assertLexedItemTypeValue(t, lexItems[5], lexItemEq, "=")
+	assertLexedItemTypeValue(t, lexItems[6], lexItemString, "#hashtag")
+}
+
 func TestLexerSpaces(t *testing.T) {
 	_, itemchan := lex("tag=my tag")
 	lexItems := drainLexedItems(itemchan)

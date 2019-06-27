@@ -6,7 +6,7 @@ import (
 	"github.com/josler/wdid/filter"
 )
 
-type ToFilterFn func(val string) (filter.Filter, error)
+type ToFilterFn func(comparison filter.FilterComparison, val string) (filter.Filter, error)
 
 type Parser struct {
 	filterFnMap map[string]ToFilterFn
@@ -54,9 +54,9 @@ func (p *Parser) parseIdentifier(identifier lexedItem) error {
 	if !ok {
 		return fmt.Errorf("failed to parse, unrecognized filter: %q", identifier.val)
 	}
-	_, ok = <-p.itemchan // drain the comparison
-	if !ok {
-		return fmt.Errorf("failed to parse %q, missing eq", identifier.val)
+	comparison, ok := <-p.itemchan // drain the comparison
+	if !ok || !(comparison.typ == lexItemEq || comparison.typ == lexItemNe) {
+		return fmt.Errorf("failed to parse %q, missing comparison", identifier.val)
 	}
 	valueItem, ok := <-p.itemchan // next is the valueItem
 	if !ok || valueItem.typ != lexItemString {
@@ -66,7 +66,16 @@ func (p *Parser) parseIdentifier(identifier lexedItem) error {
 	if p.results == nil {
 		p.results = []filter.Filter{}
 	}
-	result, err := filterFn(valueItem.val)
+
+	var filterComparison filter.FilterComparison
+	switch comparison.typ {
+	case lexItemEq:
+		filterComparison = filter.FilterEq
+	case lexItemNe:
+		filterComparison = filter.FilterNe
+	}
+
+	result, err := filterFn(filterComparison, valueItem.val)
 	if err != nil {
 		return err
 	}

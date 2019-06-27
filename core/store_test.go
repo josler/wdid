@@ -35,6 +35,8 @@ func tests() []storeTest {
 		listDate,
 		listStatus,
 		listFilters,
+		listFiltersNe,
+		listFiltersStatusOr,
 		find,
 		findMultipleReturnsMostRecent,
 		findAll,
@@ -170,7 +172,7 @@ func listStatus(t *testing.T, store core.Store) {
 	}
 }
 
-func listFilters(t *testing.T, store core.Store) {
+func setupTagAndItems(store core.Store) {
 	tag := core.NewTag("#mytag")
 	store.SaveTag(tag)
 
@@ -185,18 +187,57 @@ func listFilters(t *testing.T, store core.Store) {
 
 	store.SaveItemTag(item, tag)
 	store.SaveItemTag(skippedItem, tag)
+}
+
+func listFilters(t *testing.T, store core.Store) {
+	setupTagAndItems(store)
 
 	filters := []filter.Filter{
-		core.NewStatusFilter("skipped"),
-		core.NewTagFilter(store, "#mytag"),
+		core.NewStatusFilter(filter.FilterEq, "skipped"),
+		core.NewTagFilter(store, filter.FilterEq, "#mytag"),
 	}
 	items, _ := store.ListFilters(filters)
 
-	fmt.Println(items)
 	if len(items) != 1 {
 		t.Fatalf("error: not all items found")
 	}
 	if items[0].Data() != "#mytag skipped" {
+		t.Errorf("data not matching")
+	}
+}
+
+func listFiltersNe(t *testing.T, store core.Store) {
+	setupTagAndItems(store)
+
+	filters := []filter.Filter{
+		core.NewTagFilter(store, filter.FilterNe, "#mytag"),
+	}
+	items, _ := store.ListFilters(filters)
+
+	if len(items) != 1 {
+		t.Fatalf("error: not all items found")
+	}
+	if items[0].Data() != "my item" {
+		t.Errorf("data not matching")
+	}
+}
+
+func listFiltersStatusOr(t *testing.T, store core.Store) {
+	setupTagAndItems(store)
+
+	filters := []filter.Filter{
+		core.NewStatusFilter(filter.FilterEq, "skipped", "done"),
+	}
+	items, _ := store.ListFilters(filters)
+
+	if len(items) != 2 {
+		t.Fatalf("error: not all items found")
+	}
+	if items[0].Data() != "#mytag done" {
+		t.Errorf("data not matching")
+	}
+
+	if items[1].Data() != "#mytag skipped" {
 		t.Errorf("data not matching")
 	}
 }
