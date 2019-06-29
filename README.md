@@ -293,10 +293,17 @@ $ wdid -f "tag=#pr,tag=@josler" # show me all of the items tagged "#pr" and "@jo
 
 The format of this filter is: `{type_of_filter}{conditional}{value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, and `time`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above.
 
-Currently, these filters are an AND filter - they must all be true. Further, the conditional can be `=` or `!=` for all `tag` and `status`, but only `=` is supported for `date`. For example:
+Currently, these filters are an AND filter - they must all be true. Further, there are limits to which conditional can be used with each type:
+
+* `=` - `tag`, `status`, `time`
+* `!=` - `tag`, `status`
+* `>` - `time`
+* `<` - `time`
+
+Please note that `<` and `>` are _inclusive_ (so really `>=`).
 
 ```shell
-$ wdid -f "tag!=#pr,tag=@josler" # show me all of the items _not_ tagged #pr but tagged @josler.
+$ wdid -f "tag!=#pr,tag=@josler,time<this week" # show me all of the items _not_ tagged #pr but tagged @josler, earlier than this week
 ```
 
 Please note this is *mutually exclusive* with the flags for filtering by status directly, and the regular time filter as well.
