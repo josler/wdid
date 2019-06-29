@@ -18,6 +18,8 @@ const (
 	lexItemEOF
 	lexItemEq
 	lexItemNe
+	lexItemGt
+	lexItemLt
 	lexItemString
 	lexItemIdentifier
 	lexItemComma
@@ -26,6 +28,8 @@ const (
 const EOF rune = 0
 const EqualSign string = "="
 const NotEqualSign string = "!="
+const GtSign string = ">"
+const LtSign string = "<"
 const Comma string = ","
 
 func (i lexedItem) String() string {
@@ -92,7 +96,18 @@ func lexIdentifier(l *lexer) stateFn {
 				l.emit(lexItemIdentifier)
 			}
 			return lexNe
+		} else if strings.HasPrefix(l.input[l.pos:], GtSign) {
+			if l.pos > l.start {
+				l.emit(lexItemIdentifier)
+			}
+			return lexGt
+		} else if strings.HasPrefix(l.input[l.pos:], LtSign) {
+			if l.pos > l.start {
+				l.emit(lexItemIdentifier)
+			}
+			return lexLt
 		}
+
 		if l.next() == EOF {
 			break
 		}
@@ -114,6 +129,18 @@ func lexEq(l *lexer) stateFn {
 func lexNe(l *lexer) stateFn {
 	l.pos += len(NotEqualSign)
 	l.emit(lexItemNe)
+	return lexString
+}
+
+func lexGt(l *lexer) stateFn {
+	l.pos += len(GtSign)
+	l.emit(lexItemGt)
+	return lexString
+}
+
+func lexLt(l *lexer) stateFn {
+	l.pos += len(LtSign)
+	l.emit(lexItemLt)
 	return lexString
 }
 

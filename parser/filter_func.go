@@ -55,7 +55,7 @@ func (p *Parser) parseIdentifier(identifier lexedItem) error {
 		return fmt.Errorf("failed to parse, unrecognized filter: %q", identifier.val)
 	}
 	comparison, ok := <-p.itemchan // drain the comparison
-	if !ok || !(comparison.typ == lexItemEq || comparison.typ == lexItemNe) {
+	if !ok {
 		return fmt.Errorf("failed to parse %q, missing comparison", identifier.val)
 	}
 	valueItem, ok := <-p.itemchan // next is the valueItem
@@ -73,6 +73,10 @@ func (p *Parser) parseIdentifier(identifier lexedItem) error {
 		filterComparison = filter.FilterEq
 	case lexItemNe:
 		filterComparison = filter.FilterNe
+	case lexItemGt:
+		filterComparison = filter.FilterGt
+	case lexItemLt:
+		filterComparison = filter.FilterLt
 	}
 
 	result, err := filterFn(filterComparison, valueItem.val)

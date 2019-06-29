@@ -17,13 +17,19 @@ func NewDateFilter(comparison filter.FilterComparison, timespan *Timespan) *Date
 }
 
 func DateFilterFn(comparison filter.FilterComparison, val string) (filter.Filter, error) {
-	if comparison != filter.FilterEq {
-		return nil, errors.New("date filter does not support comparison")
-	}
 	from, err := TimeParser{Input: val}.Parse()
 	if err != nil {
 		return nil, err
 	}
+	switch comparison {
+	case filter.FilterGt:
+		from.End = Timespan{}.LatestTime()
+	case filter.FilterLt:
+		from.Start = Timespan{}.EarliestTime()
+	case filter.FilterNe:
+		return nil, errors.New("date filter does not support comparison 'ne'")
+	}
+
 	return NewDateFilter(comparison, from), nil
 }
 
@@ -42,6 +48,11 @@ func NewStatusFilter(comparison filter.FilterComparison, statuses ...string) *St
 }
 
 func StatusFilterFn(comparison filter.FilterComparison, val string) (filter.Filter, error) {
+	switch comparison {
+	case filter.FilterGt, filter.FilterLt:
+		return nil, errors.New("status filter does not support comparison > or <")
+	}
+
 	validStatuses := map[string]struct{}{WaitingStatus: struct{}{}, SkippedStatus: struct{}{}, DoneStatus: struct{}{}, BumpedStatus: struct{}{}}
 	// allow usage of OR split - beta feature
 	statusValues := strings.Split(val, "|")
@@ -93,6 +104,10 @@ func NewTagFilter(store Store, comparison filter.FilterComparison, name string) 
 
 func TagFilterFn(store Store) parser.ToFilterFn {
 	return func(comparison filter.FilterComparison, val string) (filter.Filter, error) {
+		switch comparison {
+		case filter.FilterGt, filter.FilterLt:
+			return nil, errors.New("tag filter does not support > or <")
+		}
 		return NewTagFilter(store, comparison, val), nil
 	}
 }
