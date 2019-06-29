@@ -9,4 +9,6 @@ type FilterComparison int
 const (
 	FilterEq FilterComparison = iota
 	FilterNe
+	FilterGt
+	FilterLt
 )

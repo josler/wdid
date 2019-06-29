@@ -32,7 +32,21 @@ func TestDateFilterFunction(t *testing.T) {
 	assert.DeepEqual(t, dateFilter.(*DateFilter).timespan, timespan)
 }
 
+func TestDateFilterGtFunction(t *testing.T) {
+	dateFilter, _ := DateFilterFn(filter.FilterGt, "2019-05-18")
+	timespan, _ := TimeParser{Input: "2019-05-18"}.Parse()
+	timespan.End = Timespan{}.LatestTime()
+	assert.DeepEqual(t, dateFilter.(*DateFilter).timespan, timespan)
+}
+
+func TestDateFilterLtFunction(t *testing.T) {
+	dateFilter, _ := DateFilterFn(filter.FilterLt, "2019-05-18")
+	timespan, _ := TimeParser{Input: "2019-05-18"}.Parse()
+	timespan.Start = Timespan{}.EarliestTime()
+	assert.DeepEqual(t, dateFilter.(*DateFilter).timespan, timespan)
+}
+
 func TestDateFilterNeFunction(t *testing.T) {
 	_, err := DateFilterFn(filter.FilterNe, "2019-05-18")
-	assert.Error(t, err, "date filter does not support comparison")
+	assert.Error(t, err, "date filter does not support comparison 'ne'")
 }
