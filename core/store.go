@@ -14,6 +14,7 @@ type Store interface {
 	ItemStore
 	TagStore
 	ItemTagStore
+	GroupStore
 
 	WithContext(ctx context.Context) Store
 	Close()
@@ -39,4 +40,9 @@ type ItemTagStore interface {
 	DeleteItemTag(item *Item, Tag *Tag) error
 	FindItemsWithTag(tag *Tag, limit int) ([]*Item, error)
 	DeleteItemTagsWithItem(item *Item) error
+}
+
+type GroupStore interface {
+	SaveGroup(group *Group) error
+	FindGroupByName(name string) (*Group, error)
 }

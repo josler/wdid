@@ -21,6 +21,7 @@ func withFreshBoltStore(boltStore *core.BoltStore, f func()) {
 	boltStore.DropBucket("StormItem")
 	boltStore.DropBucket("StormTag")
 	boltStore.DropBucket("StormItemTag")
+	boltStore.DropBucket("StormGroup")
 	f()
 }
 
@@ -49,6 +50,7 @@ func tests() []storeTest {
 		deleteItemTag,
 		findItemsWithTag,
 		deleteItemTagsWithItem,
+		saveGroup,
 	}
 }
 
@@ -416,5 +418,21 @@ func deleteItemTagsWithItem(t *testing.T, store core.Store) {
 	items, err := store.FindItemsWithTag(tag, -1)
 	if err != nil && len(items) != 0 {
 		t.Errorf("failed to delete all item tags!")
+	}
+}
+
+func saveGroup(t *testing.T, store core.Store) {
+	group := core.NewGroup("group name", "tag=#foo,status!=done")
+	err := store.SaveGroup(group)
+	if err != nil {
+		t.Fatalf("failed to save group %v", err)
+	}
+
+	group, err = store.FindGroupByName("group name")
+	if err != nil {
+		t.Errorf("failed to find group")
+	}
+	if group.FilterString != "tag=#foo,status!=done" {
+		t.Error("failed to load group filterstring")
 	}
 }

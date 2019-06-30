@@ -2,16 +2,27 @@ package core
 
 import (
 	"context"
+	"strings"
 
 	"github.com/josler/wdid/parser"
 )
 
-func List(ctx context.Context, timeString string, filterString string, statuses ...string) error {
+func List(ctx context.Context, timeString string, filterString string, groupString string, statuses ...string) error {
 	store := ctx.Value("store").(Store)
 	itemPrinter := NewItemPrinter(ctx)
 
 	var items []*Item
 	var err error
+
+	if groupString != "" {
+		group, err := store.FindGroupByName(groupString)
+		if err != nil {
+			return err
+		}
+
+		filterString = strings.Join([]string{filterString, group.FilterString}, ",")
+		filterString = strings.TrimPrefix(filterString, ",")
+	}
 
 	if filterString != "" {
 		items, err = listFromFilters(store, filterString)
@@ -24,10 +35,8 @@ func List(ctx context.Context, timeString string, filterString string, statuses 
 }
 
 func listFromFilters(store Store, filterString string) ([]*Item, error) {
-	bs := store.(*BoltStore)
-
 	p := &parser.Parser{}
-	p.RegisterToFilter("tag", TagFilterFn(bs))
+	p.RegisterToFilter("tag", TagFilterFn(store))
 	p.RegisterToFilter("status", StatusFilterFn)
 	p.RegisterToFilter("time", DateFilterFn)
 
@@ -36,7 +45,7 @@ func listFromFilters(store Store, filterString string) ([]*Item, error) {
 		return []*Item{}, err
 	}
 
-	return bs.ListFilters(filters)
+	return store.ListFilters(filters)
 }
 
 func listFromFlags(store Store, timeString string, statuses ...string) ([]*Item, error) {

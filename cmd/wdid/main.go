@@ -37,6 +37,10 @@ var (
 	editID          = edit.Arg("id", "ID of item to edit.").Required().String()
 	editDescription = edit.Arg("description", "Description of new item.").String()
 
+	group        = app.Command("group", "create a group.")
+	groupName    = group.Arg("name", "name of the group").Required().String()
+	groupFilters = group.Flag("filters", "filters for the group").Short('f').Required().String()
+
 	importCmd      = app.Command("import", "Import items from a file or stdin.")
 	importFilename = importCmd.Arg("in", "Filename to import from, if omitted, stdin used").String()
 
@@ -46,6 +50,7 @@ var (
 	listSkipped  = list.Flag("skipped", "Only list items with status = skipped.").Short('s').Bool()
 	listBumped   = list.Flag("bumped", "Only list items with status = bumped.").Short('b').Bool()
 	listFilter   = list.Flag("filter", "Filter the results").Short('f').String()
+	listGroup    = list.Flag("group", "List items in a group").Short('g').String()
 	listTime     = list.Arg("time", "Time range to search in.").Default("0").String()
 	listTimeFlag = list.Flag("time", "Time range to search in.").Short('t').String()
 
@@ -119,9 +124,9 @@ func main() {
 			statuses = append(statuses, core.SkippedStatus)
 		}
 		if *listTimeFlag != "" {
-			err = core.List(ctx, *listTimeFlag, *listFilter, statuses...)
+			err = core.List(ctx, *listTimeFlag, *listFilter, *listGroup, statuses...)
 		} else {
-			err = core.List(ctx, *listTime, *listFilter, statuses...)
+			err = core.List(ctx, *listTime, *listFilter, *listGroup, statuses...)
 		}
 	case rm.FullCommand():
 		err = core.Rm(ctx, *rmID)
@@ -131,6 +136,8 @@ func main() {
 		err = core.Show(ctx, *showID)
 	case tagList.FullCommand():
 		err = core.ListTag(ctx)
+	case group.FullCommand():
+		err = core.CreateGroup(ctx, *groupName, *groupFilters)
 	}
 	app.FatalIfError(err, "")
 }
