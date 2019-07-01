@@ -346,6 +346,40 @@ func (s *BoltStore) SaveGroup(group *Group) error {
 	return nil
 }
 
+func (s *BoltStore) DeleteGroup(group *Group) error {
+	stormGroup := s.groupToStorm(group)
+	i, err := strconv.ParseUint(group.internalID, 10, 64)
+	if err != nil {
+		return nil
+	}
+	stormGroup.RowID = i
+	return s.db.DeleteStruct(stormGroup)
+}
+
+func (s *BoltStore) ListGroups() ([]*Group, error) {
+	stormGroups := []*StormGroup{}
+	query := s.db.Select()
+	query.OrderBy("CreatedAt")
+	err := query.Find(&stormGroups)
+
+	outputGroups := []*Group{}
+	if err != nil {
+		if err == storm.ErrNotFound {
+			return outputGroups, nil
+		}
+		return outputGroups, err
+	}
+
+	for _, group := range stormGroups {
+		parsed, err := s.stormToGroup(group)
+		if err != nil {
+			return outputGroups, err
+		}
+		outputGroups = append(outputGroups, parsed)
+	}
+	return outputGroups, nil
+}
+
 func (s *BoltStore) FindGroupByName(name string) (*Group, error) {
 	stormGroup := &StormGroup{}
 	err := s.db.One("Name", name, stormGroup)

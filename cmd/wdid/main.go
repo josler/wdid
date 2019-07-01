@@ -38,8 +38,13 @@ var (
 	editDescription = edit.Arg("description", "Description of new item.").String()
 
 	group        = app.Command("group", "create a group.")
-	groupName    = group.Arg("name", "name of the group").Required().String()
+	groupName    = group.Flag("name", "name of the group").Required().String()
 	groupFilters = group.Flag("filters", "filters for the group").Short('f').Required().String()
+
+	groupRm     = app.Command("group-rm", "delete a group.")
+	groupRmName = groupRm.Arg("name", "name of the group").Required().String()
+
+	groupList = app.Command("group-ls", "List groups.")
 
 	importCmd      = app.Command("import", "Import items from a file or stdin.")
 	importFilename = importCmd.Arg("in", "Filename to import from, if omitted, stdin used").String()
@@ -54,7 +59,7 @@ var (
 	listTime     = list.Arg("time", "Time range to search in.").Default("0").String()
 	listTimeFlag = list.Flag("time", "Time range to search in.").Short('t').String()
 
-	rm   = app.Command("rm", "Remove (permanently!) a single item.")
+	rm   = app.Command("rm", "Remove (permanently!) a single item.").Alias("delete")
 	rmID = rm.Arg("id", "ID of item to remove.").Required().String()
 
 	skip   = app.Command("skip", "Mark an item as skipped.")
@@ -64,7 +69,7 @@ var (
 	showID = show.Arg("id", "ID of item to show.").Required().String()
 
 	tag     = app.Command("tag", "work with tags.")
-	tagList = tag.Command("ls", "List tags.").Alias("list").Default()
+	tagList = app.Command("tag-ls", "List tags.").Alias("list")
 )
 
 func main() {
@@ -138,6 +143,10 @@ func main() {
 		err = core.ListTag(ctx)
 	case group.FullCommand():
 		err = core.CreateGroup(ctx, *groupName, *groupFilters)
+	case groupRm.FullCommand():
+		err = core.DeleteGroup(ctx, *groupRmName)
+	case groupList.FullCommand():
+		err = core.ListGroup(ctx)
 	}
 	app.FatalIfError(err, "")
 }

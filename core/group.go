@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/josler/wdid/filter"
@@ -13,6 +14,10 @@ type Group struct {
 	Name         string
 	FilterString string
 	CreatedAt    time.Time
+}
+
+func (g *Group) String() string {
+	return fmt.Sprintf("%s: \"%s\"", g.Name, g.FilterString)
 }
 
 func NewGroup(name string, filterString string) *Group {
@@ -36,8 +41,6 @@ func CreateGroup(ctx context.Context, name string, filterString string) error {
 	store := ctx.Value("store").(Store)
 	group := NewGroup(name, filterString)
 
-	store.(*BoltStore).DropBucket("StormGroup")
-
 	// validate filters
 	_, err := group.Filters(store)
 	if err != nil {
@@ -45,4 +48,13 @@ func CreateGroup(ctx context.Context, name string, filterString string) error {
 	}
 
 	return store.SaveGroup(group)
+}
+
+func DeleteGroup(ctx context.Context, name string) error {
+	store := ctx.Value("store").(Store)
+	group, err := store.FindGroupByName(name)
+	if err != nil {
+		return err
+	}
+	return store.DeleteGroup(group)
 }

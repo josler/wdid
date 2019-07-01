@@ -51,6 +51,8 @@ func tests() []storeTest {
 		findItemsWithTag,
 		deleteItemTagsWithItem,
 		saveGroup,
+		deleteGroup,
+		listGroups,
 	}
 }
 
@@ -434,5 +436,37 @@ func saveGroup(t *testing.T, store core.Store) {
 	}
 	if group.FilterString != "tag=#foo,status!=done" {
 		t.Error("failed to load group filterstring")
+	}
+}
+
+func deleteGroup(t *testing.T, store core.Store) {
+	group := core.NewGroup("group name", "tag=#foo,status!=done")
+	err := store.SaveGroup(group)
+	if err != nil {
+		t.Fatalf("failed to save group %v", err)
+	}
+
+	err = store.DeleteGroup(group)
+	if err != nil {
+		t.Fatalf("failed to delete group %v", err)
+	}
+}
+
+func listGroups(t *testing.T, store core.Store) {
+	group := core.NewGroup("group name", "tag=#foo,status!=done")
+	err := store.SaveGroup(group)
+	if err != nil {
+		t.Fatalf("failed to save group %v", err)
+	}
+
+	groups, err := store.ListGroups()
+	if err != nil {
+		t.Fatalf("failed to list groups %v", err)
+	}
+	if len(groups) != 1 {
+		t.Fatalf("didn't load groups")
+	}
+	if groups[0].Name != "group name" {
+		t.Errorf("did not load correct group")
 	}
 }

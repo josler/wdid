@@ -44,5 +44,7 @@ type ItemTagStore interface {
 
 type GroupStore interface {
 	SaveGroup(group *Group) error
+	DeleteGroup(group *Group) error
+	ListGroups() ([]*Group, error)
 	FindGroupByName(name string) (*Group, error)
 }
