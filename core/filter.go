@@ -168,7 +168,7 @@ func NewGroupFilter(comparison filter.FilterComparison, name string, filters []f
 func GroupFilterFn(store Store) parser.ToFilterFn {
 	return func(comparison filter.FilterComparison, val string) (filter.Filter, error) {
 		switch comparison {
-		case filter.FilterNe, filter.FilterGt, filter.FilterLt:
+		case filter.FilterGt, filter.FilterLt:
 			return nil, errors.New("group filter does not support >, != or <")
 		}
 
@@ -189,12 +189,28 @@ func GroupFilterFn(store Store) parser.ToFilterFn {
 func (groupFilter *GroupFilter) Match(i interface{}) (bool, error) {
 	stormItem := i.(StormItem)
 
-	for _, filter := range groupFilter.groupFilters {
-		ok, err := filter.Match(stormItem)
-		if !ok || err != nil {
-			return false, err
+	if groupFilter.comparison == filter.FilterEq {
+		for _, filter := range groupFilter.groupFilters {
+			innerMatch, err := filter.Match(stormItem)
+			// if doesn't match an inner filter or if error
+			// then we can't match EQ
+			if !innerMatch || err != nil {
+				return false, err
+			}
 		}
+		// has matched all
+		return true, nil
 	}
-
-	return true, nil
+	if groupFilter.comparison == filter.FilterNe {
+		for _, filter := range groupFilter.groupFilters {
+			innerMatch, err := filter.Match(stormItem)
+			if innerMatch || err != nil { // if matches inner or if error
+				// then we know we can't fully match NE
+				return false, err
+			}
+		}
+		// has matched none
+		return true, nil
+	}
+	return false, errors.New("unrecognized comparison")
 }

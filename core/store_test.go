@@ -39,6 +39,7 @@ func tests() []storeTest {
 		listFiltersNe,
 		listFiltersStatusOr,
 		listFiltersGroup,
+		listFiltersGroupNe,
 		find,
 		findMultipleReturnsMostRecent,
 		findAll,
@@ -263,6 +264,25 @@ func listFiltersGroup(t *testing.T, store core.Store) {
 	}
 
 	if items[0].Data() != "#mytag skipped" {
+		t.Errorf("data not matching")
+	}
+}
+
+func listFiltersGroupNe(t *testing.T, store core.Store) {
+	setupTagAndItems(store)
+
+	filters := []filter.Filter{
+		core.NewGroupFilter(filter.FilterNe, "name", []filter.Filter{
+			core.NewTagFilter(store, filter.FilterEq, "#mytag"),
+		}),
+	}
+
+	items, _ := store.ListFilters(filters)
+	if len(items) != 1 {
+		t.Fatalf("wrong items found %v", items)
+	}
+
+	if items[0].Data() != "my item" {
 		t.Errorf("data not matching")
 	}
 }
