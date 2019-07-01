@@ -304,7 +304,7 @@ Please note that `<` and `>` are _inclusive_ (so really `>=`).
 
 ```shell
 $ wdid -f "tag!=#pr,tag=@josler,time<this week" # show me all of the items _not_ tagged #pr but tagged @josler, earlier than this week
-```
+
 
 Please note this is *mutually exclusive* with the flags for filtering by status directly, and the regular time filter as well.
 

@@ -161,6 +161,10 @@ type GroupFilter struct {
 	groupFilters []filter.Filter
 }
 
+func NewGroupFilter(comparison filter.FilterComparison, name string, filters []filter.Filter) *GroupFilter {
+	return &GroupFilter{comparison: comparison, name: name, groupFilters: filters}
+}
+
 func GroupFilterFn(store Store) parser.ToFilterFn {
 	return func(comparison filter.FilterComparison, val string) (filter.Filter, error) {
 		switch comparison {
@@ -190,7 +194,6 @@ func (groupFilter *GroupFilter) Match(i interface{}) (bool, error) {
 		if !ok || err != nil {
 			return false, err
 		}
-		break
 	}
 
 	return true, nil

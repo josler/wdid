@@ -138,12 +138,16 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	outputItems := []*Item{}
 
 	firstDateFilter, rest := s.findFirstDateFilter(filters)
-	if firstDateFilter == nil {
-		t, _ := TimeParser{Input: "0"}.Parse()
-		firstDateFilter = NewDateFilter(filter.FilterEq, t)
+	var err error
+
+	if firstDateFilter != nil {
+		// if we have a date filter, use it as a range to limit where we search over
+		err = s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
+	} else {
+		// else, get all
+		err = s.db.All(&stormItems)
 	}
 
-	err := s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return outputItems, nil
