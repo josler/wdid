@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/josler/wdid/filter"
-	"github.com/josler/wdid/parser"
 )
 
 type Group struct {
@@ -25,11 +24,7 @@ func NewGroup(name string, filterString string) *Group {
 }
 
 func (g *Group) Filters(store Store) ([]filter.Filter, error) {
-	p := &parser.Parser{}
-	p.RegisterToFilter("tag", TagFilterFn(store))
-	p.RegisterToFilter("status", StatusFilterFn)
-	p.RegisterToFilter("time", DateFilterFn)
-
+	p := DefaultParser(store)
 	filters, err := p.Parse(g.FilterString)
 	if err != nil {
 		return []filter.Filter{}, err

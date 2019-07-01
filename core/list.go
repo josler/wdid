@@ -3,8 +3,6 @@ package core
 import (
 	"context"
 	"strings"
-
-	"github.com/josler/wdid/parser"
 )
 
 func List(ctx context.Context, timeString string, filterString string, groupString string, statuses ...string) error {
@@ -35,11 +33,7 @@ func List(ctx context.Context, timeString string, filterString string, groupStri
 }
 
 func listFromFilters(store Store, filterString string) ([]*Item, error) {
-	p := &parser.Parser{}
-	p.RegisterToFilter("tag", TagFilterFn(store))
-	p.RegisterToFilter("status", StatusFilterFn)
-	p.RegisterToFilter("time", DateFilterFn)
-
+	p := DefaultParser(store)
 	filters, err := p.Parse(filterString)
 	if err != nil {
 		return []*Item{}, err
