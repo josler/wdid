@@ -42,7 +42,7 @@ var (
 	groupFilters = group.Flag("filters", "filters for the group").Short('f').Required().String()
 
 	groupRm     = app.Command("group-rm", "delete a group.")
-	groupRmName = groupRm.Arg("name", "name of the group").Required().String()
+	groupRmName = groupRm.Flag("name", "name of the group").Short('n').Required().String()
 
 	groupList = app.Command("group-ls", "List groups.")
 

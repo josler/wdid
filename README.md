@@ -25,13 +25,16 @@ Commands:
   add [<flags>] [<new-item>]
   do <id>
   edit [<flags>] <id> [<description>]
+  group --name=NAME --filters=FILTERS
+  group-rm --name=NAME
+  group-ls
   import [<in>]
   ls* [<flags>] [<time>]
   rm <id>
   skip <id>
   show <id>
   tag
-    ls*
+  tag-ls
 ```
 
 ### Installation
@@ -191,18 +194,47 @@ Items can also be hard deleted. Gone forever.
 $ wdid rm i3nh99
 ```
 
-#### tag list
+#### tag-ls
 
 Items can be tagged, and we can use the tag list command to show all tags we've created so far (not which items were tagged, but the tags themselves).
 
-```
-$ wdid tag list
+```shell
+$ wdid tag-ls
 @josler
 #pr
 #meeting
 ```
 
 You can search for items by tag with our advanced listing filter language, please see below. More details of how tags work can also be found below.
+
+
+#### group
+
+Create a group of items defined by a set of filters. Please see below for filter language definition.
+
+```shell
+$ wdid group -n "my group name" -f "status=done,time=week,tag=@josler"
+```
+
+Both `--name` and `--filter` are required.
+
+#### group-ls
+
+List groups via the group list command.
+
+```shell
+$ wdid group-ls
+prs: "tag=#pr,time=this week"
+o11y: "tag=#o11y,status!=done"
+```
+
+#### group-rm
+
+Groups can be deleted:
+
+```shell
+$ wdid group-rm --name prs
+```
 
 ### Viewing Data
 
@@ -289,14 +321,17 @@ $ wdid list --filter "tag=#pr,status=waiting,time=week" # show me all of the ite
 
 # we don't need the "list" command either, as it's default
 $ wdid -f "tag=#pr,tag=@josler" # show me all of the items tagged "#pr" and "@josler"
+
+# listing items not done within a group
+$ wdid -f "status!=done,group=my group"
 ```
 
-The format of this filter is: `{type_of_filter}{conditional}{value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, and `time`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above.
+The format of this filter is: `{type_of_filter}{conditional}{value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, `time`, and `group`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above. The group filter uses the group name.
 
 Currently, these filters are an AND filter - they must all be true. Further, there are limits to which conditional can be used with each type:
 
-* `=` - `tag`, `status`, `time`
-* `!=` - `tag`, `status`
+* `=` - `tag`, `status`, `time`, `group`
+* `!=` - `tag`, `status`, `group`
 * `>` - `time`
 * `<` - `time`
 
@@ -314,6 +349,20 @@ Currently testing OR filtering for statuses as a shorthand:
 
 ```shell
 $ wdid -f "status=done|skipped|bumped" # functionally equivalent to "status!=waiting"
+```
+
+### Groups
+
+Filters really become powerful when used with Groups. Wdid allows the user to create a predefined set of filters in a group, and then refer to those within other filters. Using the `wdid group` command to create a group with some filters, and then referring to it by name:
+
+```shell
+$ wdid ls -g "my group name"
+```
+
+or in another filter:
+
+```shell
+$ wdid -f "group=my group name,time<this week"
 ```
 
 ### Auto
