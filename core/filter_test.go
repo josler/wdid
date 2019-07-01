@@ -50,3 +50,13 @@ func TestDateFilterNeFunction(t *testing.T) {
 	_, err := DateFilterFn(filter.FilterNe, "2019-05-18")
 	assert.Error(t, err, "date filter does not support comparison 'ne'")
 }
+
+func TestGroupFilterFunction(t *testing.T) {
+	contextWithStore(func(ctx context.Context, store Store) {
+		group := NewGroup("my group", "tag=#foo")
+		store.SaveGroup(group)
+		groupFilter, err := GroupFilterFn(store)(filter.FilterEq, "my group")
+		assert.NilError(t, err)
+		assert.Equal(t, groupFilter.(*GroupFilter).name, "my group")
+	})
+}

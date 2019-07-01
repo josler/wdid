@@ -57,6 +57,19 @@ func TestListFromFiltersTime(t *testing.T) {
 	})
 }
 
+func TestListFromGroup(t *testing.T) {
+	contextWithStore(func(ctx context.Context, store Store) {
+		Add(ctx, strings.NewReader("my item #hashtag"), "now")
+		Add(ctx, strings.NewReader("same #hashtag"), "2018-08-10")
+
+		CreateGroup(ctx, "my group", "tag=#hashtag")
+		err := List(ctx, "", "", "my group")
+		if err != nil {
+			t.Errorf("failed to list from group")
+		}
+	})
+}
+
 func getItemsFromFilters(t *testing.T, store Store, filterString string) []*Item {
 	var items []*Item
 	items, err := listFromFilters(store, filterString)

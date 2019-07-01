@@ -21,6 +21,7 @@ func withFreshBoltStore(boltStore *core.BoltStore, f func()) {
 	boltStore.DropBucket("StormItem")
 	boltStore.DropBucket("StormTag")
 	boltStore.DropBucket("StormItemTag")
+	boltStore.DropBucket("StormGroup")
 	f()
 }
 
@@ -37,6 +38,8 @@ func tests() []storeTest {
 		listFilters,
 		listFiltersNe,
 		listFiltersStatusOr,
+		listFiltersGroup,
+		listFiltersGroupNe,
 		find,
 		findMultipleReturnsMostRecent,
 		findAll,
@@ -49,6 +52,9 @@ func tests() []storeTest {
 		deleteItemTag,
 		findItemsWithTag,
 		deleteItemTagsWithItem,
+		saveGroup,
+		deleteGroup,
+		listGroups,
 	}
 }
 
@@ -242,6 +248,45 @@ func listFiltersStatusOr(t *testing.T, store core.Store) {
 	}
 }
 
+func listFiltersGroup(t *testing.T, store core.Store) {
+	setupTagAndItems(store)
+
+	filters := []filter.Filter{
+		core.NewGroupFilter(filter.FilterEq, "name", []filter.Filter{
+			core.NewTagFilter(store, filter.FilterEq, "#mytag"),
+			core.NewStatusFilter(filter.FilterNe, "done"),
+		}),
+	}
+
+	items, _ := store.ListFilters(filters)
+	if len(items) != 1 {
+		t.Fatalf("wrong items found %v", items)
+	}
+
+	if items[0].Data() != "#mytag skipped" {
+		t.Errorf("data not matching")
+	}
+}
+
+func listFiltersGroupNe(t *testing.T, store core.Store) {
+	setupTagAndItems(store)
+
+	filters := []filter.Filter{
+		core.NewGroupFilter(filter.FilterNe, "name", []filter.Filter{
+			core.NewTagFilter(store, filter.FilterEq, "#mytag"),
+		}),
+	}
+
+	items, _ := store.ListFilters(filters)
+	if len(items) != 1 {
+		t.Fatalf("wrong items found %v", items)
+	}
+
+	if items[0].Data() != "my item" {
+		t.Errorf("data not matching")
+	}
+}
+
 func find(t *testing.T, store core.Store) {
 	item := core.NewItem("some data", time.Now())
 	store.Save(item)
@@ -416,5 +461,53 @@ func deleteItemTagsWithItem(t *testing.T, store core.Store) {
 	items, err := store.FindItemsWithTag(tag, -1)
 	if err != nil && len(items) != 0 {
 		t.Errorf("failed to delete all item tags!")
+	}
+}
+
+func saveGroup(t *testing.T, store core.Store) {
+	group := core.NewGroup("group name", "tag=#foo,status!=done")
+	err := store.SaveGroup(group)
+	if err != nil {
+		t.Fatalf("failed to save group %v", err)
+	}
+
+	group, err = store.FindGroupByName("group name")
+	if err != nil {
+		t.Errorf("failed to find group")
+	}
+	if group.FilterString != "tag=#foo,status!=done" {
+		t.Error("failed to load group filterstring")
+	}
+}
+
+func deleteGroup(t *testing.T, store core.Store) {
+	group := core.NewGroup("group name", "tag=#foo,status!=done")
+	err := store.SaveGroup(group)
+	if err != nil {
+		t.Fatalf("failed to save group %v", err)
+	}
+
+	err = store.DeleteGroup(group)
+	if err != nil {
+		t.Fatalf("failed to delete group %v", err)
+	}
+}
+
+func listGroups(t *testing.T, store core.Store) {
+	group := core.NewGroup("group name", "tag=#foo,status!=done")
+	err := store.SaveGroup(group)
+	if err != nil {
+		t.Fatalf("failed to save group %v", err)
+	}
+
+	groups, err := store.ListGroups()
+	if err != nil {
+		t.Fatalf("failed to list groups %v", err)
+	}
+	if len(groups) != 1 {
+		t.Fatalf("didn't load groups")
+	}
+	if groups[0].Name != "group name" {
+		t.Errorf("did not load correct group")
 	}
 }

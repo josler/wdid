@@ -38,6 +38,13 @@ type StormItemTag struct {
 	CreatedAt    int64  `storm:"index"` // timestamp
 }
 
+type StormGroup struct {
+	RowID        uint64 `storm:"id,increment"`
+	Name         string `storm:"index,unique"`
+	FilterString string
+	CreatedAt    int64 `storm:"index"` // timestamp
+}
+
 type BoltStore struct {
 	db  *storm.DB
 	ctx context.Context
@@ -131,12 +138,16 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	outputItems := []*Item{}
 
 	firstDateFilter, rest := s.findFirstDateFilter(filters)
-	if firstDateFilter == nil {
-		t, _ := TimeParser{Input: "0"}.Parse()
-		firstDateFilter = NewDateFilter(filter.FilterEq, t)
+	var err error
+
+	if firstDateFilter != nil {
+		// if we have a date filter, use it as a range to limit where we search over
+		err = s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
+	} else {
+		// else, get all
+		err = s.db.All(&stormItems)
 	}
 
-	err := s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
 	if err != nil {
 		if err == storm.ErrNotFound {
 			return outputItems, nil
@@ -321,6 +332,67 @@ func (s *BoltStore) DeleteItemTagsWithItem(item *Item) error {
 	return nil
 }
 
+func (s *BoltStore) SaveGroup(group *Group) error {
+	stormGroup := s.groupToStorm(group)
+	if group.internalID != "" {
+		i, err := strconv.ParseUint(group.internalID, 10, 64)
+		if err != nil {
+			return err
+		}
+		stormGroup.RowID = i
+		return s.db.Update(stormGroup)
+	}
+	err := s.db.Save(stormGroup)
+	if err != nil {
+		return err
+	}
+	group.internalID = fmt.Sprintf("%d", stormGroup.RowID)
+	return nil
+}
+
+func (s *BoltStore) DeleteGroup(group *Group) error {
+	stormGroup := s.groupToStorm(group)
+	i, err := strconv.ParseUint(group.internalID, 10, 64)
+	if err != nil {
+		return nil
+	}
+	stormGroup.RowID = i
+	return s.db.DeleteStruct(stormGroup)
+}
+
+func (s *BoltStore) ListGroups() ([]*Group, error) {
+	stormGroups := []*StormGroup{}
+	query := s.db.Select()
+	query.OrderBy("CreatedAt")
+	err := query.Find(&stormGroups)
+
+	outputGroups := []*Group{}
+	if err != nil {
+		if err == storm.ErrNotFound {
+			return outputGroups, nil
+		}
+		return outputGroups, err
+	}
+
+	for _, group := range stormGroups {
+		parsed, err := s.stormToGroup(group)
+		if err != nil {
+			return outputGroups, err
+		}
+		outputGroups = append(outputGroups, parsed)
+	}
+	return outputGroups, nil
+}
+
+func (s *BoltStore) FindGroupByName(name string) (*Group, error) {
+	stormGroup := &StormGroup{}
+	err := s.db.One("Name", name, stormGroup)
+	if err != nil {
+		return nil, err
+	}
+	return s.stormToGroup(stormGroup)
+}
+
 func (s *BoltStore) WithContext(ctx context.Context) Store {
 	return &BoltStore{ctx: ctx, db: s.db}
 }
@@ -381,4 +453,22 @@ func (s *BoltStore) itemTagToStorm(input *ItemTag) *StormItemTag {
 		TagID:        input.TagID(),
 		CreatedAt:    input.CreatedAt().Unix(),
 	}
+}
+
+func (s *BoltStore) groupToStorm(input *Group) *StormGroup {
+	return &StormGroup{
+		Name:         input.Name,
+		FilterString: input.FilterString,
+		CreatedAt:    input.CreatedAt.Unix(),
+	}
+}
+
+func (s *BoltStore) stormToGroup(input *StormGroup) (*Group, error) {
+	parsedTime := time.Unix(input.CreatedAt, 0)
+	return &Group{
+		internalID:   fmt.Sprintf("%d", input.RowID),
+		Name:         input.Name,
+		FilterString: input.FilterString,
+		CreatedAt:    parsedTime,
+	}, nil
 }

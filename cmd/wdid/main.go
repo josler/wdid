@@ -37,6 +37,15 @@ var (
 	editID          = edit.Arg("id", "ID of item to edit.").Required().String()
 	editDescription = edit.Arg("description", "Description of new item.").String()
 
+	group        = app.Command("group", "create a group.")
+	groupName    = group.Flag("name", "name of the group").Short('n').Required().String()
+	groupFilters = group.Flag("filters", "filters for the group").Short('f').Required().String()
+
+	groupRm     = app.Command("group-rm", "delete a group.")
+	groupRmName = groupRm.Flag("name", "name of the group").Short('n').Required().String()
+
+	groupList = app.Command("group-ls", "List groups.")
+
 	importCmd      = app.Command("import", "Import items from a file or stdin.")
 	importFilename = importCmd.Arg("in", "Filename to import from, if omitted, stdin used").String()
 
@@ -46,10 +55,11 @@ var (
 	listSkipped  = list.Flag("skipped", "Only list items with status = skipped.").Short('s').Bool()
 	listBumped   = list.Flag("bumped", "Only list items with status = bumped.").Short('b').Bool()
 	listFilter   = list.Flag("filter", "Filter the results").Short('f').String()
+	listGroup    = list.Flag("group", "List items in a group").Short('g').String()
 	listTime     = list.Arg("time", "Time range to search in.").Default("0").String()
 	listTimeFlag = list.Flag("time", "Time range to search in.").Short('t').String()
 
-	rm   = app.Command("rm", "Remove (permanently!) a single item.")
+	rm   = app.Command("rm", "Remove (permanently!) a single item.").Alias("delete")
 	rmID = rm.Arg("id", "ID of item to remove.").Required().String()
 
 	skip   = app.Command("skip", "Mark an item as skipped.")
@@ -59,7 +69,7 @@ var (
 	showID = show.Arg("id", "ID of item to show.").Required().String()
 
 	tag     = app.Command("tag", "work with tags.")
-	tagList = tag.Command("ls", "List tags.").Alias("list").Default()
+	tagList = app.Command("tag-ls", "List tags.").Alias("list")
 )
 
 func main() {
@@ -119,9 +129,9 @@ func main() {
 			statuses = append(statuses, core.SkippedStatus)
 		}
 		if *listTimeFlag != "" {
-			err = core.List(ctx, *listTimeFlag, *listFilter, statuses...)
+			err = core.List(ctx, *listTimeFlag, *listFilter, *listGroup, statuses...)
 		} else {
-			err = core.List(ctx, *listTime, *listFilter, statuses...)
+			err = core.List(ctx, *listTime, *listFilter, *listGroup, statuses...)
 		}
 	case rm.FullCommand():
 		err = core.Rm(ctx, *rmID)
@@ -131,6 +141,12 @@ func main() {
 		err = core.Show(ctx, *showID)
 	case tagList.FullCommand():
 		err = core.ListTag(ctx)
+	case group.FullCommand():
+		err = core.CreateGroup(ctx, *groupName, *groupFilters)
+	case groupRm.FullCommand():
+		err = core.DeleteGroup(ctx, *groupRmName)
+	case groupList.FullCommand():
+		err = core.ListGroup(ctx)
 	}
 	app.FatalIfError(err, "")
 }

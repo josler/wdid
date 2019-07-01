@@ -8,6 +8,15 @@ import (
 	"github.com/josler/wdid/parser"
 )
 
+func DefaultParser(store Store) *parser.Parser {
+	p := &parser.Parser{}
+	p.RegisterToFilter("tag", TagFilterFn(store))
+	p.RegisterToFilter("status", StatusFilterFn)
+	p.RegisterToFilter("time", DateFilterFn)
+	p.RegisterToFilter("group", GroupFilterFn(store))
+	return p
+}
+
 type DateFilter struct {
 	timespan *Timespan
 }
@@ -143,5 +152,65 @@ func (tagFilter *TagFilter) Match(i interface{}) (bool, error) {
 		return true, nil
 	}
 
+	return false, errors.New("unrecognized comparison")
+}
+
+type GroupFilter struct {
+	comparison   filter.FilterComparison
+	name         string
+	groupFilters []filter.Filter
+}
+
+func NewGroupFilter(comparison filter.FilterComparison, name string, filters []filter.Filter) *GroupFilter {
+	return &GroupFilter{comparison: comparison, name: name, groupFilters: filters}
+}
+
+func GroupFilterFn(store Store) parser.ToFilterFn {
+	return func(comparison filter.FilterComparison, val string) (filter.Filter, error) {
+		switch comparison {
+		case filter.FilterGt, filter.FilterLt:
+			return nil, errors.New("group filter does not support >, != or <")
+		}
+
+		group, err := store.FindGroupByName(val)
+		if err != nil {
+			return nil, err
+		}
+
+		filters, err := group.Filters(store)
+		if err != nil {
+			return nil, err
+		}
+
+		return &GroupFilter{comparison: comparison, name: group.Name, groupFilters: filters}, nil
+	}
+}
+
+func (groupFilter *GroupFilter) Match(i interface{}) (bool, error) {
+	stormItem := i.(StormItem)
+
+	if groupFilter.comparison == filter.FilterEq {
+		for _, filter := range groupFilter.groupFilters {
+			innerMatch, err := filter.Match(stormItem)
+			// if doesn't match an inner filter or if error
+			// then we can't match EQ
+			if !innerMatch || err != nil {
+				return false, err
+			}
+		}
+		// has matched all
+		return true, nil
+	}
+	if groupFilter.comparison == filter.FilterNe {
+		for _, filter := range groupFilter.groupFilters {
+			innerMatch, err := filter.Match(stormItem)
+			if innerMatch || err != nil { // if matches inner or if error
+				// then we know we can't fully match NE
+				return false, err
+			}
+		}
+		// has matched none
+		return true, nil
+	}
 	return false, errors.New("unrecognized comparison")
 }
