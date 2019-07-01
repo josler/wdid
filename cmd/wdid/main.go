@@ -38,7 +38,7 @@ var (
 	editDescription = edit.Arg("description", "Description of new item.").String()
 
 	group        = app.Command("group", "create a group.")
-	groupName    = group.Flag("name", "name of the group").Required().String()
+	groupName    = group.Flag("name", "name of the group").Short('n').Required().String()
 	groupFilters = group.Flag("filters", "filters for the group").Short('f').Required().String()
 
 	groupRm     = app.Command("group-rm", "delete a group.")
