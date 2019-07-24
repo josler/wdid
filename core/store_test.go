@@ -27,34 +27,35 @@ func withFreshBoltStore(boltStore *core.BoltStore, f func()) {
 
 type storeTest func(t *testing.T, store core.Store)
 
-func tests() []storeTest {
-	return []storeTest{
-		saveAlreadyExists,
-		saveUpdate,
-		list,
-		listEmptyShouldNotError,
-		listDate,
-		listStatus,
-		listFilters,
-		listFiltersNe,
-		listFiltersStatusOr,
-		listFiltersGroup,
-		listFiltersGroupNe,
-		find,
-		findMultipleReturnsMostRecent,
-		findAll,
-		showPartialID,
-		doDelete,
-		saveTag,
-		findTag,
-		listTags,
-		saveItemTag,
-		deleteItemTag,
-		findItemsWithTag,
-		deleteItemTagsWithItem,
-		saveGroup,
-		deleteGroup,
-		listGroups,
+// subtests for the store
+func tests() map[string]storeTest {
+	return map[string]storeTest{
+		"saveAlreadyExists":             saveAlreadyExists,
+		"saveUpdate":                    saveUpdate,
+		"list":                          list,
+		"listEmptyShouldNotError":       listEmptyShouldNotError,
+		"listDate":                      listDate,
+		"listStatus":                    listStatus,
+		"listFilters":                   listFilters,
+		"listFiltersNe":                 listFiltersNe,
+		"listFiltersStatusOr":           listFiltersStatusOr,
+		"listFiltersGroup":              listFiltersGroup,
+		"listFiltersGroupNe":            listFiltersGroupNe,
+		"find":                          find,
+		"findMultipleReturnsMostRecent": findMultipleReturnsMostRecent,
+		"findAll":                       findAll,
+		"showPartialID":                 showPartialID,
+		"doDelete":                      doDelete,
+		"saveTag":                       saveTag,
+		"findTag":                       findTag,
+		"listTags":                      listTags,
+		"saveItemTag":                   saveItemTag,
+		"deleteItemTag":                 deleteItemTag,
+		"findItemsWithTag":              findItemsWithTag,
+		"deleteItemTagsWithItem":        deleteItemTagsWithItem,
+		"saveGroup":                     saveGroup,
+		"deleteGroup":                   deleteGroup,
+		"listGroups":                    listGroups,
 	}
 }
 
@@ -65,9 +66,11 @@ func TestBoltStore(t *testing.T) {
 	}
 	boltStore := core.NewBoltStore(db)
 
-	for _, test := range tests() {
-		withFreshBoltStore(boltStore, func() {
-			test(t, boltStore)
+	for name, subTest := range tests() {
+		t.Run(name, func(t *testing.T) {
+			withFreshBoltStore(boltStore, func() {
+				subTest(t, boltStore)
+			})
 		})
 	}
 
