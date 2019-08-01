@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 	"testing"
+
+	"gotest.tools/assert"
 )
 
 func TestEdit(t *testing.T) {
@@ -30,5 +32,19 @@ func TestEditAllowsFutureItem(t *testing.T) {
 		if err != nil {
 			t.Errorf("item not edited")
 		}
+	})
+}
+
+func TestEditTrimsNewlines(t *testing.T) {
+	contextWithStore(func(ctx context.Context, store Store) {
+		Add(ctx, strings.NewReader("my new item"), "2018-04-02")
+		found := mostRecentItem(store)
+		err := Edit(ctx, found.ID(), strings.NewReader("change the message\n\n\n"), "2019-01-01")
+		if err != nil {
+			t.Errorf("item not edited")
+		}
+		found, err = store.Find(found.ID())
+		assert.NilError(t, err)
+		assert.Equal(t, found.Data(), "change the message", "doesn't trim newlines correctly")
 	})
 }
