@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"strings"
 
 	kingpin "github.com/alecthomas/kingpin"
+	"github.com/asdine/storm"
+	"github.com/josler/wdid/config"
 	"github.com/josler/wdid/core"
+	"github.com/josler/wdid/fileedit"
 )
 
 const (
@@ -73,7 +77,7 @@ var (
 )
 
 func main() {
-	conf, err := loadConfig()
+	conf, err := config.Load()
 	app.FatalIfError(err, "")
 	kingpin.CommandLine.HelpFlag.Short('h')
 	kingpin.EnableFileExpansion = false
@@ -92,6 +96,7 @@ func main() {
 	ctx := context.WithValue(context.Background(), "store", store)
 	ctx = context.WithValue(ctx, "verbose", *v)
 	ctx = context.WithValue(ctx, "format", *format)
+	ctx = context.WithValue(ctx, "config", conf)
 
 	switch commandName {
 	case add.FullCommand():
@@ -111,7 +116,11 @@ func main() {
 	case do.FullCommand():
 		err = core.Do(ctx, *doID)
 	case edit.FullCommand():
-		err = core.Edit(ctx, *editID, strings.NewReader(*editDescription), *editTime)
+		if *editDescription == "" && *editTime == "" {
+			err = editFromFile(ctx)
+		} else {
+			err = core.Edit(ctx, *editID, strings.NewReader(*editDescription), *editTime)
+		}
 	case importCmd.FullCommand():
 		err = core.Import(ctx, *importFilename)
 	case list.FullCommand():
@@ -149,4 +158,36 @@ func main() {
 		err = core.ListGroup(ctx)
 	}
 	app.FatalIfError(err, "")
+}
+
+func editFromFile(ctx context.Context) error {
+	fpath := config.ConfigDir() + "/WDID_TEMP"
+
+	// find the item in question
+	items, err := core.FindAll(ctx, *editID)
+	if err != nil {
+		return err
+	}
+	if len(items) != 1 {
+		return errors.New("found too many items to edit")
+	}
+
+	data, err := fileedit.EditWithExistingContent(fpath, strings.NewReader(items[0].Data()))
+	if err != nil {
+		return err
+	}
+	return core.Edit(ctx, *editID, strings.NewReader(data), *editTime)
+}
+
+func createStore(conf *config.Config) (core.Store, error) {
+	switch conf.Store.Type {
+	case "bolt":
+		db, err := storm.Open(conf.Store.Filepath())
+		if err != nil {
+			return nil, err
+		}
+		return core.NewBoltStore(db), nil
+	default:
+		return nil, errors.New("store not specified correctly")
+	}
 }

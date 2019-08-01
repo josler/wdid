@@ -5,8 +5,7 @@ import (
 )
 
 func Show(ctx context.Context, idString string) error {
-	store := ctx.Value("store").(Store)
-	items, err := store.FindAll(idString)
+	items, err := FindAll(ctx, idString)
 	if err != nil {
 		return err
 	}

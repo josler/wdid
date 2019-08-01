@@ -106,7 +106,7 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 
 // Retrieves a token from a local file.
 func (gc *GoogleCalendar) tokenFromFile(path string) (*oauth2.Token, error) {
-	f, err := os.Open(filepath.Join(configDir(), path))
+	f, err := os.Open(filepath.Join(ConfigDir(), path))
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (gc *GoogleCalendar) tokenFromFile(path string) (*oauth2.Token, error) {
 
 // Saves a token to a file path.
 func (gc *GoogleCalendar) saveToken(path string, token *oauth2.Token) {
-	f, err := os.OpenFile(filepath.Join(configDir(), path), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	f, err := os.OpenFile(filepath.Join(ConfigDir(), path), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
@@ -127,7 +127,7 @@ func (gc *GoogleCalendar) saveToken(path string, token *oauth2.Token) {
 }
 
 func (gc *GoogleCalendar) getConfig() *oauth2.Config {
-	b, err := ioutil.ReadFile(filepath.Join(configDir(), "client_secret.json"))
+	b, err := ioutil.ReadFile(filepath.Join(ConfigDir(), "client_secret.json"))
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
@@ -140,7 +140,7 @@ func (gc *GoogleCalendar) getConfig() *oauth2.Config {
 	return config
 }
 
-func configDir() string {
+func ConfigDir() string {
 	return filepath.Join(homeDir(), ".config", "wdid")
 }
 

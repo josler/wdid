@@ -27,32 +27,40 @@ func (ic *ItemCreator) Create(data string, at time.Time) (*Item, error) {
 	return item, nil
 }
 
-func (ic *ItemCreator) Edit(item *Item, data string, timeString string) (*Item, error) {
-	store := ic.ctx.Value("store").(Store)
-	// set a new time
-	newAt := item.Time()
+func (ic *ItemCreator) maybeNewTime(item *Item, timeString string) error {
 	if timeString != "" {
 		span, err := TimeParser{Input: timeString}.Parse()
 		if err != nil {
-			return nil, err
+			return err
 		}
-		newAt = span.Start
+		item.datetime = span.Start
 	}
-	err := ic.deleteOldItemTags(item)
+	return nil
+}
+
+func (ic *ItemCreator) maybeNewDescription(item *Item, data string) error {
+	if data != "" {
+		item.data = data
+	}
+	return nil
+}
+
+func (ic *ItemCreator) Edit(item *Item, data string, timeString string) (*Item, error) {
+	store := ic.ctx.Value("store").(Store)
+	err := ic.maybeNewTime(item, timeString)
+	if err != nil {
+		return nil, err
+	}
+	err = ic.deleteOldItemTags(item)
 	if err != nil {
 		if ic.isVerbose() {
 			fmt.Printf("failed to delete old item tags, continuing. %v\n", err)
 		}
 	}
-
-	// set new description
-	newDescription := item.Data()
-	if data != "" {
-		newDescription = data
+	err = ic.maybeNewDescription(item, data)
+	if err != nil {
+		return nil, err
 	}
-
-	item.datetime = newAt
-	item.data = newDescription
 
 	err = ic.GenerateAndSaveMetadata(item)
 	if err != nil {

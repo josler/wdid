@@ -1,7 +1,6 @@
-package main
+package config
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,8 +9,6 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/asdine/storm"
-	"github.com/josler/wdid/core"
 )
 
 type ConfigStore struct {
@@ -53,10 +50,10 @@ file = "~/.config/wdid/wdid.db"
 #username = "username"
 `
 
-func loadConfig() (*Config, error) {
-	filename := filepath.Join(configDir(), "config.toml")
+func Load() (*Config, error) {
+	filename := filepath.Join(ConfigDir(), "config.toml")
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		os.MkdirAll(configDir(), os.ModePerm)
+		os.MkdirAll(ConfigDir(), os.ModePerm)
 
 		fmt.Println("setting up config...")
 		file, err := os.Create(filename)
@@ -89,27 +86,7 @@ func loadConfig() (*Config, error) {
 	return &conf, nil
 }
 
-func createStore(conf *Config) (core.Store, error) {
-	switch conf.Store.Type {
-	case "bolt":
-		db, err := storm.Open(parseConfigPath(conf.Store.File))
-		if err != nil {
-			return nil, err
-		}
-		return core.NewBoltStore(db), nil
-	default:
-		return nil, errors.New("store not specified correctly")
-	}
-}
-
-func parseConfigPath(filepath string) string {
-	pathCmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s", filepath))
-	out, _ := pathCmd.CombinedOutput()
-	pathCmd.Run()
-	return strings.Trim(string(out), "\n")
-}
-
-func configDir() string {
+func ConfigDir() string {
 	return filepath.Join(homeDir(), ".config", "wdid")
 }
 
@@ -119,4 +96,11 @@ func homeDir() string {
 		return "defaultuser"
 	}
 	return usr.HomeDir
+}
+
+func (store ConfigStore) Filepath() string {
+	pathCmd := exec.Command("sh", "-c", fmt.Sprintf("echo %s", store.File))
+	out, _ := pathCmd.CombinedOutput()
+	pathCmd.Run()
+	return strings.Trim(string(out), "\n")
 }
