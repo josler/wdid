@@ -77,6 +77,17 @@ func TestBoltStore(t *testing.T) {
 	db.Close()
 }
 
+func TestSqlStore(t *testing.T) {
+	sqlStore := core.NewSqlStore()
+
+	for name, subTest := range tests() {
+		t.Run(name, func(t *testing.T) {
+			subTest(t, sqlStore)
+		})
+	}
+
+}
+
 func saveAlreadyExists(t *testing.T, store core.Store) {
 	item := core.NewItem("some data", time.Now())
 	err := store.Save(item)
@@ -386,7 +397,7 @@ func listTags(t *testing.T, store core.Store) {
 
 	found, err := store.ListTags()
 	if err != nil || len(found) != 2 {
-		t.Errorf("failed to list tags")
+		t.Fatalf("failed to list tags")
 	}
 
 	if found[0].Name() != tagone.Name() || found[1].Name() != tagtwo.Name() {
@@ -438,7 +449,7 @@ func findItemsWithTag(t *testing.T, store core.Store) {
 
 	items, err := store.FindItemsWithTag(tag, -1)
 	if err != nil || len(items) != 2 {
-		t.Errorf("failed to find items with tag")
+		t.Fatalf("failed to find items with tag")
 	}
 	if items[0].Data() != "my item" {
 		t.Errorf("found wrong item through tag")

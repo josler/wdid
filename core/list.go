@@ -6,8 +6,14 @@ import (
 )
 
 func List(ctx context.Context, timeString string, filterString string, groupString string, statuses ...string) error {
-	store := ctx.Value("store").(Store)
 	itemPrinter := NewItemPrinter(ctx)
+	items, err := ListWithoutPrint(ctx, timeString, filterString, groupString, statuses...)
+	itemPrinter.Print(items...)
+	return err
+}
+
+func ListWithoutPrint(ctx context.Context, timeString string, filterString string, groupString string, statuses ...string) ([]*Item, error) {
+	store := ctx.Value("store").(Store)
 
 	var items []*Item
 	var err error
@@ -15,7 +21,7 @@ func List(ctx context.Context, timeString string, filterString string, groupStri
 	if groupString != "" {
 		group, err := store.FindGroupByName(groupString)
 		if err != nil {
-			return err
+			return items, err
 		}
 
 		filterString = strings.Join([]string{filterString, group.FilterString}, ",")
@@ -27,9 +33,7 @@ func List(ctx context.Context, timeString string, filterString string, groupStri
 	} else {
 		items, err = listFromFlags(store, timeString, statuses...)
 	}
-
-	itemPrinter.Print(items...)
-	return err
+	return items, err
 }
 
 func listFromFilters(store Store, filterString string) ([]*Item, error) {
