@@ -122,7 +122,7 @@ func TagFilterFn(store Store) parser.ToFilterFn {
 }
 
 func (tagFilter *TagFilter) Match(i interface{}) (bool, error) {
-	stormItem := i.(StormItem)
+	stormItem := i.(StormItem) // TODO: this can't be cast , use interface
 	tokenizer := &parser.Tokenizer{}
 	tokenResult, err := tokenizer.Tokenize(stormItem.Data)
 	if err != nil {

@@ -17,9 +17,11 @@ require (
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/google/go-github v15.0.0+incompatible
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
+	github.com/jmoiron/sqlx v1.2.0
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
+	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mingrammer/commonregex v1.0.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
@@ -44,3 +46,5 @@ require (
 )
 
 replace github.com/asdine/storm => github.com/asdine/storm v0.0.0-20190418133842-e0f77eada154
+
+go 1.13

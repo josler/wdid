@@ -8,9 +8,11 @@ import (
 
 	kingpin "github.com/alecthomas/kingpin"
 	"github.com/asdine/storm"
+	"github.com/jmoiron/sqlx"
 	"github.com/josler/wdid/config"
 	"github.com/josler/wdid/core"
 	"github.com/josler/wdid/fileedit"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
@@ -187,6 +189,18 @@ func createStore(conf *config.Config) (core.Store, error) {
 			return nil, err
 		}
 		return core.NewBoltStore(db), nil
+	case "sql":
+		db, err := sqlx.Open("sqlite3", ":memory:")
+		if err != nil {
+			return nil, err
+		}
+		err = db.Ping()
+		if err != nil {
+			return nil, err
+		}
+		store := core.NewSqlStore(db)
+		err = store.InitTables()
+		return store, err
 	default:
 		return nil, errors.New("store not specified correctly")
 	}
