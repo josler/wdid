@@ -44,3 +44,5 @@ require (
 )
 
 replace github.com/asdine/storm => github.com/asdine/storm v0.0.0-20190418133842-e0f77eada154
+
+go 1.13
