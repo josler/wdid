@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -16,6 +17,7 @@ type PrintFormat int
 const (
 	HumanPrintFormat PrintFormat = 0
 	TextPrintFormat  PrintFormat = 1
+	JSONPrintFormat  PrintFormat = 2
 )
 
 func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
@@ -30,6 +32,7 @@ func GetPrintFormat(format string) PrintFormat {
 	return map[string]PrintFormat{
 		"human": HumanPrintFormat,
 		"text":  TextPrintFormat,
+		"json":  JSONPrintFormat,
 	}[format]
 }
 
@@ -65,6 +68,8 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 			ip.fPrintItemCompact(w, items[0])
 		case HumanPrintFormat:
 			ip.fPrintItemDetail(tw, items[0])
+		case JSONPrintFormat:
+			ip.fPrintItemJSON(tw, items[0])
 		}
 		return
 	}
@@ -81,6 +86,8 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 				currDay = item.Time().Day()
 			}
 			ip.fPrintItem(tw, item)
+		case JSONPrintFormat:
+			ip.fPrintItemJSON(tw, item)
 		}
 	}
 }
@@ -111,6 +118,42 @@ func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
 		refID = "<-" + item.PreviousID()
 	}
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%q\t%s\n", item.ID(), item.internalID, item.Status(), refID, item.Data(), item.Time().Format(time.RFC3339))
+}
+
+type JSONItem struct {
+	ID         string
+	InternalID string
+	NextID     string
+	PreviousID string
+
+	Data       string
+	Status     string
+	TimeString string
+	Tags       []string
+}
+
+func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
+	tags := item.Tags()
+	tagStrings := []string{}
+	for _, tag := range tags {
+		tagStrings = append(tagStrings, tag.Name())
+	}
+
+	jsonItem := JSONItem{
+		ID:         item.ID(),
+		InternalID: item.internalID,
+		NextID:     item.NextID(),
+		PreviousID: item.PreviousID(),
+		Data:       item.Data(),
+		Status:     item.Status(),
+		TimeString: item.Time().Format(time.RFC3339),
+		Tags:       tagStrings,
+	}
+	b, err := json.Marshal(jsonItem)
+	if err != nil {
+		return
+	}
+	fmt.Fprintf(w, "%s\n", string(b))
 }
 
 func (ip *ItemPrinter) fPrintItem(w io.Writer, item *Item) {

@@ -20,7 +20,7 @@ const (
 var (
 	app    = kingpin.New("wdid", "A tool to track what you did.")
 	v      = app.Flag("verbose", "Enable verbose logging.").Short('v').Bool()
-	format = app.Flag("format", "format to print in ('human' or 'text').").Default("human").Enum("human", "text")
+	format = app.Flag("format", "format to print in ('human', 'text', or 'json).").Default("human").Enum("human", "text", "json")
 
 	auto     = app.Command("auto", "bring up items for automatic suggestion")
 	autoTime = auto.Flag("time", "Time range to search in.").Short('t').PlaceHolder("TIME").Default("0").String()

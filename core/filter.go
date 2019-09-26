@@ -169,7 +169,7 @@ func GroupFilterFn(store Store) parser.ToFilterFn {
 	return func(comparison filter.FilterComparison, val string) (filter.Filter, error) {
 		switch comparison {
 		case filter.FilterGt, filter.FilterLt:
-			return nil, errors.New("group filter does not support >, != or <")
+			return nil, errors.New("group filter does not support > or <")
 		}
 
 		group, err := store.FindGroupByName(val)

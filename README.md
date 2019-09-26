@@ -10,12 +10,14 @@ This tool both aims to track your most important goals, day-to-day, and help tra
 $ wdid help
 usage: wdid [<flags>] <command> [<args> ...]
 
+usage: wdid [<flags>] <command> [<args> ...]
+
 A tool to track what you did.
 
 Flags:
   -h, --help          Show context-sensitive help (also try --help-long and --help-man).
   -v, --verbose       Enable verbose logging.
-      --format=human  format to print in ('human' or 'text').
+      --format=human  format to print in ('human', 'text', or 'json).
       --version       Show application version.
 
 Commands:
@@ -238,7 +240,8 @@ $ wdid group-rm --name prs
 
 ### Viewing Data
 
-Data can be printed in a couple of different ways. The two supported formats are "text" and "human". The text format is tab-delimited and useful for parsing with other command line tools, whereas the human format is easier to read for humans (colored, unicode characters, more detail when viewing single items). The default is "human". To change, pass a "format" flag: `wdid list --format=text week`.
+Data can be printed in a couple of different ways. The two supported formats are "text", "human", and JSON. The text format is tab-delimited and useful for parsing with other command line tools, whereas the human format is easier to read for humans (colored, unicode characters, more detail when viewing single items). The 
+"json" format prints items in JSON Line format, one item per line (`\n`). The default is "human". To change, pass a "format" flag: `wdid list --format=text week`.
 
 The text format is especially helpful for exporting and importing data:
 
