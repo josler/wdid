@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -149,11 +150,14 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 		TimeString: item.Time().Format(time.RFC3339),
 		Tags:       tagStrings,
 	}
-	b, err := json.Marshal(jsonItem)
+	buf := bytes.Buffer{}
+	encoder := json.NewEncoder(&buf)
+	encoder.SetEscapeHTML(false)
+	err := encoder.Encode(jsonItem)
 	if err != nil {
 		return
 	}
-	fmt.Fprintf(w, "%s\n", string(b))
+	fmt.Fprintf(w, "%s\n", buf.String())
 }
 
 func (ip *ItemPrinter) fPrintItem(w io.Writer, item *Item) {
