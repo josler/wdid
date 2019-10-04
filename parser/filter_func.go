@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/josler/wdid/filter"
 )
@@ -50,7 +51,8 @@ func (p *Parser) parse() {
 }
 
 func (p *Parser) parseIdentifier(identifier lexedItem) error {
-	filterFn, ok := p.filterFnMap[identifier.val]
+	trimmedIdentifier := strings.Trim(identifier.val, " ")
+	filterFn, ok := p.filterFnMap[trimmedIdentifier]
 	if !ok {
 		return fmt.Errorf("failed to parse, unrecognized filter: %q", identifier.val)
 	}
@@ -79,7 +81,8 @@ func (p *Parser) parseIdentifier(identifier lexedItem) error {
 		filterComparison = filter.FilterLt
 	}
 
-	result, err := filterFn(filterComparison, valueItem.val)
+	trimmedValue := strings.Trim(valueItem.val, " ")
+	result, err := filterFn(filterComparison, trimmedValue)
 	if err != nil {
 		return err
 	}

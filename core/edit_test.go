@@ -35,6 +35,15 @@ func TestEditAllowsFutureItem(t *testing.T) {
 	})
 }
 
+func TestEditWithFunkyDateFails(t *testing.T) {
+	contextWithStore(func(ctx context.Context, store Store) {
+		Add(ctx, strings.NewReader("standard item"), "2018-04-02")
+		found := mostRecentItem(store)
+		err := Edit(ctx, found.ID(), strings.NewReader("change the message"), "2019:10:10")
+		assert.Error(t, err, "failed to parse time with input: 2019:10:10")
+	})
+}
+
 func TestEditTrimsNewlines(t *testing.T) {
 	contextWithStore(func(ctx context.Context, store Store) {
 		Add(ctx, strings.NewReader("my new item"), "2018-04-02")
