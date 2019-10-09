@@ -110,7 +110,7 @@ func main() {
 		for _, c := range conf.Auto { // dance around iface mapping
 			confs = append(confs, c)
 		}
-		core.Auto(ctx, *autoTime, confs...)
+		err = core.Auto(ctx, *autoTime, confs...)
 	case bump.FullCommand():
 		err = core.Bump(ctx, *bumpID, *bumpTime)
 	case do.FullCommand():

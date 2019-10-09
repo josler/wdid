@@ -5,12 +5,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"hash"
+	"hash/fnv"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 	"text/tabwriter"
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/josler/wdid/config"
 )
 
 type PrintFormat int
@@ -43,11 +48,44 @@ type ItemPrinter struct {
 	waitColor    color.Attribute
 	successColor color.Attribute
 
+	hasher     hash.Hash32
+	colorWheel map[int]int
+
 	PrintFormat PrintFormat
 }
 
 func NewItemPrinter(ctx context.Context) *ItemPrinter {
-	return &ItemPrinter{bumpedColor: color.FgYellow, failColor: color.FgRed, successColor: color.FgGreen, waitColor: color.FgWhite, PrintFormat: GetPrintFormatFromContext(ctx)}
+	base := &ItemPrinter{
+		bumpedColor:  color.FgYellow,
+		failColor:    color.FgRed,
+		successColor: color.FgGreen,
+		waitColor:    color.FgWhite,
+		PrintFormat:  GetPrintFormatFromContext(ctx),
+	}
+	conf := ctx.Value("config").(*config.Config)
+
+	if !conf.ColorTags {
+		return base
+	}
+
+	base.hasher = fnv.New32a()
+
+	// there are 216 non "standard" colors
+	// some of them might be hard to read on a regular terminal, so we limit
+	// this is pretty arbitrary based on the scheme I'm currently usng
+	colorWheel := map[int]int{}
+	for i := 33; i < 52; i++ {
+		colorWheel[len(colorWheel)] = i
+	}
+	for i := 69; i < 88; i++ {
+		colorWheel[len(colorWheel)] = i
+	}
+	for i := 99; i < 231; i++ {
+		colorWheel[len(colorWheel)] = i
+	}
+
+	base.colorWheel = colorWheel
+	return base
 }
 
 func (ip *ItemPrinter) Print(items ...*Item) {
@@ -81,12 +119,13 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 		case TextPrintFormat:
 			ip.fPrintItemCompact(w, item)
 		case HumanPrintFormat:
+			// new day so print header
 			if currDay != item.Time().Day() {
 				fmt.Fprintf(tw, "\t\t\t\n")
 				fmt.Fprintf(tw, "- %s\t\t\t\n", item.Time().Format("Monday January 02"))
 				currDay = item.Time().Day()
 			}
-			ip.fPrintItem(tw, item)
+			ip.fPrintItemHuman(tw, item)
 		case JSONPrintFormat:
 			ip.fPrintItemJSON(tw, item)
 		}
@@ -160,7 +199,7 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s\n", buf.String())
 }
 
-func (ip *ItemPrinter) fPrintItem(w io.Writer, item *Item) {
+func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), TrimString(item.Data(), 60), ip.itemTags(item), item.Time().Format("15:04"))
 }
 
@@ -168,7 +207,35 @@ func (ip *ItemPrinter) itemTags(item *Item) string {
 	if len(item.Tags()) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("%s", item.Tags())
+
+	if ip.hasher == nil {
+		return fmt.Sprintf("%s", item.Tags())
+	}
+
+	tagStrings := []string{}
+	for _, tag := range item.Tags() {
+		ip.hasher.Write([]byte(tag.Name()))
+		num := int(ip.hasher.Sum32())
+
+		// find the appropriate color in our wheel
+		num = num % len(ip.colorWheel)
+
+		//terminal escape codes are in the format: 38;5;n for the larger range of colors
+		tagStrings = append(tagStrings, ip.tagColor(tag.Name(), []int{38, 5, ip.colorWheel[num]}))
+		ip.hasher.Reset()
+	}
+
+	return fmt.Sprintf("%s", tagStrings)
+}
+
+func (ip *ItemPrinter) tagColor(tagName string, params []int) string {
+	format := make([]string, len(params))
+	for i, v := range params {
+		format[i] = strconv.Itoa(int(v))
+	}
+
+	sequence := strings.Join(format, ";")
+	return fmt.Sprintf("%s[%sm%s%s[%dm", "\x1b", sequence, tagName, "\x1b", 0)
 }
 
 func (ip *ItemPrinter) doneStatus(item *Item) string {
