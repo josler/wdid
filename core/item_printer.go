@@ -11,11 +11,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"text/tabwriter"
 	"time"
 
 	"github.com/fatih/color"
 	"github.com/josler/wdid/config"
+	"github.com/juju/ansiterm"
 )
 
 type PrintFormat int
@@ -97,8 +97,7 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 		return
 	}
 
-	tw := &tabwriter.Writer{}
-	tw.Init(w, 7, 0, 1, ' ', 0)
+	tw := ansiterm.NewTabWriter(w, 7, 0, 1, ' ', 0)
 	defer tw.Flush()
 
 	if len(items) == 1 {
