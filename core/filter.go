@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/josler/wdid/filter"
@@ -45,6 +46,10 @@ func DateFilterFn(comparison filter.FilterComparison, val string) (filter.Filter
 func (dateFilter *DateFilter) Match(i interface{}) (bool, error) {
 	stormItem := i.(StormItem)
 	return (stormItem.Datetime >= dateFilter.timespan.Start.Unix() && stormItem.Datetime <= dateFilter.timespan.End.Unix()), nil
+}
+
+func (dateFilter *DateFilter) String() string {
+	return fmt.Sprintf("Between %v and %v", dateFilter.timespan.Start, dateFilter.timespan.End)
 }
 
 type StatusFilter struct {
@@ -101,6 +106,10 @@ func (statusFilter *StatusFilter) Match(i interface{}) (bool, error) {
 	return false, errors.New("unrecognized comparison")
 }
 
+func (statusFilter *StatusFilter) String() string {
+	return fmt.Sprintf("Status %v %v", statusFilter.comparison, statusFilter.statuses)
+}
+
 type TagFilter struct {
 	store      Store
 	comparison filter.FilterComparison
@@ -155,6 +164,10 @@ func (tagFilter *TagFilter) Match(i interface{}) (bool, error) {
 	return false, errors.New("unrecognized comparison")
 }
 
+func (tagFilter *TagFilter) String() string {
+	return fmt.Sprintf("Tag %v %s", tagFilter.comparison, tagFilter.tagName)
+}
+
 type GroupFilter struct {
 	comparison   filter.FilterComparison
 	name         string
@@ -174,7 +187,7 @@ func GroupFilterFn(store Store) parser.ToFilterFn {
 
 		group, err := store.FindGroupByName(val)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Failed to find group by name: %w", err)
 		}
 
 		filters, err := group.Filters(store)
@@ -213,4 +226,8 @@ func (groupFilter *GroupFilter) Match(i interface{}) (bool, error) {
 		return true, nil
 	}
 	return false, errors.New("unrecognized comparison")
+}
+
+func (groupFilter *GroupFilter) String() string {
+	return fmt.Sprintf("Group %v %s", groupFilter.comparison, groupFilter.name)
 }
