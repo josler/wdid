@@ -239,6 +239,11 @@ func (ip *ItemPrinter) doneStatus(item *Item) string {
 		baseColor.EnableColor()
 		return baseColor.Sprintf("✔ %v", item.ID())
 	case WaitingStatus:
+		if item.PreviousID() != "" { // i.e. was bumped
+			baseColor := color.New(ip.bumpedColor)
+			baseColor.EnableColor()
+			return fmt.Sprintf("%s %v", baseColor.Sprintf("⇒"), item.ID()) // just color the arrow
+		}
 		baseColor := color.New(ip.waitColor)
 		baseColor.EnableColor()
 		return baseColor.Sprintf("⇒ %v", item.ID())
