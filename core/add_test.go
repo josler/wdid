@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/asdine/storm"
+	"gotest.tools/assert"
 )
 
 func TestAddCreatesItem(t *testing.T) {
@@ -30,6 +31,17 @@ func TestAddFutureItem(t *testing.T) {
 		if err != nil {
 			t.Errorf("item not saved")
 		}
+	})
+}
+
+func TestAddDone(t *testing.T) {
+	contextWithStore(func(ctx context.Context, store Store) {
+		err := AddDone(ctx, strings.NewReader("my new item"), "now")
+		if err != nil {
+			t.Errorf("item not saved")
+		}
+		item := mostRecentItem(store)
+		assert.Equal(t, item.Status(), DoneStatus)
 	})
 }
 
