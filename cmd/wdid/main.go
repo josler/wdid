@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"strings"
 
@@ -31,6 +32,7 @@ var (
 
 	add      = app.Command("add", "Add a new item to track.")
 	addTime  = add.Flag("time", "Time to add the item at.").Short('t').PlaceHolder("TIME").Default("now").String()
+	addDone  = add.Flag("done", "Mark item as done already").Short('d').Bool()
 	newThing = add.Arg("new-item", "Description of new item.").String()
 
 	do   = app.Command("do", "Mark an item as done.")
@@ -100,10 +102,17 @@ func main() {
 
 	switch commandName {
 	case add.FullCommand():
+		var description io.Reader
 		if *newThing != "" {
-			err = core.Add(ctx, strings.NewReader(*newThing), *addTime)
+			description = strings.NewReader(*newThing)
+
 		} else {
-			err = core.Add(ctx, os.Stdin, *addTime)
+			description = os.Stdin
+		}
+		if *addDone {
+			err = core.AddDone(ctx, description, *addTime)
+		} else {
+			err = core.Add(ctx, description, *addTime)
 		}
 	case auto.FullCommand():
 		var confs []core.AutoConf
