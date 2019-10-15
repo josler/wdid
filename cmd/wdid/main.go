@@ -73,7 +73,7 @@ var (
 	showID = show.Arg("id", "ID of item to show.").Required().String()
 
 	tag     = app.Command("tag", "work with tags.")
-	tagList = app.Command("tag-ls", "List tags.").Alias("list")
+	tagList = app.Command("tag-ls", "List tags.")
 )
 
 func main() {
