@@ -35,14 +35,11 @@ func (ca ConfigAuto) AutoUsername() string {
 }
 
 type Config struct {
-	Store     ConfigStore
-	Auto      []ConfigAuto
-	ColorTags bool `toml:"color_tags"`
+	Store ConfigStore
+	Auto  []ConfigAuto
 }
 
 var defaultConfig = `
-color_tags = false
-
 [store]
 type = "bolt"
 file = "~/.config/wdid/wdid.db"

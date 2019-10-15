@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/josler/wdid/config"
 	"github.com/juju/ansiterm"
 )
 
@@ -61,11 +60,6 @@ func NewItemPrinter(ctx context.Context) *ItemPrinter {
 		successColor: color.FgGreen,
 		waitColor:    color.FgWhite,
 		PrintFormat:  GetPrintFormatFromContext(ctx),
-	}
-	conf := ctx.Value("config").(*config.Config)
-
-	if !conf.ColorTags {
-		return base
 	}
 
 	base.hasher = fnv.New32a()
@@ -143,9 +137,9 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 		fmt.Fprintf(w, "Bumped from: %s\n", baseColor.Sprintf("%s", item.PreviousID()))
 	}
 	if len(item.Tags()) != 0 {
-		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", item.Tags()))
+		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", ip.itemTags(item)))
 	}
-	fmt.Fprintf(w, "Data:\n %s\n\n", item.Data())
+	fmt.Fprintf(w, "Data:\n%s\n\n", item.Data())
 }
 
 func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
@@ -199,16 +193,13 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 }
 
 func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item) {
-	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), TrimString(item.Data(), 60), ip.itemTags(item), item.Time().Format("15:04"))
+	dataString := TrimString(strings.Split(item.Data(), "\n")[0], 60)
+	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), dataString, ip.itemTags(item), item.Time().Format("15:04"))
 }
 
 func (ip *ItemPrinter) itemTags(item *Item) string {
 	if len(item.Tags()) == 0 {
 		return ""
-	}
-
-	if ip.hasher == nil {
-		return fmt.Sprintf("%s", item.Tags())
 	}
 
 	tagStrings := []string{}
