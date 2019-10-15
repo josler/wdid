@@ -92,7 +92,7 @@ func TestListFromGroup(t *testing.T) {
 
 func getItemsFromFilters(t *testing.T, store Store, filterString string) []*Item {
 	var items []*Item
-	items, err := listFromFilters(store, filterString)
+	items, err := listFromFilters(store, filterString, false)
 	if err != nil {
 		t.Fatalf("error listing by filters")
 	}

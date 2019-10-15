@@ -2,10 +2,14 @@ package core
 
 import (
 	"context"
+	"fmt"
 	"strings"
 )
 
 func List(ctx context.Context, timeString string, filterString string, groupString string, statuses ...string) error {
+	v := ctx.Value("verbose")
+	isVerbose := v != nil && v.(bool)
+
 	store := ctx.Value("store").(Store)
 	itemPrinter := NewItemPrinter(ctx)
 
@@ -23,7 +27,7 @@ func List(ctx context.Context, timeString string, filterString string, groupStri
 	}
 
 	if filterString != "" {
-		items, err = listFromFilters(store, filterString)
+		items, err = listFromFilters(store, filterString, isVerbose)
 	} else {
 		items, err = listFromFlags(store, timeString, statuses...)
 	}
@@ -32,11 +36,19 @@ func List(ctx context.Context, timeString string, filterString string, groupStri
 	return err
 }
 
-func listFromFilters(store Store, filterString string) ([]*Item, error) {
+func listFromFilters(store Store, filterString string, isVerbose bool) ([]*Item, error) {
 	p := DefaultParser(store)
 	filters, err := p.Parse(filterString)
 	if err != nil {
 		return []*Item{}, err
+	}
+
+	if isVerbose {
+		fmt.Println("Filters:")
+		for _, filter := range filters {
+			fmt.Println(filter)
+		}
+		fmt.Println("")
 	}
 
 	return store.ListFilters(filters)
