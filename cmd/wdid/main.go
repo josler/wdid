@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -77,8 +76,6 @@ var (
 
 	tag     = app.Command("tag", "work with tags.")
 	tagList = app.Command("tag-ls", "List tags.")
-
-	ui = app.Command("ui", "show a UI.")
 )
 
 func main() {
@@ -168,8 +165,6 @@ func main() {
 		err = core.DeleteGroup(ctx, *groupRmName)
 	case groupList.FullCommand():
 		err = core.ListGroup(ctx)
-	case ui.FullCommand():
-		fmt.Println("hi")
 	}
 	app.FatalIfError(err, "")
 }
