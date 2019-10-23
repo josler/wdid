@@ -27,7 +27,7 @@ func (t *Tokenizer) Tokenize(text string) (*TokenResult, error) {
 	var capturedBrackets strings.Builder
 	shouldCapture := false
 	for _, tok := range doc.Tokens() {
-		if strings.HasPrefix(tok.Text, "@") || strings.HasPrefix(tok.Text, "#") {
+		if t.isTagPrefix(tok.Text) {
 			tagMap[tok.Text] = true
 		} else if tok.Text == "[" {
 			shouldCapture = true
@@ -54,4 +54,10 @@ func (t *Tokenizer) Tokenize(text string) (*TokenResult, error) {
 	}
 
 	return &result, nil
+}
+
+func (t *Tokenizer) isTagPrefix(text string) bool {
+	hasAtPrefix := strings.HasPrefix(text, "@") && !strings.HasPrefix(text, "@@")
+	hasHashPrefix := strings.HasPrefix(text, "#") && !strings.HasPrefix(text, "##")
+	return hasAtPrefix || hasHashPrefix
 }
