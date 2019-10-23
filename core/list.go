@@ -8,6 +8,16 @@ import (
 	"github.com/josler/wdid/filter"
 )
 
+func ListWithoutPrinting(ctx context.Context, filter string) ([]*Item, error) {
+	store := ctx.Value("store").(Store)
+
+	var items []*Item
+	var err error
+
+	items, err = listFromFilters(store, filter, true)
+	return items, err
+}
+
 func List(ctx context.Context, argString string, groupString string) error {
 	v := ctx.Value("verbose")
 	isVerbose := v != nil && v.(bool)
