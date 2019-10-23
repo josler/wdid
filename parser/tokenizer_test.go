@@ -54,3 +54,10 @@ func TestTokenizeDuplicates(t *testing.T) {
 		t.Errorf("hashtags not parsed correctly")
 	}
 }
+
+func TestTokenizeMultiplePrefixes(t *testing.T) {
+	result := getResult("This needs to be done, promptly. ##foo @@foo ## @@@")
+	if len(result.Tags) != 0 {
+		t.Errorf("failed to ignore double prefixes")
+	}
+}
