@@ -142,7 +142,7 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 		fmt.Fprintf(w, "Bumped from: %s\n", baseColor.Sprintf("%s", item.PreviousID()))
 	}
 	if len(item.Tags()) != 0 {
-		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", ip.itemTags(item)))
+		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", ip.ItemTags(item)))
 	}
 	fmt.Fprintf(w, "Data:\n%s\n\n", item.Data())
 }
@@ -199,25 +199,29 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 
 func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item, maxTagStringLength int) {
 	dataString := TrimString(strings.Split(item.Data(), "\n")[0], LargestDateLen+ColSpacesLen+ColMinWidth+maxTagStringLength)
-	fmt.Fprintf(w, "%s\t%s\t%s\t\n", ip.doneStatus(item), dataString, ip.itemTags(item))
+	fmt.Fprintf(w, "%s\t%s\t%s\t\n", ip.doneStatus(item), dataString, ip.ItemTags(item))
 }
 
-func (ip *ItemPrinter) itemTags(item *Item) string {
+func (ip *ItemPrinter) ANSIColorOfTag(tag *Tag) int {
+	ip.hasher.Write([]byte(tag.Name()))
+	num := int(ip.hasher.Sum32())
+	ip.hasher.Reset()
+	// find the appropriate color in our wheel
+	num = num % len(ip.colorWheel)
+	return ip.colorWheel[num]
+}
+
+func (ip *ItemPrinter) ItemTags(item *Item) string {
 	if len(item.Tags()) == 0 {
 		return ""
 	}
 
 	tagStrings := []string{}
 	for _, tag := range item.Tags() {
-		ip.hasher.Write([]byte(tag.Name()))
-		num := int(ip.hasher.Sum32())
-
-		// find the appropriate color in our wheel
-		num = num % len(ip.colorWheel)
+		color := ip.ANSIColorOfTag(tag)
 
 		//terminal escape codes are in the format: 38;5;n for the larger range of colors
-		tagStrings = append(tagStrings, ip.tagColor(tag.Name(), []int{38, 5, ip.colorWheel[num]}))
-		ip.hasher.Reset()
+		tagStrings = append(tagStrings, ip.tagColor(tag.Name(), []int{38, 5, color}))
 	}
 
 	return fmt.Sprintf("%s", tagStrings)
