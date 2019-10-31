@@ -23,6 +23,11 @@ const (
 	HumanPrintFormat PrintFormat = 0
 	TextPrintFormat  PrintFormat = 1
 	JSONPrintFormat  PrintFormat = 2
+
+	COL_MIN_WIDTH    int = 7  // minimum column width
+	COL_SPACES_LEN   int = 4  // how many spaces between columns (inc newline col)
+	LARGEST_DATE_LEN int = 17 // length of "- Wed Sep 23" + "00:00"
+	QUOTES_LEN       int = 2  // we have quotes around our data
 )
 
 func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
@@ -91,7 +96,7 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 		return
 	}
 
-	tw := ansiterm.NewTabWriter(w, 7, 0, 1, ' ', 0)
+	tw := ansiterm.NewTabWriter(w, COL_MIN_WIDTH, 0, 1, ' ', 0)
 	defer tw.Flush()
 
 	if len(items) == 1 {
@@ -107,6 +112,8 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 	}
 
 	currDay := items[0].Time().Day() - 1 // set to something different
+	maxTagStringLength := ip.maxTagStringLength(items)
+
 	for _, item := range items {
 		switch ip.PrintFormat {
 		case TextPrintFormat:
@@ -115,10 +122,10 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 			// new day so print header
 			if currDay != item.Time().Day() {
 				fmt.Fprintf(tw, "\t\t\t\n")
-				fmt.Fprintf(tw, "- %s\t\t\t\n", item.Time().Format("Monday January 02"))
+				fmt.Fprintf(tw, "- %s\t\t\t\n", item.Time().Format("Mon Jan 02"))
 				currDay = item.Time().Day()
 			}
-			ip.fPrintItemHuman(tw, item)
+			ip.fPrintItemHuman(tw, item, maxTagStringLength)
 		case JSONPrintFormat:
 			ip.fPrintItemJSON(tw, item)
 		}
@@ -192,8 +199,8 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s\n", buf.String())
 }
 
-func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item) {
-	dataString := TrimString(strings.Split(item.Data(), "\n")[0], 60)
+func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item, maxTagStringLength int) {
+	dataString := TrimString(strings.Split(item.Data(), "\n")[0], LARGEST_DATE_LEN+QUOTES_LEN+COL_SPACES_LEN+COL_MIN_WIDTH+maxTagStringLength)
 	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), dataString, ip.itemTags(item), item.Time().Format("15:04"))
 }
 
@@ -213,6 +220,29 @@ func (ip *ItemPrinter) itemTags(item *Item) string {
 		//terminal escape codes are in the format: 38;5;n for the larger range of colors
 		tagStrings = append(tagStrings, ip.tagColor(tag.Name(), []int{38, 5, ip.colorWheel[num]}))
 		ip.hasher.Reset()
+	}
+
+	return fmt.Sprintf("%s", tagStrings)
+}
+
+func (ip *ItemPrinter) maxTagStringLength(items []*Item) int {
+	maxLength := 0
+	for _, item := range items {
+		if len(ip.rawItemTagsString(item)) > maxLength {
+			maxLength = len(ip.rawItemTagsString(item))
+		}
+	}
+	return maxLength
+}
+
+func (ip *ItemPrinter) rawItemTagsString(item *Item) string {
+	if len(item.Tags()) == 0 {
+		return ""
+	}
+
+	tagStrings := []string{}
+	for _, tag := range item.Tags() {
+		tagStrings = append(tagStrings, tag.Name())
 	}
 
 	return fmt.Sprintf("%s", tagStrings)
