@@ -5,9 +5,14 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 const defaultEditor = "vim"
+
+func NewWithNoContent(filePath string) (string, error) {
+	return EditWithExistingContent(filePath, strings.NewReader(""))
+}
 
 func EditWithExistingContent(filePath string, content io.Reader) (string, error) {
 	err := writeTmpFile(filePath, content)

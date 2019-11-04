@@ -99,7 +99,8 @@ func main() {
 			description = strings.NewReader(*newThing)
 
 		} else {
-			description = os.Stdin
+			err = addNewFromFile(ctx)
+			break
 		}
 		if *addDone {
 			err = core.AddDone(ctx, description, *addTime)
@@ -158,6 +159,21 @@ func editFromFile(ctx context.Context) error {
 		return err
 	}
 	return core.Edit(ctx, *editID, strings.NewReader(data), *editTime)
+}
+
+func addNewFromFile(ctx context.Context) error {
+	fpath := config.ConfigDir() + "/WDID_TEMP"
+
+	data, err := fileedit.NewWithNoContent(fpath)
+	if err != nil {
+		return err
+	}
+	timeString := *editTime
+	if timeString == "" {
+		timeString = "now"
+	}
+
+	return core.Add(ctx, strings.NewReader(data), timeString)
 }
 
 func createStore(conf *config.Config) (core.Store, error) {
