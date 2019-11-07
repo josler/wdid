@@ -24,10 +24,9 @@ const (
 	TextPrintFormat  PrintFormat = 1
 	JSONPrintFormat  PrintFormat = 2
 
-	COL_MIN_WIDTH    int = 7  // minimum column width
-	COL_SPACES_LEN   int = 4  // how many spaces between columns (inc newline col)
-	LARGEST_DATE_LEN int = 17 // length of "- Wed Sep 23" + "00:00"
-	QUOTES_LEN       int = 2  // we have quotes around our data
+	COL_MIN_WIDTH    int = 2  // minimum column width
+	COL_SPACES_LEN   int = 3  // how many spaces between columns (inc newline col)
+	LARGEST_DATE_LEN int = 12 // length of "- Wed Sep 23"
 )
 
 func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
@@ -121,8 +120,8 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 		case HumanPrintFormat:
 			// new day so print header
 			if currDay != item.Time().Day() {
-				fmt.Fprintf(tw, "\t\t\t\n")
-				fmt.Fprintf(tw, "- %s\t\t\t\n", item.Time().Format("Mon Jan 02"))
+				fmt.Fprintf(tw, "\t\t\n")
+				fmt.Fprintf(tw, "- %s\t\t\n", item.Time().Format("Mon Jan 02"))
 				currDay = item.Time().Day()
 			}
 			ip.fPrintItemHuman(tw, item, maxTagStringLength)
@@ -157,7 +156,7 @@ func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
 	if item.PreviousID() != "" {
 		refID = "<-" + item.PreviousID()
 	}
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%q\t%s\n", item.ID(), item.internalID, item.Status(), refID, item.Data(), item.Time().Format(time.RFC3339))
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", item.ID(), item.internalID, item.Status(), refID, item.Data(), item.Time().Format(time.RFC3339))
 }
 
 type JSONItem struct {
@@ -200,8 +199,8 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 }
 
 func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item, maxTagStringLength int) {
-	dataString := TrimString(strings.Split(item.Data(), "\n")[0], LARGEST_DATE_LEN+QUOTES_LEN+COL_SPACES_LEN+COL_MIN_WIDTH+maxTagStringLength)
-	fmt.Fprintf(w, "%s\t%q\t%s\t%v\t\n", ip.doneStatus(item), dataString, ip.itemTags(item), item.Time().Format("15:04"))
+	dataString := TrimString(strings.Split(item.Data(), "\n")[0], LARGEST_DATE_LEN+COL_SPACES_LEN+COL_MIN_WIDTH+maxTagStringLength)
+	fmt.Fprintf(w, "%s\t%s\t%s\t\n", ip.doneStatus(item), dataString, ip.itemTags(item))
 }
 
 func (ip *ItemPrinter) itemTags(item *Item) string {

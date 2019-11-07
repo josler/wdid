@@ -15,7 +15,7 @@ func TrimString(input string, extraCharacterLength int) string {
 	}
 	trimAt = trimAt - extraCharacterLength
 	if len(input) < trimAt {
-		trimAt = len(input)
+		return input
 	}
-	return input[0:trimAt]
+	return input[0:trimAt] + "\u2026"
 }
