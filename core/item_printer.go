@@ -195,7 +195,7 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 	if err != nil {
 		return
 	}
-	fmt.Fprintf(w, "%s\n", buf.String())
+	fmt.Fprintf(w, "%s", buf.String())
 }
 
 func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item, maxTagStringLength int) {
