@@ -180,6 +180,7 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	return outputItems, nil
 }
 
+// TODO(JO): UNUSED
 func (s *BoltStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
 	filters := []filter.Filter{NewDateFilter(filter.FilterEq, t)}
 	if len(statuses) > 0 {
