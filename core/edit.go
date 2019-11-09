@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/josler/wdid/fileedit"
 )
 
 // edit description and time, not status
@@ -39,4 +41,27 @@ func Edit(ctx context.Context, idString string, description io.Reader, timeStrin
 	}
 	NewItemPrinter(ctx).Print(item)
 	return nil
+}
+
+func EditDataFromFile(ctx context.Context, editID string) error {
+	// find the item in question
+	store := ctx.Value("store").(Store)
+	items, err := store.FindAll(editID)
+	if err != nil {
+		return err
+	}
+	if len(items) > 1 {
+		printFormat := GetPrintFormatFromContext(ctx)
+		if printFormat == HumanPrintFormat {
+			fmt.Println("Error: Found multiple matching items:")
+			NewItemPrinter(ctx).Print(items...)
+		}
+		return errors.New("unable to find unique item")
+	}
+
+	data, err := fileedit.EditExisting(items[0].Data())
+	if err != nil {
+		return err
+	}
+	return Edit(ctx, editID, data, "")
 }

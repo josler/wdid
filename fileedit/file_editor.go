@@ -2,27 +2,38 @@ package fileedit
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
+
+	"github.com/josler/wdid/config"
 )
 
 const defaultEditor = "vim"
 
-func EditWithExistingContent(filePath string, content io.Reader) (string, error) {
+func NewWithNoContent() (io.Reader, error) {
+	filePath := config.ConfigDir() + "/WDID_TEMP"
+	return editWithContent(filePath, strings.NewReader(""))
+}
+
+func EditExisting(data string) (io.Reader, error) {
+	filePath := config.ConfigDir() + "/WDID_TEMP"
+	return editWithContent(filePath, strings.NewReader(data))
+}
+
+func editWithContent(filePath string, content io.Reader) (io.Reader, error) {
 	err := writeTmpFile(filePath, content)
 	if err != nil {
-		return "", err
+		return content, err
 	}
 	defer os.Remove(filePath)
 
 	cmd := editorCmd(filePath)
 	err = cmd.Run()
 	if err != nil {
-		return "", err
+		return content, err
 	}
-	data, err := ioutil.ReadFile(filePath)
-	return string(data), err
+	return os.Open(filePath)
 }
 
 func writeTmpFile(fpath string, content io.Reader) error {
