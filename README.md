@@ -1,8 +1,6 @@
 ### Overview
 
-What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items. Alongside this manual tracking, there's an `auto` feature that can help automate fetching information about what you've done.
-
-There's tagging built-in, and the ability to search your items by tag. Using this simple foundational item, you can organise your data however you like.
+What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items. There's tagging built-in, and the ability to filter your items by tag, status, and time. Using these filters, you can organise your data however you like with groups.
 
 This tool both aims to track your most important goals, day-to-day, and help track what you have actually been working on in detail. Often when working we have goals. Goals are easy to track, there's a known outcome ahead of time. What's much harder is answering the question "where did all my time go?". Wdid aims to address that.
 
@@ -20,7 +18,6 @@ Flags:
 
 Commands:
   help [<command>...]
-  auto [<flags>]
   bump [<flags>] <id>
   add [<flags>] [<new-item>]
   do <id>
@@ -364,46 +361,6 @@ or in another filter:
 ```shell
 $ wdid -f "group=my group name,time<this week"
 ```
-
-### Auto
-
-wdid has an `auto` command, where it can pull a list of potential items from various sources, and present them to the user. These can be selected to be turned into full items.
-
-```
-$ wdid auto
-<type to filter>
-<pick options with spacebar>
-<hit enter to finish>
-```
-
-#### Auto-Github
-
-This can be enabled by adding the relevant config:
-
-```
-[[auto]]
-type = "github"
-key = "accesstoken"
-username = "my_username"
-```
-
-Options will then be sourced from Github, any issue or PR the author was involved in that was updated in $time. Issues and PR's that are closed will be auto-marked as "done".
-
-### Auto-GoogleCalendar (WIP)
-
-Enable with the following:
-
-```
-[[auto]]
-type = "calendar"
-username = "jamie@intercom.io"
-```
-
-Where the username is the name of your calendar you want to draw events from. Events that have taken place in the past will create items marked as "done".
-
-Currently this requires a Google Calendar OAuth client secret file placed in `~/.config/wdid/client_secret.json`. You can obtain one of these from Google by setting up a project and enabling calendar API for it. In the future, wdid may provide this.
-
-The first time this runs, it will ask the user for access through OAuth to the calendar, and then save the granted token locally.
 
 ### Configuration
 

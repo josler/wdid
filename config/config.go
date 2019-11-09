@@ -16,38 +16,14 @@ type ConfigStore struct {
 	File string
 }
 
-type ConfigAuto struct {
-	Type     string
-	Key      string
-	Username string
-}
-
-func (ca ConfigAuto) AutoType() string {
-	return ca.Type
-}
-
-func (ca ConfigAuto) AuthKey() string {
-	return ca.Key
-}
-
-func (ca ConfigAuto) AutoUsername() string {
-	return ca.Username
-}
-
 type Config struct {
 	Store ConfigStore
-	Auto  []ConfigAuto
 }
 
 var defaultConfig = `
 [store]
 type = "bolt"
 file = "~/.config/wdid/wdid.db"
-
-#[[auto]]
-#type = "github"
-#key = "apikey"
-#username = "username"
 `
 
 func Load() (*Config, error) {
@@ -79,9 +55,6 @@ func Load() (*Config, error) {
 	var conf Config
 	if _, err := toml.DecodeReader(file, &conf); err != nil {
 		return nil, err
-	}
-	if conf.Auto == nil {
-		conf.Auto = []ConfigAuto{}
 	}
 	return &conf, nil
 }

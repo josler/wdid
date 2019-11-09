@@ -23,9 +23,6 @@ var (
 	v      = app.Flag("verbose", "Enable verbose logging.").Short('v').Bool()
 	format = app.Flag("format", "format to print in ('human', 'text', or 'json).").Default("human").Enum("human", "text", "json")
 
-	auto     = app.Command("auto", "bring up items for automatic suggestion")
-	autoTime = auto.Flag("time", "Time range to search in.").Short('t').PlaceHolder("TIME").Default("0").String()
-
 	bump     = app.Command("bump", "Bump an item to a new time, skipping the existing and creating a new one.")
 	bumpID   = bump.Arg("id", "ID of item to bump.").Required().String()
 	bumpTime = bump.Flag("time", "Time to bump item to the item at.").Short('t').PlaceHolder("TIME").Default("now").String()
@@ -109,12 +106,6 @@ func main() {
 		} else {
 			err = core.Add(ctx, description, *addTime)
 		}
-	case auto.FullCommand():
-		var confs []core.AutoConf
-		for _, c := range conf.Auto { // dance around iface mapping
-			confs = append(confs, c)
-		}
-		err = core.Auto(ctx, *autoTime, confs...)
 	case bump.FullCommand():
 		err = core.Bump(ctx, *bumpID, *bumpTime)
 	case do.FullCommand():
