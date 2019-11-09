@@ -99,8 +99,10 @@ func main() {
 			description = strings.NewReader(*newThing)
 
 		} else {
-			err = addNewFromFile(ctx)
-			break
+			description, err = fileedit.NewWithNoContent()
+			if err != nil {
+				break
+			}
 		}
 		if *addDone {
 			err = core.AddDone(ctx, description, *addTime)
@@ -113,7 +115,7 @@ func main() {
 		err = core.Do(ctx, *doID)
 	case edit.FullCommand():
 		if *editDescription == "" && *editTime == "" {
-			err = editFromFile(ctx)
+			err = core.EditDataFromFile(ctx, *editID)
 		} else {
 			err = core.Edit(ctx, *editID, strings.NewReader(*editDescription), *editTime)
 		}
@@ -140,40 +142,6 @@ func main() {
 		err = core.ListGroup(ctx)
 	}
 	app.FatalIfError(err, "")
-}
-
-func editFromFile(ctx context.Context) error {
-	fpath := config.ConfigDir() + "/WDID_TEMP"
-
-	// find the item in question
-	items, err := core.FindAll(ctx, *editID)
-	if err != nil {
-		return err
-	}
-	if len(items) != 1 {
-		return errors.New("found too many items to edit")
-	}
-
-	data, err := fileedit.EditWithExistingContent(fpath, strings.NewReader(items[0].Data()))
-	if err != nil {
-		return err
-	}
-	return core.Edit(ctx, *editID, strings.NewReader(data), *editTime)
-}
-
-func addNewFromFile(ctx context.Context) error {
-	fpath := config.ConfigDir() + "/WDID_TEMP"
-
-	data, err := fileedit.NewWithNoContent(fpath)
-	if err != nil {
-		return err
-	}
-	timeString := *editTime
-	if timeString == "" {
-		timeString = "now"
-	}
-
-	return core.Add(ctx, strings.NewReader(data), timeString)
 }
 
 func createStore(conf *config.Config) (core.Store, error) {

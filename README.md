@@ -50,10 +50,10 @@ $ wdid add "my task item"
 $ wdid add -t 1 "my task from yesterday that I forgot."
 ```
 
-You can also add from stdin:
+You can also add using an $EDITOR:
 
 ```shell
-$ wdid add < myitem.txt
+$ wdid add
 ```
 
 #### show
