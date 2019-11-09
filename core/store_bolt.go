@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/asdine/storm"
-	"github.com/asdine/storm/q"
 	"github.com/josler/wdid/filter"
 )
 
@@ -28,14 +27,6 @@ type StormTag struct {
 	Name      string `storm:"index,unique"`
 	CreatedAt int64  // timestamp
 	Type      string `storm:"index"`
-}
-
-type StormItemTag struct {
-	RowID        uint64 `storm:"id,increment"`
-	ItemTagIndex string `storm:"index,unique"`
-	ItemID       string `storm:"index"`
-	TagID        string `storm:"index"`
-	CreatedAt    int64  `storm:"index"` // timestamp
 }
 
 type StormGroup struct {
@@ -228,102 +219,6 @@ func (s *BoltStore) ListTags() ([]*Tag, error) {
 	return outputTags, nil
 }
 
-func (s *BoltStore) SaveItemTag(item *Item, tag *Tag) error {
-	itemTag := NewItemTag(item, tag)
-	stormItemTag := s.itemTagToStorm(itemTag)
-	err := s.db.Save(stormItemTag)
-	if err != nil {
-		if err == storm.ErrAlreadyExists {
-			// already exists
-			return nil
-		}
-		return err
-	}
-	return nil
-}
-
-func (s *BoltStore) DeleteItemTag(item *Item, tag *Tag) error {
-	itemTag := NewItemTag(item, tag)
-
-	stormItemTags := []*StormItemTag{}
-	query := s.db.Select(q.Eq("ItemTagIndex", fmt.Sprintf("%s:%s", itemTag.ItemID(), itemTag.TagID())))
-	query.OrderBy("CreatedAt")
-	err := query.Find(&stormItemTags)
-	if err != nil {
-		return err
-	}
-	err = s.db.DeleteStruct(stormItemTags[0])
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *BoltStore) FindItemsWithTag(tag *Tag, limit int) ([]*Item, error) {
-	stormItemTags := []*StormItemTag{}
-	query := s.db.Select(q.Eq("TagID", tag.internalID))
-	if limit > 0 {
-		query.OrderBy("CreatedAt").Limit(limit).Reverse()
-	} else {
-		query.OrderBy("CreatedAt").Reverse()
-	}
-
-	err := query.Find(&stormItemTags)
-	if err != nil {
-		if err == storm.ErrNotFound {
-			return []*Item{}, nil
-		}
-		return []*Item{}, err
-	}
-
-	stormItems := []*StormItem{}
-	ids := []string{}
-	for _, stormItemTag := range stormItemTags {
-		ids = append(ids, stormItemTag.ItemID)
-	}
-	query = s.db.Select(q.In("ID", ids))
-	err = query.Find(&stormItems)
-
-	outputItems := []*Item{}
-	if err != nil {
-		if err == storm.ErrNotFound {
-			return outputItems, nil
-		}
-		return outputItems, err
-	}
-
-	for _, item := range stormItems {
-		parsed, err := s.stormToItem(item)
-		if err != nil {
-			return outputItems, err
-		}
-		outputItems = append(outputItems, parsed)
-	}
-	return outputItems, nil
-}
-
-func (s *BoltStore) DeleteItemTagsWithItem(item *Item) error {
-	stormItemTags := []*StormItemTag{}
-	query := s.db.Select(q.Eq("ItemID", item.ID()))
-	query.OrderBy("CreatedAt")
-	err := query.Find(&stormItemTags)
-	if err != nil {
-		if err == storm.ErrNotFound {
-			// nothing to do
-			return nil
-		}
-		return err
-	}
-	for _, stormItemTag := range stormItemTags {
-		err = s.db.DeleteStruct(stormItemTag)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (s *BoltStore) SaveGroup(group *Group) error {
 	stormGroup := s.groupToStorm(group)
 	if group.internalID != "" {
@@ -436,15 +331,6 @@ func (s *BoltStore) stormToTag(input *StormTag) (*Tag, error) {
 		name:       input.Name,
 		createdAt:  parsedTime,
 	}, nil
-}
-
-func (s *BoltStore) itemTagToStorm(input *ItemTag) *StormItemTag {
-	return &StormItemTag{
-		ItemTagIndex: fmt.Sprintf("%s:%s", input.ItemID(), input.TagID()),
-		ItemID:       input.ItemID(),
-		TagID:        input.TagID(),
-		CreatedAt:    input.CreatedAt().Unix(),
-	}
 }
 
 func (s *BoltStore) groupToStorm(input *Group) *StormGroup {

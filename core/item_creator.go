@@ -51,12 +51,6 @@ func (ic *ItemCreator) Edit(item *Item, data string, timeString string) (*Item, 
 	if err != nil {
 		return nil, err
 	}
-	err = ic.deleteOldItemTags(item)
-	if err != nil {
-		if ic.isVerbose() {
-			fmt.Printf("failed to delete old item tags, continuing. %v\n", err)
-		}
-	}
 	err = ic.maybeNewDescription(item, data)
 	if err != nil {
 		return nil, err
@@ -95,14 +89,7 @@ func (ic *ItemCreator) GenerateAndSaveMetadata(item *Item) error {
 
 func (ic *ItemCreator) Delete(item *Item) error {
 	store := ic.ctx.Value("store").(Store)
-	err := ic.deleteOldItemTags(item)
-	if err != nil {
-		if ic.isVerbose() {
-			fmt.Printf("failed to delete old item tags. %v\n", err)
-		}
-		return err
-	}
-	err = store.Delete(item)
+	err := store.Delete(item)
 	if err != nil {
 		if ic.isVerbose() {
 			fmt.Printf("failed to delete item. %v\n", err)
@@ -120,21 +107,11 @@ func (ic *ItemCreator) saveNewTags(item *Item, tokenResult *parser.TokenResult) 
 		if err != nil {
 			return err
 		}
-		err = store.SaveItemTag(item, tag)
-		if err != nil {
-			return err
-		}
 		if ic.isVerbose() {
 			fmt.Printf("saved tag %s\n", tag.Name())
 		}
 	}
 	return nil
-}
-
-func (ic *ItemCreator) deleteOldItemTags(item *Item) error {
-	store := ic.ctx.Value("store").(Store)
-	item.tags = []*Tag{}
-	return store.DeleteItemTagsWithItem(item)
 }
 
 func (ic *ItemCreator) isVerbose() bool {

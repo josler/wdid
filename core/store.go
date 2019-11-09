@@ -13,7 +13,6 @@ const (
 type Store interface {
 	ItemStore
 	TagStore
-	ItemTagStore
 	GroupStore
 
 	WithContext(ctx context.Context) Store
@@ -32,13 +31,6 @@ type TagStore interface {
 	FindTag(name string) (*Tag, error)
 	SaveTag(tag *Tag) error
 	ListTags() ([]*Tag, error)
-}
-
-type ItemTagStore interface {
-	SaveItemTag(item *Item, tag *Tag) error
-	DeleteItemTag(item *Item, Tag *Tag) error
-	FindItemsWithTag(tag *Tag, limit int) ([]*Item, error)
-	DeleteItemTagsWithItem(item *Item) error
 }
 
 type GroupStore interface {

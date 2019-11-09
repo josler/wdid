@@ -57,7 +57,6 @@ func contextWithStore(f func(ctx context.Context, store Store)) {
 	store := NewBoltStore(db)
 	store.DropBucket("StormItem")
 	store.DropBucket("StormTag")
-	store.DropBucket("StormItemTag")
 	store.DropBucket("StormGroup")
 
 	ctx = context.WithValue(ctx, "store", store)
