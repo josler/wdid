@@ -180,15 +180,6 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	return outputItems, nil
 }
 
-// TODO(JO): UNUSED
-func (s *BoltStore) List(t *Timespan, statuses ...string) ([]*Item, error) {
-	filters := []filter.Filter{NewDateFilter(filter.FilterEq, t)}
-	if len(statuses) > 0 {
-		filters = append(filters, NewStatusFilter(filter.FilterEq, statuses...))
-	}
-	return s.ListFilters(filters)
-}
-
 func (s *BoltStore) FindTag(name string) (*Tag, error) {
 	stormTag := &StormTag{}
 	err := s.db.One("Name", name, stormTag)
