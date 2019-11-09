@@ -24,13 +24,12 @@ func List(ctx context.Context, argString string, groupString string) error {
 			return err
 		}
 
-		argString = strings.Join([]string{argString, group.FilterString}, ",")
-		argString = strings.TrimPrefix(argString, ",")
+		argString = strings.TrimPrefix(group.FilterString, ",")
 	}
 
-	items, err = listFromFilters(store, argString, isVerbose)
+	items, err = listFromTimeString(store, argString)
 	if err != nil {
-		items, err = listFromTimeString(store, argString)
+		items, err = listFromFilters(store, argString, isVerbose)
 	}
 
 	itemPrinter.Print(items...)

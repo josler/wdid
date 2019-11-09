@@ -20,7 +20,6 @@ func contextWithStore(store core.Store) context.Context {
 func withFreshBoltStore(boltStore *core.BoltStore, f func()) {
 	boltStore.DropBucket("StormItem")
 	boltStore.DropBucket("StormTag")
-	boltStore.DropBucket("StormItemTag")
 	boltStore.DropBucket("StormGroup")
 	f()
 }
@@ -49,10 +48,6 @@ func tests() map[string]storeTest {
 		"saveTag":                       saveTag,
 		"findTag":                       findTag,
 		"listTags":                      listTags,
-		"saveItemTag":                   saveItemTag,
-		"deleteItemTag":                 deleteItemTag,
-		"findItemsWithTag":              findItemsWithTag,
-		"deleteItemTagsWithItem":        deleteItemTagsWithItem,
 		"saveGroup":                     saveGroup,
 		"deleteGroup":                   deleteGroup,
 		"listGroups":                    listGroups,
@@ -203,9 +198,6 @@ func setupTagAndItems(store core.Store) {
 	skippedItem := core.NewItem("#mytag skipped", time.Now())
 	skippedItem.Skip()
 	store.Save(skippedItem)
-
-	store.SaveItemTag(item, tag)
-	store.SaveItemTag(skippedItem, tag)
 }
 
 func listFilters(t *testing.T, store core.Store) {
@@ -401,79 +393,6 @@ func listTags(t *testing.T, store core.Store) {
 
 	if found[0].Name() != tagone.Name() || found[1].Name() != tagtwo.Name() {
 		t.Errorf("failed to list tags in order")
-	}
-}
-
-func saveItemTag(t *testing.T, store core.Store) {
-	tag := core.NewTag("mytag")
-	item := core.NewItem("my item", time.Now())
-
-	err := store.SaveItemTag(item, tag)
-	if err != nil {
-		t.Errorf("failed to save item tag")
-	}
-
-	err = store.SaveItemTag(item, tag)
-	if err != nil {
-		t.Errorf("failed to save duplicate")
-	}
-}
-
-func deleteItemTag(t *testing.T, store core.Store) {
-	tag := core.NewTag("mytag")
-	item := core.NewItem("my item", time.Now())
-
-	err := store.SaveItemTag(item, tag)
-	if err != nil {
-		t.Errorf("failed to save item tag")
-	}
-	err = store.DeleteItemTag(item, tag)
-	if err != nil {
-		t.Errorf("failed to delete item tag")
-	}
-}
-
-func findItemsWithTag(t *testing.T, store core.Store) {
-	tag := core.NewTag("mytag")
-	store.SaveTag(tag)
-	item := core.NewItem("my item", time.Now())
-	store.Save(item)
-	itemtwo := core.NewItem("my second item", time.Now())
-	store.Save(itemtwo)
-	itemthree := core.NewItem("my third item", time.Now())
-	store.Save(itemthree)
-
-	store.SaveItemTag(item, tag)
-	store.SaveItemTag(itemtwo, tag)
-
-	items, err := store.FindItemsWithTag(tag, -1)
-	if err != nil || len(items) != 2 {
-		t.Errorf("failed to find items with tag")
-	}
-	if items[0].Data() != "my item" {
-		t.Errorf("found wrong item through tag")
-	}
-	if items[1].Data() != "my second item" {
-		t.Errorf("found wrong item through tag")
-	}
-}
-
-func deleteItemTagsWithItem(t *testing.T, store core.Store) {
-	tag := core.NewTag("mytag")
-	item := core.NewItem("my item", time.Now())
-	store.SaveTag(tag)
-
-	err := store.SaveItemTag(item, tag)
-	if err != nil {
-		t.Errorf("failed to save item tag")
-	}
-	err = store.DeleteItemTagsWithItem(item)
-	if err != nil {
-		t.Errorf("failed to delete item tag")
-	}
-	items, err := store.FindItemsWithTag(tag, -1)
-	if err != nil && len(items) != 0 {
-		t.Errorf("failed to delete all item tags!")
 	}
 }
 
