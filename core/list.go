@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
+	"github.com/josler/wdid/filter"
 )
 
-func List(ctx context.Context, timeString string, filterString string, groupString string, statuses ...string) error {
+func List(ctx context.Context, argString string, groupString string) error {
 	v := ctx.Value("verbose")
 	isVerbose := v != nil && v.(bool)
 
@@ -22,14 +24,13 @@ func List(ctx context.Context, timeString string, filterString string, groupStri
 			return err
 		}
 
-		filterString = strings.Join([]string{filterString, group.FilterString}, ",")
-		filterString = strings.TrimPrefix(filterString, ",")
+		argString = strings.Join([]string{argString, group.FilterString}, ",")
+		argString = strings.TrimPrefix(argString, ",")
 	}
 
-	if filterString != "" {
-		items, err = listFromFilters(store, filterString, isVerbose)
-	} else {
-		items, err = listFromFlags(store, timeString, statuses...)
+	items, err = listFromFilters(store, argString, isVerbose)
+	if err != nil {
+		items, err = listFromTimeString(store, argString)
 	}
 
 	itemPrinter.Print(items...)
@@ -54,10 +55,12 @@ func listFromFilters(store Store, filterString string, isVerbose bool) ([]*Item,
 	return store.ListFilters(filters)
 }
 
-func listFromFlags(store Store, timeString string, statuses ...string) ([]*Item, error) {
+func listFromTimeString(store Store, timeString string) ([]*Item, error) {
 	from, err := TimeParser{Input: timeString}.Parse()
 	if err != nil {
 		return []*Item{}, err
 	}
-	return store.List(from, statuses...)
+
+	filters := []filter.Filter{NewDateFilter(filter.FilterEq, from)}
+	return store.ListFilters(filters)
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/asdine/storm"
+	"github.com/josler/wdid/filter"
 	"gotest.tools/assert"
 )
 
@@ -68,7 +69,8 @@ func contextWithStore(f func(ctx context.Context, store Store)) {
 // mostRecentItem returns the most recent item chronologically in the store, up until time.Now()
 // it does not deal with insertion order
 func mostRecentItem(store Store) *Item {
-	items, err := store.List(NewTimespan(time.Unix(0, 0), time.Now()))
+	filters := []filter.Filter{NewDateFilter(filter.FilterEq, NewTimespan(time.Unix(0, 0), time.Now()))}
+	items, err := store.ListFilters(filters)
 	if err != nil {
 		panic(err)
 	}

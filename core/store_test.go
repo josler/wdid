@@ -109,7 +109,9 @@ func list(t *testing.T, store core.Store) {
 	if err != nil {
 		t.Fatalf("error %s", err)
 	}
-	items, _ := store.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()))
+	timespan := core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now())
+	filters := []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan)}
+	items, _ := store.ListFilters(filters)
 	if len(items) != 1 {
 		t.Fatalf("error: no items found")
 	}
@@ -123,7 +125,9 @@ func listEmptyShouldNotError(t *testing.T, store core.Store) {
 	// it only fails when there has been at least one write.
 	item := core.NewItem("some data", time.Now().Add(-1*time.Minute))
 	store.Save(item)
-	items, err := store.List(core.NewTimespan(time.Now().Add(24*time.Hour), time.Now().Add(48*time.Hour)))
+	timespan := core.NewTimespan(time.Now().Add(24*time.Hour), time.Now().Add(48*time.Hour))
+	filters := []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan)}
+	items, err := store.ListFilters(filters)
 	if len(items) != 0 {
 		t.Fatalf("error: items found when they shouldn't have been")
 	}
@@ -140,7 +144,9 @@ func listDate(t *testing.T, store core.Store) {
 	store.Save(core.NewItem("4", now.Add(24*time.Hour)))
 	store.Save(core.NewItem("5", now.Add(1*time.Second))) // should not pick this up as it's greater than end time
 
-	items, _ := store.List(core.NewTimespan(now.Add(-36*time.Hour), now))
+	timespan := core.NewTimespan(time.Now().Add(-36*time.Hour), now)
+	filters := []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan)}
+	items, _ := store.ListFilters(filters)
 	if len(items) != 2 {
 		t.Fatalf("error: not all items found")
 	}
@@ -161,7 +167,9 @@ func listStatus(t *testing.T, store core.Store) {
 	skippedItem.Skip()
 	store.Save(skippedItem)
 
-	items, _ := store.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), core.WaitingStatus, core.SkippedStatus)
+	timespan := core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now())
+	filters := []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan), core.NewStatusFilter(filter.FilterEq, core.WaitingStatus, core.SkippedStatus)}
+	items, _ := store.ListFilters(filters)
 	if len(items) != 2 {
 		t.Fatalf("error: not all items found")
 	}
@@ -172,7 +180,9 @@ func listStatus(t *testing.T, store core.Store) {
 		t.Errorf("error data not matching")
 	}
 
-	items, _ = store.List(core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now()), core.DoneStatus)
+	timespan = core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now())
+	filters = []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan), core.NewStatusFilter(filter.FilterEq, core.DoneStatus)}
+	items, _ = store.ListFilters(filters)
 	if len(items) != 1 {
 		t.Fatalf("error: not all items found")
 	}

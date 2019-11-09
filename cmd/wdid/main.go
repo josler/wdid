@@ -55,15 +55,10 @@ var (
 	importCmd      = app.Command("import", "Import items from a file or stdin.")
 	importFilename = importCmd.Arg("in", "Filename to import from, if omitted, stdin used").String()
 
-	list         = app.Command("ls", "List the items you're tracking.").Alias("list").Default()
-	listDone     = list.Flag("done", "Only list items with status = done.").Short('d').Bool()
-	listWaiting  = list.Flag("waiting", "Only list items with status = waiting.").Short('w').Bool()
-	listSkipped  = list.Flag("skipped", "Only list items with status = skipped.").Short('s').Bool()
-	listBumped   = list.Flag("bumped", "Only list items with status = bumped.").Short('b').Bool()
-	listFilter   = list.Flag("filter", "Filter the results").Short('f').String()
-	listGroup    = list.Flag("group", "List items in a group").Short('g').String()
-	listTime     = list.Arg("time", "Time range to search in.").Default("0").String()
-	listTimeFlag = list.Flag("time", "Time range to search in.").Short('t').String()
+	list       = app.Command("ls", "List the items you're tracking.").Alias("list").Default()
+	listFilter = list.Flag("filter", "Filter the results").Short('f').String()
+	listGroup  = list.Flag("group", "List items in a group").Short('g').String()
+	listArg    = list.Arg("filters", "Filter your items.").Default("0").String()
 
 	rm   = app.Command("rm", "Remove (permanently!) a single item.").Alias("delete")
 	rmID = rm.Arg("id", "ID of item to remove.").Required().String()
@@ -133,24 +128,10 @@ func main() {
 	case importCmd.FullCommand():
 		err = core.Import(ctx, *importFilename)
 	case list.FullCommand():
-		statuses := []string{}
-		if *listBumped {
-			statuses = append(statuses, core.BumpedStatus)
+		if *listFilter != "" {
+			*listArg = *listFilter // temporary override
 		}
-		if *listDone {
-			statuses = append(statuses, core.DoneStatus)
-		}
-		if *listWaiting {
-			statuses = append(statuses, core.WaitingStatus)
-		}
-		if *listSkipped {
-			statuses = append(statuses, core.SkippedStatus)
-		}
-		if *listTimeFlag != "" {
-			err = core.List(ctx, *listTimeFlag, *listFilter, *listGroup, statuses...)
-		} else {
-			err = core.List(ctx, *listTime, *listFilter, *listGroup, statuses...)
-		}
+		err = core.List(ctx, *listArg, *listGroup)
 	case rm.FullCommand():
 		err = core.Rm(ctx, *rmID)
 	case skip.FullCommand():

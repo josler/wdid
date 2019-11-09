@@ -10,8 +10,6 @@ This tool both aims to track your most important goals, day-to-day, and help tra
 $ wdid help
 usage: wdid [<flags>] <command> [<args> ...]
 
-usage: wdid [<flags>] <command> [<args> ...]
-
 A tool to track what you did.
 
 Flags:
@@ -31,7 +29,7 @@ Commands:
   group-rm --name=NAME
   group-ls
   import [<in>]
-  ls* [<flags>] [<time>]
+  ls* [<flags>] [<filters>]
   rm <id>
   skip <id>
   show <id>
@@ -91,6 +89,20 @@ You can edit the description or the time of an item. For example, to change the 
 $ wdid edit a9fi3q "my new description" -t day
 ```
 
+If you do not provide a new description but just the time, wdid will just update that:
+
+```shell
+$ wdid edit a9fi3q -t day
+```
+
+#### [BETA] Edit in editor
+
+If you don't provide a time or a description, wdid will open the item in an editor (currently: vim).
+
+```shell
+$ wdid edit a9fi3q
+```
+
 #### list
 
 `ls` or `list` is the default subcommand, listing all tasks from a period of time (default today).
@@ -108,21 +120,6 @@ You can also pass time structures to the list command.
 $ wdid list week # all tasks from this week
 ⇒ a9fi3q  "my task from yesterday that I forgot."           Mon, 26 Mar 2018 00:00:00
 ⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40
-```
-
-You can list by item status too:
-
-```shell
-$ wdid ls -d # done tasks from this week
-$ wdid ls -s # skipped tasks from this week
-$ wdid ls -w # waiting tasks from this week
-$ wdid ls -b # bumped tasks from this week
-```
-
-These can also be combined:
-
-```shell
-$ wdid list -sb month # skipped and bumped tasks from this month
 ```
 
 There's also an advanced listing filter language, please see details below.
@@ -317,16 +314,16 @@ You can then search for items with particular tags using our advanced listing.
 
 ### Advanced listing
 
-There's a basic filter/query language built into wdid. You can use it to filter results in a more powerful way that the presets. To use it, pass the `--filter, -f` flag:
+There's a basic filter/query language built into wdid. You can use it to filter results in a more powerful way that the presets. To use it, pass an argument in filter form (passing a flag `--filter` also works):
 
 ```shell
-$ wdid list --filter "tag=#pr,status=waiting,time=week" # show me all of the items tagged "#pr", with a status of "waiting" from this week.
+$ wdid "tag=#pr,status=waiting,time=week" # show me all of the items tagged "#pr", with a status of "waiting" from this week.
 
-# we don't need the "list" command either, as it's default
-$ wdid -f "tag=#pr,tag=@josler" # show me all of the items tagged "#pr" and "@josler"
+# show me all of the items tagged "#pr" and "@josler"
+$ wdid "tag=#pr,tag=@josler"
 
 # listing items not done within a group
-$ wdid -f "status!=done,group=my group"
+$ wdid "status!=done,group=my group"
 ```
 
 The format of this filter is: `{type_of_filter}{conditional}{value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, `time`, and `group`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above. The group filter uses the group name.
@@ -342,11 +339,11 @@ Please note that `<` and `>` are _inclusive_ (so really `>=`).
 
 ```shell
 $ wdid -f "tag!=#pr,tag=@josler,time<this week" # show me all of the items _not_ tagged #pr but tagged @josler, earlier than this week
+```
 
+Note that a status filter like `"status=done,status=bumped"` will never match, an item can't be done and waiting.
 
-Please note this is *mutually exclusive* with the flags for filtering by status directly, and the regular time filter as well.
-
-#### [Beta Feature] Status OR
+#### [BETA] Status OR
 
 Currently testing OR filtering for statuses as a shorthand:
 

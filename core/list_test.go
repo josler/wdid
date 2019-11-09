@@ -83,7 +83,7 @@ func TestListFromGroup(t *testing.T) {
 		Add(ctx, strings.NewReader("same #hashtag"), "2018-08-10")
 
 		CreateGroup(ctx, "my group", "tag=#hashtag")
-		err := List(ctx, "", "", "my group")
+		err := List(ctx, "", "my group")
 		if err != nil {
 			t.Errorf("failed to list from group")
 		}
