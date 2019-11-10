@@ -133,7 +133,6 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 
 func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s -- %v\n", ip.doneStatus(item), item.Time().Format("Mon, 02 Jan 2006 15:04:05"))
-	fmt.Fprintf(w, "InternalID: %s\n", item.internalID)
 	baseColor := color.New(color.Bold)
 	baseColor.EnableColor()
 	if item.NextID() != "" {

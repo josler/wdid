@@ -1,8 +1,58 @@
+[Documentation](https://j-osler.gitbook.io/wdid/)
+
 ### Overview
 
-What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items. There's tagging built-in, and the ability to filter your items by tag, status, and time. Using these filters, you can organise your data however you like with groups.
+What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items. There's tagging built in, and the ability to list and filter your items by tag, status, and time. Using these filters, you can organise your data however you like with groups. It's very fast and flexible. Here's a sample of what you can do (run it yourself to see the lovely colors!), though you can do an awful lot more; such as organising projects, areas of work, time frames, taking notes etc...
 
-This tool both aims to track your most important goals, day-to-day, and help track what you have actually been working on in detail. Often when working we have goals. Goals are easy to track, there's a known outcome ahead of time. What's much harder is answering the question "where did all my time go?". Wdid aims to address that.
+#### Add an item
+
+```
+$ wdid add "my item for #project"
+⇒ w9hjba -- Fri, 09 Nov 2019 15:03:08
+Tags: [#project]
+Data:
+my item for #project
+```
+
+#### List items with filters
+
+```
+$ wdid "tag=#project,status=waiting"
+
+- Thu Nov 07
+⇒ o2wjb9     send email to @josler about #project [@josler #project]
+
+- Fri Nov 08
+⇒ w9hjba     my item for #project                 [#project]
+```
+
+#### Take action on items
+
+```
+$ wdid do o2w
+✔ o2wjb9 -- Thu, 07 Nov 2019 00:00:00
+Tags: [@josler #project]
+Data:
+send email to @josler about #project
+```
+
+### Why command line?
+
+I spend much of my time with a terminal open. It's right there, always a cmd-tab away. Being able to quickly record notes without having a website open, or having some app consuming memory is really useful. I also want to make sure that the data is easily accessible, and works with other tools wherever possible. Building on the command line enables that "for free". Your data is exportable, and we have different output formats for both humans to consume and for interop with various tools (json and structured text outputs!)
+
+### Why personal?
+
+This is a tool to track your personal to-do's, work done, notes, etc. It deliberately eschews complexity added by networking, sharing, and large-scale project management. In doing this it can remain, small, simple, fast, and useful.
+
+### Installation
+
+```
+go get -u github.com/josler/wdid/...
+```
+
+### Usage
+
+See [documentation](https://j-osler.gitbook.io/wdid/) for more.
 
 ```
 $ wdid help
@@ -32,346 +82,4 @@ Commands:
   show <id>
   tag
   tag-ls
-```
-
-### Installation
-
-```
-go get -u github.com/josler/wdid/...
-```
-
-
-### Usage
-
-#### add
-
-```shell
-$ wdid add "my task item"
-$ wdid add -t 1 "my task from yesterday that I forgot."
-```
-
-You can also add using an $EDITOR:
-
-```shell
-$ wdid add
-```
-
-#### show
-
-Calling `show` with an ID shows more detail on the item.
-
-```shell
-$ wdid show a9fi3q
-⇒ a9fi3q -- Mon, 26 Mar 2018 00:00:00
-InternalID: recJyUxvMHSao4xZ9
-Data:
- my task from yesterday that I forgot.
-```
-
-You can also just a prefix for the ID, and wdid will attempt to match the correct one - within a time frame of the last 14 days.
-
-```shell
-$ wdid show a9f
-⇒ a9fi3q -- Mon, 26 Mar 2018 00:00:00
-InternalID: recJyUxvMHSao4xZ9
-Data:
- my task from yesterday that I forgot.
-```
-
-#### edit
-
-You can edit the description or the time of an item. For example, to change the description and set the time to the start of today:
-
-```shell
-$ wdid edit a9fi3q "my new description" -t day
-```
-
-If you do not provide a new description but just the time, wdid will just update that:
-
-```shell
-$ wdid edit a9fi3q -t day
-```
-
-#### [BETA] Edit in editor
-
-If you don't provide a time or a description, wdid will open the item in an editor (currently: vim).
-
-```shell
-$ wdid edit a9fi3q
-```
-
-#### list
-
-`ls` or `list` is the default subcommand, listing all tasks from a period of time (default today).
-
-```shell
-$ wdid
-⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40
-$ wdid ls # equivalent
-⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40
-```
-
-You can also pass time structures to the list command.
-
-```shell
-$ wdid list week # all tasks from this week
-⇒ a9fi3q  "my task from yesterday that I forgot."           Mon, 26 Mar 2018 00:00:00
-⇒ l72i3q  "my task item"                                    Tue, 27 Mar 2018 19:10:40
-```
-
-There's also an advanced listing filter language, please see details below.
-
-#### do
-
-Items in wdid can be in one of four states:
-
-- waiting: items to be worked on.
-- skipped: items that have been skipped/dropped and no longer are waiting to be done.
-- bumped: items that have been bumped forward (carried over) to another time.
-- done: items that have been completed.
-
-Items start in a waiting state, and then can be moved to done with `do`, and be marked with a green tick:
-
-```shell
-$ wdid do a9f
-✔ a9fi3q -- Mon, 26 Mar 2018 00:00:00
-InternalID: recJyUxvMHSao4xZ9
-Data:
- my task from yesterday that I forgot.
-```
-
-#### skip
-
-Items can be moved to skipped with `skip`, and be marked with a red x:
-
-```shell
-$ wdid skip a9f
-✘ a9fi3q -- Mon, 26 Mar 2018 00:00:00
-InternalID: recJyUxvMHSao4xZ9
-Data:
- my task from yesterday that I forgot.
-```
-
-#### bump
-
-Items can be bumped or carried forward with `bump`. This will return a new 'waiting' item, linked to the old one:
-
-```shell
-$ wdid bump a9f
-⇒ i3nh99 -- Tue, 27 Mar 2018 19:20:44
-InternalID: recjj9d4MH3QmI73t
-Bumped from: a9fi3q
-Data:
- my task from yesterday that I forgot.
-```
-
-The old item gets marked as bumped, have a reference to the new item, and be marked with a yellow ⇒:
-
-```shell
-$ wdid show a9f
-⇒ a9fi3q -- Mon, 26 Mar 2018 00:00:00
-InternalID: recJyUxvMHSao4xZ9
-Bumped to: i3nh99
-Data:
- my task from yesterday that I forgot.
-```
-
-Times can also be passed to the `bump` command to bump to a paricular time:
-
-```shell
-$ wdid bump yyt week # bump a task from the past to the start of the week.
-```
-
-#### rm
-
-Items can also be hard deleted. Gone forever.
-
-```shell
-$ wdid rm i3nh99
-```
-
-#### tag-ls
-
-Items can be tagged, and we can use the tag list command to show all tags we've created so far (not which items were tagged, but the tags themselves).
-
-```shell
-$ wdid tag-ls
-@josler
-#pr
-#meeting
-```
-
-You can search for items by tag with our advanced listing filter language, please see below. More details of how tags work can also be found below.
-
-
-#### group
-
-Create a group of items defined by a set of filters. Please see below for filter language definition.
-
-```shell
-$ wdid group -n "my group name" -f "status=done,time=week,tag=@josler"
-```
-
-Both `--name` and `--filter` are required.
-
-#### group-ls
-
-List groups via the group list command.
-
-```shell
-$ wdid group-ls
-prs: "tag=#pr,time=this week"
-o11y: "tag=#o11y,status!=done"
-```
-
-#### group-rm
-
-Groups can be deleted:
-
-```shell
-$ wdid group-rm --name prs
-```
-
-### Viewing Data
-
-Data can be printed in a couple of different ways. The two supported formats are "text", "human", and JSON. The text format is tab-delimited and useful for parsing with other command line tools, whereas the human format is easier to read for humans (colored, unicode characters, more detail when viewing single items). The 
-"json" format prints items in JSON Line format, one item per line (`\n`). The default is "human". To change, pass a "format" flag: `wdid list --format=text week`.
-
-The text format is especially helpful for exporting and importing data:
-
-#### export
-
-Data can be exported to text through the list command with text format. For example, to write the last 14 days worth of data to text, you can use the following:
-
-```shell
-wdid list --format=text 14 > file.txt
-```
-
-To view, `column` works nicely:
-
-```shell
-column -t -s $'\t' file.txt
-```
-
-#### import
-
-Data can be imported in text format from a file or stdin.
-
-```shell
-wdid import file.txt
-```
-
-```shell
-cat file.txt | wdid import
-```
-
-Imported items will overwrite duplicates of that item.
-
-### Time parsing
-
-Times can be passed in the following formats:
-
-- `now`: Now until end of day.
-- `0`: Start of today (midnight in your TZ) - equates to "today" when searching. Equivalent to `day`. Ends end of today.
-- Integer n (e.g. `1`, `6`): start of the day, n days ago - equates to "in the last n days" when searching. Ends end of today.
-- `day`: Start of today (midnight in your TZ). Equivalent to `1`. Ends end of today.
-- `week`: Start of the week (monday, midnight in your TZ) - equates to "in the last week" when searching. Ends end of the week.
-- `month`: Start of the month (first day of month, midnight in your TZ) - equates to "in the last month" when searching. Ends end of the month.
-- `yesterday`: Yesterday.
-- `today`: Today.
-- `tomorrow`: Tomorrow.
-- `monday`: Start Monday of _this week_. Ends end of that day. Same for every day of the week. Can also use short forms like `tue` or `tues`.
-- `this monday`: Start Monday of _this week_. Ends that day.
-- `next monday` Start Monday of _next week_. Ends that day.
-- `last monday` Start Monday of _last week_. Ends that day.
-- `last week` Start at start of previous week, end at end of that week.
-- `next week` Start at start of next week, end at end of that week.
-- `last month` Start at start of last month, end at end of that month.
-- `next month` Start at start of next month, end at end of that month.
-- `YYYY-MM-DD` (`2006-01-02` in Go time format): Start of given day in your TZ. Ends end of that day.
-- `YYYY-MM-DDTHH:MM`: particular time on a day in your TZ. Ends end of that day.
-
-Note that these times cover a _range_ of values. Usually from the start of the indicated day (00:00) to the end of the day (23:59) at the end of the period, inclusive.
-
-When adding items, or setting the time for an item, wdid uses the _start_ of the period to do so. When searching for items, wdid uses the range. This sounds more complicated than it is, in practise it does what you'd expect.
-
-### Tags
-
-Wdid supports using tags to mark items, but the way it does this is not through manual tagging, but by parsing the item text itself. There are several ways to indicate through text that you'd like an item to have a tag.
-
-```shell
-$ wdid add "send invoice #project1 #billing" # two tags, "#project1" and "#billing".
-$ wdid add "ask @josler to work more" # tag "@josler"
-$ wdid add "[tag, another]" # two tags, "#tag" and "#another"
-```
-
-In general, any word with a preceeding '#' or '@' will be used as a tag, and anything within square brackets as well (anything without a leading '#' or '@' will have a '#' added). The leading '#' or '@' is part of the tag name.
-
-You can then search for items with particular tags using our advanced listing.
-
-### Advanced listing
-
-There's a basic filter/query language built into wdid. You can use it to filter results in a more powerful way that the presets. To use it, pass an argument in filter form (passing a flag `--filter` also works):
-
-```shell
-$ wdid "tag=#pr,status=waiting,time=week" # show me all of the items tagged "#pr", with a status of "waiting" from this week.
-
-# show me all of the items tagged "#pr" and "@josler"
-$ wdid "tag=#pr,tag=@josler"
-
-# listing items not done within a group
-$ wdid "status!=done,group=my group"
-```
-
-The format of this filter is: `{type_of_filter}{conditional}{value}`, with commas `,` separating each filter. The supported types of filter at this time are: `tag`, `status`, `time`, and `group`. The tag and status values are self-explanatory, and the value for a time filter is of the time format specified above. The group filter uses the group name.
-
-Currently, these filters are an AND filter - they must all be true. Further, there are limits to which conditional can be used with each type:
-
-* `=` - `tag`, `status`, `time`, `group`
-* `!=` - `tag`, `status`, `group`
-* `>` - `time`
-* `<` - `time`
-
-Please note that `<` and `>` are _inclusive_ (so really `>=`).
-
-```shell
-$ wdid -f "tag!=#pr,tag=@josler,time<this week" # show me all of the items _not_ tagged #pr but tagged @josler, earlier than this week
-```
-
-Note that a status filter like `"status=done,status=bumped"` will never match, an item can't be done and waiting.
-
-#### [BETA] Status OR
-
-Currently testing OR filtering for statuses as a shorthand:
-
-```shell
-$ wdid -f "status=done|skipped|bumped" # functionally equivalent to "status!=waiting"
-```
-
-### Groups
-
-Filters really become powerful when used with Groups. Wdid allows the user to create a predefined set of filters in a group, and then refer to those within other filters. Using the `wdid group` command to create a group with some filters, and then referring to it by name:
-
-```shell
-$ wdid ls -g "my group name"
-```
-
-or in another filter:
-
-```shell
-$ wdid -f "group=my group name,time<this week"
-```
-
-### Configuration
-
-Wdid should work out of the box with some sensible defaults. On first run it will populate a configuration file under `~/.config/wdid/config.toml`. This, by default, sets local storage up using [boltdb](https://github.com/coreos/bbolt).
-
-#### Cross-Device Syncing
-
-Currently, the suggested way to do this is to change the config file to point the store to somewhere that gets synced via an external method. For example, Dropbox works well:
-
-```toml
-[store]
-type = "bolt"
-file = "~/Dropbox/wdid.db"
 ```
