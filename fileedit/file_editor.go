@@ -52,7 +52,10 @@ func editorCmd(filePath string) *exec.Cmd {
 	if editorPath == "" {
 		editorPath = defaultEditor
 	}
-	editor := exec.Command(editorPath, filePath)
+	splitPath := strings.Split(editorPath, " ")
+	splitPath = append(splitPath, filePath)
+	// we always have at least 2 elements. the editor path and the filepath
+	editor := exec.Command(splitPath[0], splitPath[1:]...)
 
 	editor.Stdin = os.Stdin
 	editor.Stdout = os.Stdout
