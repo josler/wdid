@@ -1,8 +1,6 @@
 module github.com/josler/wdid
 
 require (
-	cloud.google.com/go v0.24.0 // indirect
-	github.com/AlecAivazis/survey v1.5.3
 	github.com/BurntSushi/toml v0.3.0
 	github.com/DataDog/zstd v1.3.4 // indirect
 	github.com/Sereal/Sereal v0.0.0-20190618215532-0b8ac451a863 // indirect
@@ -15,14 +13,11 @@ require (
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.0 // indirect
-	github.com/google/go-github v15.0.0+incompatible
-	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
-	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mingrammer/commonregex v1.0.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/neurosnap/sentences v1.0.6 // indirect
@@ -31,14 +26,11 @@ require (
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
 	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
-	golang.org/x/oauth2 v0.0.0-20180416194528-6881fee410a5
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
 	gonum.org/v1/gonum v0.0.0-20180814074008-f4b55da7eefa // indirect
 	gonum.org/v1/netlib v0.0.0-20180816165226-ebcc3d2662d3 // indirect
-	google.golang.org/api v0.0.0-20180702000508-e0f3bfad2532
 	google.golang.org/appengine v1.0.0 // indirect
-	gopkg.in/AlecAivazis/survey.v1 v1.5.3 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/jdkato/prose.v2 v2.0.0-20180723191954-597d4355f5c8
 	gopkg.in/neurosnap/sentences.v1 v1.0.6 // indirect
