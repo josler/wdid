@@ -24,9 +24,9 @@ const (
 	TextPrintFormat  PrintFormat = 1
 	JSONPrintFormat  PrintFormat = 2
 
-	COL_MIN_WIDTH    int = 2  // minimum column width
-	COL_SPACES_LEN   int = 3  // how many spaces between columns (inc newline col)
-	LARGEST_DATE_LEN int = 12 // length of "- Wed Sep 23"
+	ColMinWidth    int = 2  // minimum column width
+	ColSpacesLen   int = 3  // how many spaces between columns (inc newline col)
+	LargestDateLen int = 12 // length of "- Wed Sep 23"
 )
 
 func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
@@ -95,7 +95,7 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 		return
 	}
 
-	tw := ansiterm.NewTabWriter(w, COL_MIN_WIDTH, 0, 1, ' ', 0)
+	tw := ansiterm.NewTabWriter(w, ColMinWidth, 0, 1, ' ', 0)
 	defer tw.Flush()
 
 	if len(items) == 1 {
@@ -198,7 +198,7 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 }
 
 func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item, maxTagStringLength int) {
-	dataString := TrimString(strings.Split(item.Data(), "\n")[0], LARGEST_DATE_LEN+COL_SPACES_LEN+COL_MIN_WIDTH+maxTagStringLength)
+	dataString := TrimString(strings.Split(item.Data(), "\n")[0], LargestDateLen+ColSpacesLen+ColMinWidth+maxTagStringLength)
 	fmt.Fprintf(w, "%s\t%s\t%s\t\n", ip.doneStatus(item), dataString, ip.itemTags(item))
 }
 

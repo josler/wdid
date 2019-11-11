@@ -66,7 +66,6 @@ var (
 	show   = app.Command("show", "Show a single item.")
 	showID = show.Arg("id", "ID of item to show.").Required().String()
 
-	tag     = app.Command("tag", "work with tags.")
 	tagList = app.Command("tag-ls", "List tags.")
 )
 
