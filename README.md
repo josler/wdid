@@ -4,6 +4,8 @@
 
 What Did I Do (wdid) is a small CLI tool to track what you have been working on. You can `add`, `list`, `edit`, `do`, `skip`, `bump`, `show` and `rm` items. There's tagging built in, and the ability to list and filter your items by tag, status, and time. Using these filters, you can organise your data however you like with groups. It's very fast and flexible. Here's a sample of what you can do (run it yourself to see the lovely colors!), though you can do an awful lot more; such as organising projects, areas of work, time frames, taking notes etc...
 
+<img width="498" alt="terminal screen shot" src="https://user-images.githubusercontent.com/167061/68556700-4e199800-0401-11ea-9e81-cdf948663f62.png">
+
 #### Add an item
 
 ```
