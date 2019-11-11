@@ -52,6 +52,8 @@ This is a tool to track your personal to-do's, work done, notes, etc. It deliber
 go get -u github.com/josler/wdid/...
 ```
 
+Or check the [releases](https://github.com/josler/wdid/releases) page for prebuilt binaries.
+
 ### Usage
 
 See [documentation](https://j-osler.gitbook.io/wdid/) for more.
