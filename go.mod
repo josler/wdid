@@ -1,7 +1,7 @@
 module github.com/josler/wdid
 
 require (
-	github.com/BurntSushi/toml v0.3.0
+	github.com/BurntSushi/toml v0.3.1
 	github.com/DataDog/zstd v1.3.4 // indirect
 	github.com/Sereal/Sereal v0.0.0-20190618215532-0b8ac451a863 // indirect
 	github.com/alecthomas/kingpin v2.2.7-0.20180312062423-a39589180ebd+incompatible
@@ -14,7 +14,6 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
@@ -31,10 +30,10 @@ require (
 	gonum.org/v1/gonum v0.0.0-20180814074008-f4b55da7eefa // indirect
 	gonum.org/v1/netlib v0.0.0-20180816165226-ebcc3d2662d3 // indirect
 	google.golang.org/appengine v1.0.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/jdkato/prose.v2 v2.0.0-20180723191954-597d4355f5c8
 	gopkg.in/neurosnap/sentences.v1 v1.0.6 // indirect
 	gotest.tools v2.2.0+incompatible
+	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
 )
 
 replace github.com/asdine/storm => github.com/asdine/storm v0.0.0-20190418133842-e0f77eada154
