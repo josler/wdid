@@ -32,19 +32,6 @@ func TestTokenize(t *testing.T) {
 	}
 }
 
-func TestTokenizeSquareBrackets(t *testing.T) {
-	result := getResult("[meeting, @josler, #hashtag, foo] whatever")
-	if len(result.Tags) != 4 {
-		t.Errorf("failed to parse square bracket tags")
-	}
-	if !includes(result.Tags, "#meeting") {
-		t.Errorf("hashtag not parsed correctly")
-	}
-	if !includes(result.Tags, "#foo") {
-		t.Errorf("hashtag not parsed correctly")
-	}
-}
-
 func TestTokenizeDuplicates(t *testing.T) {
 	result := getResult("This needs to be done, promptly. #foo #foo")
 	if len(result.Tags) != 1 {
