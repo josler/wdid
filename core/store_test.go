@@ -55,11 +55,10 @@ func tests() map[string]storeTest {
 }
 
 func TestBoltStore(t *testing.T) {
-	db, err := storm.Open("/tmp/test123.db")
+	boltStore, err := core.NewBoltStore("/tmp/test123.db")
 	if err != nil {
 		os.Exit(1)
 	}
-	boltStore := core.NewBoltStore(db)
 
 	for name, subTest := range tests() {
 		t.Run(name, func(t *testing.T) {
@@ -68,8 +67,6 @@ func TestBoltStore(t *testing.T) {
 			})
 		})
 	}
-
-	db.Close()
 }
 
 func saveAlreadyExists(t *testing.T, store core.Store) {

@@ -16,7 +16,6 @@ type Store interface {
 	GroupStore
 
 	WithContext(ctx context.Context) Store
-	Close()
 }
 
 type ItemStore interface {
