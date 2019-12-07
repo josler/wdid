@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	kingpin "github.com/alecthomas/kingpin"
-	"github.com/asdine/storm"
 	"github.com/josler/wdid/config"
 	"github.com/josler/wdid/core"
 	"github.com/josler/wdid/fileedit"
@@ -84,7 +83,6 @@ func main() {
 
 	store, err := createStore(conf)
 	app.FatalIfError(err, "")
-	defer store.Close()
 
 	ctx := context.WithValue(context.Background(), "store", store)
 	ctx = context.WithValue(ctx, "verbose", *v)
@@ -146,11 +144,7 @@ func main() {
 func createStore(conf *config.Config) (core.Store, error) {
 	switch conf.Store.Type {
 	case "bolt":
-		db, err := storm.Open(conf.Store.Filepath())
-		if err != nil {
-			return nil, err
-		}
-		return core.NewBoltStore(db), nil
+		return core.NewBoltStore(conf.Store.Filepath())
 	default:
 		return nil, errors.New("store not specified correctly")
 	}

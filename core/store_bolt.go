@@ -37,12 +37,24 @@ type StormGroup struct {
 }
 
 type BoltStore struct {
-	db  *storm.DB
-	ctx context.Context
+	path string
+	ctx  context.Context
 }
 
-func NewBoltStore(db *storm.DB) *BoltStore {
-	return &BoltStore{db: db}
+func NewBoltStore(path string) (*BoltStore, error) {
+	store := &BoltStore{path: path}
+	db, err := storm.Open(store.path)
+	db.Close()
+	return store, err
+}
+
+func (s *BoltStore) withOpenDB(f func(*storm.DB)) {
+	db, err := storm.Open(s.path)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	f(db)
 }
 
 func (s *BoltStore) Find(id string) (*Item, error) {
@@ -66,7 +78,11 @@ func (s *BoltStore) Find(id string) (*Item, error) {
 
 func (s *BoltStore) FindAll(id string) ([]*Item, error) {
 	stormItems := []*StormItem{}
-	err := s.db.Prefix("ID", id, &stormItems)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.Prefix("ID", id, &stormItems)
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +107,10 @@ func (s *BoltStore) Delete(item *Item) error {
 		return nil
 	}
 	stormItem.RowID = i
-	return s.db.DeleteStruct(stormItem)
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.DeleteStruct(stormItem)
+	})
+	return err
 }
 
 func (s *BoltStore) Save(item *Item) error {
@@ -102,9 +121,15 @@ func (s *BoltStore) Save(item *Item) error {
 			return err
 		}
 		stormItem.RowID = i
-		return s.db.Update(stormItem)
+		s.withOpenDB(func(db *storm.DB) {
+			err = db.Update(stormItem)
+		})
+		return err
 	}
-	err := s.db.Save(stormItem)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.Save(stormItem)
+	})
 	if err != nil {
 		return err
 	}
@@ -131,13 +156,15 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	firstDateFilter, rest := s.findFirstDateFilter(filters)
 	var err error
 
-	if firstDateFilter != nil {
-		// if we have a date filter, use it as a range to limit where we search over
-		err = s.db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
-	} else {
-		// else, get all
-		err = s.db.All(&stormItems)
-	}
+	s.withOpenDB(func(db *storm.DB) {
+		if firstDateFilter != nil {
+			// if we have a date filter, use it as a range to limit where we search over
+			err = db.Range("Datetime", firstDateFilter.timespan.Start.Unix(), firstDateFilter.timespan.End.Unix(), &stormItems)
+		} else {
+			// else, get all
+			err = db.All(&stormItems)
+		}
+	})
 
 	if err != nil {
 		if err == storm.ErrNotFound {
@@ -173,7 +200,11 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 
 func (s *BoltStore) FindTag(name string) (*Tag, error) {
 	stormTag := &StormTag{}
-	err := s.db.One("Name", name, stormTag)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.One("Name", name, stormTag)
+	})
+
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +213,10 @@ func (s *BoltStore) FindTag(name string) (*Tag, error) {
 
 func (s *BoltStore) SaveTag(tag *Tag) error {
 	stormTag := s.tagToStorm(tag)
-	err := s.db.Save(stormTag)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.Save(stormTag)
+	})
 	if err != nil {
 		if err == storm.ErrAlreadyExists {
 			found, _ := s.FindTag(tag.Name())
@@ -197,9 +231,12 @@ func (s *BoltStore) SaveTag(tag *Tag) error {
 
 func (s *BoltStore) ListTags() ([]*Tag, error) {
 	stormTags := []*StormTag{}
-	query := s.db.Select()
-	query.OrderBy("CreatedAt")
-	err := query.Find(&stormTags)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		query := db.Select()
+		query.OrderBy("CreatedAt")
+		err = query.Find(&stormTags)
+	})
 
 	outputTags := []*Tag{}
 	if err != nil {
@@ -227,9 +264,15 @@ func (s *BoltStore) SaveGroup(group *Group) error {
 			return err
 		}
 		stormGroup.RowID = i
-		return s.db.Update(stormGroup)
+		s.withOpenDB(func(db *storm.DB) {
+			err = db.Update(stormGroup)
+		})
+		return err
 	}
-	err := s.db.Save(stormGroup)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.Save(stormGroup)
+	})
 	if err != nil {
 		return err
 	}
@@ -244,14 +287,20 @@ func (s *BoltStore) DeleteGroup(group *Group) error {
 		return nil
 	}
 	stormGroup.RowID = i
-	return s.db.DeleteStruct(stormGroup)
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.DeleteStruct(stormGroup)
+	})
+	return err
 }
 
 func (s *BoltStore) ListGroups() ([]*Group, error) {
 	stormGroups := []*StormGroup{}
-	query := s.db.Select()
-	query.OrderBy("CreatedAt")
-	err := query.Find(&stormGroups)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		query := db.Select()
+		query.OrderBy("CreatedAt")
+		err = query.Find(&stormGroups)
+	})
 
 	outputGroups := []*Group{}
 	if err != nil {
@@ -273,7 +322,10 @@ func (s *BoltStore) ListGroups() ([]*Group, error) {
 
 func (s *BoltStore) FindGroupByName(name string) (*Group, error) {
 	stormGroup := &StormGroup{}
-	err := s.db.One("Name", name, stormGroup)
+	var err error
+	s.withOpenDB(func(db *storm.DB) {
+		err = db.One("Name", name, stormGroup)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -281,15 +333,13 @@ func (s *BoltStore) FindGroupByName(name string) (*Group, error) {
 }
 
 func (s *BoltStore) WithContext(ctx context.Context) Store {
-	return &BoltStore{ctx: ctx, db: s.db}
-}
-
-func (s *BoltStore) Close() {
-	s.db.Close()
+	return &BoltStore{ctx: ctx, path: s.path}
 }
 
 func (s *BoltStore) DropBucket(bucket string) {
-	s.db.Drop(bucket)
+	s.withOpenDB(func(db *storm.DB) {
+		db.Drop(bucket)
+	})
 }
 
 func (s *BoltStore) itemToNewStorm(input *Item) *StormItem {

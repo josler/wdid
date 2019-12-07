@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/asdine/storm"
 	"github.com/josler/wdid/core"
 )
 
@@ -19,19 +18,16 @@ func importTests() []storeTest {
 }
 
 func TestBoltStoreImport(t *testing.T) {
-	db, err := storm.Open("/tmp/test123.db")
+	boltStore, err := core.NewBoltStore("/tmp/test123.db")
 	if err != nil {
 		os.Exit(1)
 	}
-	boltStore := core.NewBoltStore(db)
 
 	for _, test := range importTests() {
 		withFreshBoltStore(boltStore, func() {
 			test(t, boltStore)
 		})
 	}
-
-	db.Close()
 }
 
 func testImport(t *testing.T, store core.Store) {

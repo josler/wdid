@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/asdine/storm"
 	"github.com/josler/wdid/filter"
 	"gotest.tools/assert"
 )
@@ -49,20 +48,17 @@ func TestAddDone(t *testing.T) {
 func contextWithStore(f func(ctx context.Context, store Store)) {
 	ctx := context.Background()
 
-	db, err := storm.Open("/tmp/test123.db")
+	store, err := NewBoltStore("/tmp/test123.db")
 	if err != nil {
 		os.Exit(1)
 	}
 
-	store := NewBoltStore(db)
 	store.DropBucket("StormItem")
 	store.DropBucket("StormTag")
 	store.DropBucket("StormGroup")
 
 	ctx = context.WithValue(ctx, "store", store)
 	f(ctx, store)
-	db.Close()
-
 }
 
 // mostRecentItem returns the most recent item chronologically in the store, up until time.Now()
