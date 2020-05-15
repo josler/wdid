@@ -16,7 +16,7 @@ func TestRm(t *testing.T) {
 		if err != nil {
 			t.Errorf("item not removed")
 		}
-		err = Show(ctx, found.ID())
+		err = Show(ctx, found.ID(), false)
 		if err == nil {
 			t.Errorf("item not removed")
 		}

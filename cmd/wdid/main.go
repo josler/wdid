@@ -62,8 +62,9 @@ var (
 	skip   = app.Command("skip", "Mark an item as skipped.")
 	skipID = skip.Arg("id", "ID of item to mark skipped.").Required().String()
 
-	show   = app.Command("show", "Show a single item.")
-	showID = show.Arg("id", "ID of item to show.").Required().String()
+	show          = app.Command("show", "Show a single item.")
+	showID        = show.Arg("id", "ID of item to show.").Required().String()
+	showConnected = show.Flag("connected", "Show connected items also.").Short('c').Bool()
 
 	tagList = app.Command("tag-ls", "List tags.")
 )
@@ -128,7 +129,7 @@ func main() {
 	case skip.FullCommand():
 		err = core.Skip(ctx, *skipID)
 	case show.FullCommand():
-		err = core.Show(ctx, *showID)
+		err = core.Show(ctx, *showID, *showConnected)
 	case tagList.FullCommand():
 		err = core.ListTag(ctx)
 	case group.FullCommand():

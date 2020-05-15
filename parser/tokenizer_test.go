@@ -2,6 +2,8 @@ package parser
 
 import (
 	"testing"
+
+	"gotest.tools/assert"
 )
 
 func getResult(text string) *TokenResult {
@@ -30,6 +32,22 @@ func TestTokenize(t *testing.T) {
 	if result.Raw != "This needs to be done, promptly. @josler, #foo, #bar https://josler.io" {
 		t.Errorf("raw text altered!")
 	}
+}
+
+func TestTokenizeDoubleSquareBrackets(t *testing.T) {
+	result := getResult("[[connection_to]] whatever [not conn]")
+	if len(result.Connections) != 1 {
+		t.Errorf("failed to parse double square bracket tags")
+	}
+	assert.DeepEqual(t, []string{"connection_to"}, result.Connections)
+}
+
+func TestTokenizeDoubleSquareBracketsBroken(t *testing.T) {
+	result := getResult("[[[connection_to]] whatever [not conn] [[realconn]] [[foo]bar] [[bax]]")
+	if len(result.Connections) != 2 {
+		t.Errorf("failed to parse double square bracket tags")
+	}
+	assert.DeepEqual(t, []string{"realconn", "bax"}, result.Connections)
 }
 
 func TestTokenizeDuplicates(t *testing.T) {

@@ -90,6 +90,21 @@ func (ip *ItemPrinter) Print(items ...*Item) {
 	ip.FPrint(os.Stdout, items...)
 }
 
+func (ip *ItemPrinter) PrintSingleWithConnected(item *Item, connections ...*Item) {
+	switch ip.PrintFormat {
+	case HumanPrintFormat:
+		baseColor := color.New(color.Bold)
+		baseColor.EnableColor()
+		fmt.Fprintf(os.Stdout, baseColor.Sprintf("Main Item:\n\n"))
+		ip.FPrint(os.Stdout, item)
+		fmt.Fprintf(os.Stdout, baseColor.Sprintln("Connected Items:"))
+		ip.FPrint(os.Stdout, connections...)
+	default:
+		ip.FPrint(os.Stdout, item)
+		ip.FPrint(os.Stdout, connections...)
+	}
+}
+
 func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 	if len(items) == 0 {
 		return

@@ -84,6 +84,9 @@ func (ic *ItemCreator) GenerateAndSaveMetadata(item *Item) error {
 	for _, resultTag := range tokenResult.Tags {
 		item.tags = append(item.tags, NewTag(resultTag))
 	}
+	if len(tokenResult.Connections) > 0 {
+		item.connections = tokenResult.Connections
+	}
 	return nil
 }
 
