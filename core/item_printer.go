@@ -152,7 +152,7 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s -- %v\n", ip.doneStatus(item), item.Time().Format("Mon, 02 Jan 2006 15:04:05"))
 	baseColor := color.New(color.Bold)
 	baseColor.EnableColor()
-	fmt.Fprintf(w, fmt.Sprintf("Kind: %v\n", item.Kind()))
+	fmt.Fprintf(w, "Kind: %v\n", item.Kind())
 	if item.NextID() != "" {
 		fmt.Fprintf(w, "Bumped to: %s\n", baseColor.Sprintf("%s", item.NextID()))
 	}

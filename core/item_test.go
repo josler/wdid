@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"gotest.tools/assert"
 )
 
 func TestBase36(t *testing.T) {
@@ -88,6 +90,14 @@ func TestSkipBumped(t *testing.T) {
 	if bumpedItem.Status() != BumpedStatus {
 		t.Errorf("Bumped item could be marked as skipped")
 	}
+}
+
+func TestTagsOrdered(t *testing.T) {
+	item := NewTask("foobar #bbb #aaa", time.Now())
+	tags := item.Tags()
+
+	assert.Equal(t, "#aaa", tags[0].Name())
+	assert.Equal(t, "#bbb", tags[1].Name())
 }
 
 func testBase36Matches(t *testing.T, input int, expected rune) {

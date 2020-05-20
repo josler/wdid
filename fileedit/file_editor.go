@@ -48,10 +48,7 @@ func writeTmpFile(fpath string, content io.Reader) error {
 }
 
 func editorCmd(filePath string) *exec.Cmd {
-	editorPath := os.Getenv("EDITOR")
-	if editorPath == "" {
-		editorPath = defaultEditor
-	}
+	editorPath := editorPath()
 	splitPath := strings.Split(editorPath, " ")
 	splitPath = append(splitPath, filePath)
 	// we always have at least 2 elements. the editor path and the filepath
@@ -62,4 +59,16 @@ func editorCmd(filePath string) *exec.Cmd {
 	editor.Stderr = os.Stderr
 
 	return editor
+}
+
+func editorPath() string {
+	conf, _ := config.Load()
+	if conf.Editor != "" {
+		return conf.Editor
+	}
+	editorPath := os.Getenv("EDITOR")
+	if editorPath != "" {
+		return editorPath
+	}
+	return defaultEditor
 }

@@ -17,7 +17,8 @@ type ConfigStore struct {
 }
 
 type Config struct {
-	Store ConfigStore
+	Store  ConfigStore
+	Editor string
 }
 
 var defaultConfig = `

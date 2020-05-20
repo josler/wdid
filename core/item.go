@@ -2,6 +2,7 @@ package core
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/josler/wdid/parser"
@@ -83,6 +84,9 @@ func (i *Item) Tags() []*Tag {
 	if i.emptyMetadata() {
 		i.generateMetadata()
 	}
+	sort.Slice(i.tags, func(j, k int) bool {
+		return i.tags[j].Name() <= i.tags[k].Name()
+	})
 	return i.tags
 }
 
