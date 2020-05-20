@@ -35,8 +35,8 @@ func AddNote(ctx context.Context, description io.Reader, timeString string) erro
 	if err != nil {
 		return err
 	}
-
-	NewItemPrinter(ctx).Print(item)
+	connectedItems := getValidConnections(ctx, item)
+	NewItemPrinter(ctx).PrintSingleWithConnected(item, connectedItems...)
 	return nil
 }
 
