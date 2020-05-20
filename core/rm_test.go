@@ -29,7 +29,7 @@ func TestRmMultiMatching(t *testing.T) {
 		found := mostRecentItem(store)
 
 		// second item
-		item := NewItem("will have similar id", time.Now())
+		item := NewTask("will have similar id", time.Now())
 		item.SetID(fmt.Sprintf("%s%s", found.ID()[:3], "yyy"))
 		err := store.Save(item)
 		if err != nil {

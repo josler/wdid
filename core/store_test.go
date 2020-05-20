@@ -32,6 +32,7 @@ func tests() map[string]storeTest {
 		"saveAlreadyExists":             saveAlreadyExists,
 		"saveUpdate":                    saveUpdate,
 		"list":                          list,
+		"saveListNote":                  saveListNote,
 		"listEmptyShouldNotError":       listEmptyShouldNotError,
 		"listDate":                      listDate,
 		"listStatus":                    listStatus,
@@ -70,7 +71,7 @@ func TestBoltStore(t *testing.T) {
 }
 
 func saveAlreadyExists(t *testing.T, store core.Store) {
-	item := core.NewItem("some data", time.Now())
+	item := core.NewTask("some data", time.Now())
 	err := store.Save(item)
 	if err != nil {
 		t.Fatalf("error %s", err)
@@ -83,7 +84,7 @@ func saveAlreadyExists(t *testing.T, store core.Store) {
 }
 
 func saveUpdate(t *testing.T, store core.Store) {
-	item := core.NewItem("some data", time.Now())
+	item := core.NewTask("some data", time.Now())
 	err := store.Save(item)
 	if err != nil {
 		t.Fatalf("error %s", err)
@@ -96,7 +97,7 @@ func saveUpdate(t *testing.T, store core.Store) {
 }
 
 func list(t *testing.T, store core.Store) {
-	item := core.NewItem("some data", time.Now().Add(-1*time.Minute))
+	item := core.NewTask("some data", time.Now().Add(-1*time.Minute))
 	err := store.Save(item)
 	if err != nil {
 		t.Fatalf("error %s", err)
@@ -110,12 +111,35 @@ func list(t *testing.T, store core.Store) {
 	if items[0].ID() != item.ID() {
 		t.Errorf("error id not matching")
 	}
+	if items[0].Kind() != core.Task {
+		t.Errorf("item not saved as Task")
+	}
+}
+
+func saveListNote(t *testing.T, store core.Store) {
+	item := core.NewNote("some data", time.Now())
+	err := store.Save(item)
+	if err != nil {
+		t.Fatalf("error %s", err)
+	}
+	timespan := core.NewTimespan(time.Now().Add(-1*time.Hour), time.Now())
+	filters := []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan)}
+	items, _ := store.ListFilters(filters)
+	if len(items) != 1 {
+		t.Fatalf("error: no items found")
+	}
+	if items[0].ID() != item.ID() {
+		t.Errorf("error id not matching")
+	}
+	if items[0].Kind() != core.Note {
+		t.Errorf("item not saved as Note")
+	}
 }
 
 func listEmptyShouldNotError(t *testing.T, store core.Store) {
 	// interestingly, this test doesn't fail when the database is completely empty
 	// it only fails when there has been at least one write.
-	item := core.NewItem("some data", time.Now().Add(-1*time.Minute))
+	item := core.NewTask("some data", time.Now().Add(-1*time.Minute))
 	store.Save(item)
 	timespan := core.NewTimespan(time.Now().Add(24*time.Hour), time.Now().Add(48*time.Hour))
 	filters := []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan)}
@@ -130,11 +154,11 @@ func listEmptyShouldNotError(t *testing.T, store core.Store) {
 
 func listDate(t *testing.T, store core.Store) {
 	now := time.Now()
-	store.Save(core.NewItem("1", now.Add(-48*time.Hour)))
-	store.Save(core.NewItem("2", now.Add(-24*time.Hour)))
-	store.Save(core.NewItem("3", now.Add(-1*time.Minute)))
-	store.Save(core.NewItem("4", now.Add(24*time.Hour)))
-	store.Save(core.NewItem("5", now.Add(1*time.Second))) // should not pick this up as it's greater than end time
+	store.Save(core.NewTask("1", now.Add(-48*time.Hour)))
+	store.Save(core.NewTask("2", now.Add(-24*time.Hour)))
+	store.Save(core.NewTask("3", now.Add(-1*time.Minute)))
+	store.Save(core.NewTask("4", now.Add(24*time.Hour)))
+	store.Save(core.NewTask("5", now.Add(1*time.Second))) // should not pick this up as it's greater than end time
 
 	timespan := core.NewTimespan(time.Now().Add(-36*time.Hour), now)
 	filters := []filter.Filter{core.NewDateFilter(filter.FilterEq, timespan)}
@@ -151,11 +175,11 @@ func listDate(t *testing.T, store core.Store) {
 }
 
 func listStatus(t *testing.T, store core.Store) {
-	store.Save(core.NewItem("1", time.Now()))
-	doneItem := core.NewItem("2", time.Now())
+	store.Save(core.NewTask("1", time.Now()))
+	doneItem := core.NewTask("2", time.Now())
 	doneItem.Do()
 	store.Save(doneItem)
-	skippedItem := core.NewItem("3", time.Now())
+	skippedItem := core.NewTask("3", time.Now())
 	skippedItem.Skip()
 	store.Save(skippedItem)
 
@@ -187,12 +211,12 @@ func setupTagAndItems(store core.Store) {
 	tag := core.NewTag("#mytag")
 	store.SaveTag(tag)
 
-	item := core.NewItem("my item", time.Now())
+	item := core.NewTask("my item", time.Now())
 	store.Save(item)
-	doneItem := core.NewItem("#mytag done", time.Now())
+	doneItem := core.NewTask("#mytag done", time.Now())
 	doneItem.Do()
 	store.Save(doneItem)
-	skippedItem := core.NewItem("#mytag skipped", time.Now())
+	skippedItem := core.NewTask("#mytag skipped", time.Now())
 	skippedItem.Skip()
 	store.Save(skippedItem)
 }
@@ -290,7 +314,7 @@ func listFiltersGroupNe(t *testing.T, store core.Store) {
 }
 
 func find(t *testing.T, store core.Store) {
-	item := core.NewItem("some data", time.Now())
+	item := core.NewTask("some data", time.Now())
 	store.Save(item)
 	found, err := store.Find(item.ID())
 	if err != nil || found.ID() != item.ID() {
@@ -299,11 +323,11 @@ func find(t *testing.T, store core.Store) {
 }
 
 func findMultipleReturnsMostRecent(t *testing.T, store core.Store) {
-	item := core.NewItem("to be saved twice", time.Now().Add(-5*time.Second))
+	item := core.NewTask("to be saved twice", time.Now().Add(-5*time.Second))
 	firstID := item.ID()
 	store.Save(item)
 
-	item = core.NewItem("to be saved twice", time.Now())
+	item = core.NewTask("to be saved twice", time.Now())
 	item.SetID(fmt.Sprintf("%s%s", firstID[:3], "yyy"))
 	err := store.Save(item) // save a copy
 	if err != nil {
@@ -319,7 +343,7 @@ func findMultipleReturnsMostRecent(t *testing.T, store core.Store) {
 }
 
 func findAll(t *testing.T, store core.Store) {
-	item := core.NewItem("to be saved twice", time.Now())
+	item := core.NewTask("to be saved twice", time.Now())
 	store.Save(item)
 	item.ResetInternalID()
 	item.SetID(fmt.Sprintf("%s%s", item.ID()[:3], "yyy"))
@@ -334,7 +358,7 @@ func findAll(t *testing.T, store core.Store) {
 }
 
 func showPartialID(t *testing.T, store core.Store) {
-	item := core.NewItem("some data", time.Now())
+	item := core.NewTask("some data", time.Now())
 	store.Save(item)
 	found, err := store.Find(item.ID()[:2])
 	if err != nil || found.ID() != item.ID() {
@@ -343,7 +367,7 @@ func showPartialID(t *testing.T, store core.Store) {
 }
 
 func doDelete(t *testing.T, store core.Store) {
-	item := core.NewItem("some data", time.Now())
+	item := core.NewTask("some data", time.Now())
 	store.Save(item)
 	store.Delete(item)
 	_, err := store.Find(item.ID())

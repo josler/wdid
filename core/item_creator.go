@@ -15,7 +15,7 @@ type ItemCreator struct {
 
 func (ic *ItemCreator) Create(data string, at time.Time) (*Item, error) {
 	store := ic.ctx.Value("store").(Store)
-	item := NewItem(data, at)
+	item := NewTask(data, at)
 	err := ic.GenerateAndSaveMetadata(item)
 	if err != nil {
 		return nil, err

@@ -8,11 +8,40 @@ import (
 )
 
 const (
+	NoStatus      = "none"
 	WaitingStatus = "waiting"
 	DoneStatus    = "done"
 	SkippedStatus = "skipped"
 	BumpedStatus  = "bumped"
 )
+
+type Kind int
+
+const (
+	_ Kind = iota
+	Task
+	Note
+)
+
+func (k Kind) String() string {
+	switch k {
+	case Task:
+		return "task"
+	case Note:
+		return "note"
+	}
+	return ""
+}
+
+func StringToKind(kindstring string) Kind {
+	switch kindstring {
+	case "task":
+		return Task
+	case "note":
+		return Note
+	}
+	return 0
+}
 
 type Item struct {
 	internalID  string
@@ -24,10 +53,18 @@ type Item struct {
 	connections []string // connections to other items
 	status      string
 	datetime    time.Time
+	kind        Kind
 }
 
 func (i *Item) ID() string {
 	return i.id
+}
+
+func (i *Item) Kind() Kind {
+	if i.kind == 0 {
+		return Task
+	}
+	return i.kind
 }
 
 func (i *Item) NextID() string {
@@ -65,20 +102,29 @@ func (i *Item) Time() time.Time {
 }
 
 func (i *Item) Do() {
+	if i.Kind() != Task {
+		return // do does nothing with non tasks
+	}
 	if i.status != BumpedStatus {
 		i.status = DoneStatus
 	}
 }
 
 func (i *Item) Skip() {
+	if i.Kind() != Task {
+		return // do does nothing with non tasks
+	}
 	if i.status != BumpedStatus {
 		i.status = SkippedStatus
 	}
 }
 
 func (i *Item) Bump(newTime time.Time) *Item {
+	if i.Kind() != Task {
+		return i // do does nothing with non tasks
+	}
 	i.status = BumpedStatus
-	newItem := NewItem(i.data, newTime)
+	newItem := NewTask(i.data, newTime)
 	i.nextID = newItem.ID()
 	newItem.previousID = i.ID()
 	return newItem
@@ -95,6 +141,13 @@ func (i *Item) ResetInternalID() {
 // manually set the ID, useful for testing!
 func (i *Item) SetID(id string) {
 	i.id = id[:MaxIDLength]
+}
+
+func (i *Item) SetKind(kind Kind) {
+	i.kind = kind
+	if i.kind == Note {
+		i.status = NoStatus
+	}
 }
 
 func (i *Item) generateMetadata() {
@@ -117,6 +170,10 @@ func (i *Item) emptyMetadata() bool {
 	return i.tags == nil && i.connections == nil
 }
 
-func NewItem(data string, at time.Time) *Item {
-	return &Item{id: GenerateID(at), data: data, status: WaitingStatus, datetime: at}
+func NewTask(data string, at time.Time) *Item {
+	return &Item{id: GenerateID(at), data: data, status: WaitingStatus, datetime: at, kind: Task}
+}
+
+func NewNote(data string, at time.Time) *Item {
+	return &Item{id: GenerateID(at), data: data, status: NoStatus, datetime: at, kind: Note}
 }

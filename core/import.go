@@ -41,8 +41,14 @@ func ReadToStore(ctx context.Context, f io.Reader) error {
 		if err != nil {
 			continue
 		}
+		var kind Kind
+		if len(split) == 7 {
+			kind = StringToKind(split[6])
+		} else {
+			kind = Task
+		}
 
-		item := &Item{id: split[0], internalID: split[1], status: split[2], data: split[4], datetime: parsedTime}
+		item := &Item{id: split[0], internalID: split[1], status: split[2], data: split[4], datetime: parsedTime, kind: kind}
 
 		refID := split[3]
 		if strings.HasPrefix(refID, "->") {
@@ -67,7 +73,6 @@ func ReadToStore(ctx context.Context, f io.Reader) error {
 		}
 		err = store.Save(item)
 
-		fmt.Println(item)
 		if err != nil {
 			return err
 		}

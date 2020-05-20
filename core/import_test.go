@@ -14,6 +14,7 @@ func importTests() []storeTest {
 		testImportExistingSameInternalID,
 		testImportExistingDifferentInternalID,
 		testImportExistingNoInternalID,
+		testImportKind,
 	}
 }
 
@@ -37,6 +38,9 @@ func testImport(t *testing.T, store core.Store) {
 	found, err := store.Find("s36i4z")
 	if err != nil || found.Data() != "some change" {
 		t.Errorf("item not saved")
+	}
+	if found.Kind() != core.Task {
+		t.Errorf("did not save item as Task without explicit kind")
 	}
 }
 
@@ -79,5 +83,15 @@ func testImportExistingNoInternalID(t *testing.T, store core.Store) {
 	found, err := store.Find("s36i4b")
 	if err != nil || found.Data() != "more detail" {
 		t.Errorf("item not saved")
+	}
+}
+
+func testImportKind(t *testing.T, store core.Store) {
+	ctx := contextWithStore(store)
+	f := bytes.NewBufferString("s36i4z	recEJFQBuZsArxrJI	done	<-4agi3u	some change	2018-04-11T08:15:00-04:00	note")
+	core.ReadToStore(ctx, f)
+	found, err := store.Find("s36i4z")
+	if err != nil || found.Kind() != core.Note {
+		t.Errorf("item not saved as Note")
 	}
 }

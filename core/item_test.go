@@ -28,14 +28,14 @@ func TestGenerateIDFromTime(t *testing.T) {
 func TestNewItemHasTimeBasedID(t *testing.T) {
 	expectedSuffix := "i3m"
 	ti := timeAt("2018-03-22 00:00:00 -0400 EDT")
-	item := NewItem("foobar", ti)
+	item := NewTask("foobar", ti)
 	if !strings.HasSuffix(item.ID(), expectedSuffix) {
 		t.Errorf("With time '%v', expected '%s' to end with '%s'", ti, item.Time(), expectedSuffix)
 	}
 }
 
 func TestBump(t *testing.T) {
-	bumpedItem := NewItem("foobar", time.Now())
+	bumpedItem := NewTask("foobar", time.Now())
 	newItem := bumpedItem.Bump(time.Now())
 	if newItem.PreviousID() != bumpedItem.ID() {
 		t.Errorf("Bumped item ID %s and new item PreviousID %s do not match", bumpedItem.ID(), newItem.PreviousID())
@@ -49,7 +49,7 @@ func TestBump(t *testing.T) {
 }
 
 func TestDo(t *testing.T) {
-	item := NewItem("foobar", time.Now())
+	item := NewTask("foobar", time.Now())
 	item.Do()
 	if item.Status() != DoneStatus {
 		t.Errorf("item was not marked done")
@@ -57,7 +57,7 @@ func TestDo(t *testing.T) {
 }
 
 func TestDoBumped(t *testing.T) {
-	bumpedItem := NewItem("foobar", time.Now())
+	bumpedItem := NewTask("foobar", time.Now())
 	bumpedItem.Bump(time.Now())
 	bumpedItem.Do()
 	if bumpedItem.Status() != BumpedStatus {
@@ -65,8 +65,16 @@ func TestDoBumped(t *testing.T) {
 	}
 }
 
+func TestDoNote(t *testing.T) {
+	item := NewNote("foobar", time.Now())
+	item.Do()
+	if item.Status() != NoStatus {
+		t.Errorf("Note not immune to Do")
+	}
+}
+
 func TestSkip(t *testing.T) {
-	item := NewItem("foobar", time.Now())
+	item := NewTask("foobar", time.Now())
 	item.Skip()
 	if item.Status() != SkippedStatus {
 		t.Errorf("item was not marked skipped")
@@ -74,7 +82,7 @@ func TestSkip(t *testing.T) {
 }
 
 func TestSkipBumped(t *testing.T) {
-	bumpedItem := NewItem("foobar", time.Now())
+	bumpedItem := NewTask("foobar", time.Now())
 	bumpedItem.Bump(time.Now())
 	bumpedItem.Skip()
 	if bumpedItem.Status() != BumpedStatus {

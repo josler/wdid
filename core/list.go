@@ -36,6 +36,19 @@ func List(ctx context.Context, argString string, groupString string) error {
 	return err
 }
 
+func ListWithoutPrinting(ctx context.Context, argString string) ([]*Item, error) {
+	store := ctx.Value("store").(Store)
+
+	var items []*Item
+	var err error
+
+	items, err = listFromTimeString(store, argString)
+	if err != nil {
+		items, err = listFromFilters(store, argString, false)
+	}
+	return items, err
+}
+
 func listFromFilters(store Store, filterString string, isVerbose bool) ([]*Item, error) {
 	p := DefaultParser(store)
 	filters, err := p.Parse(filterString)

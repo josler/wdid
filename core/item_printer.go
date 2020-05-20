@@ -50,6 +50,7 @@ type ItemPrinter struct {
 	failColor    color.Attribute
 	waitColor    color.Attribute
 	successColor color.Attribute
+	noteColor    color.Attribute
 
 	hasher     hash.Hash32
 	colorWheel map[int]int
@@ -63,6 +64,7 @@ func NewItemPrinter(ctx context.Context) *ItemPrinter {
 		failColor:    color.FgRed,
 		successColor: color.FgGreen,
 		waitColor:    color.FgWhite,
+		noteColor:    color.FgBlue,
 		PrintFormat:  GetPrintFormatFromContext(ctx),
 	}
 
@@ -150,6 +152,7 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 	fmt.Fprintf(w, "%s -- %v\n", ip.doneStatus(item), item.Time().Format("Mon, 02 Jan 2006 15:04:05"))
 	baseColor := color.New(color.Bold)
 	baseColor.EnableColor()
+	fmt.Fprintf(w, fmt.Sprintf("Kind: %v\n", item.Kind()))
 	if item.NextID() != "" {
 		fmt.Fprintf(w, "Bumped to: %s\n", baseColor.Sprintf("%s", item.NextID()))
 	}
@@ -170,7 +173,7 @@ func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
 	if item.PreviousID() != "" {
 		refID = "<-" + item.PreviousID()
 	}
-	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", item.ID(), item.internalID, item.Status(), refID, item.Data(), item.Time().Format(time.RFC3339))
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%v\n", item.ID(), item.internalID, item.Status(), refID, item.Data(), item.Time().Format(time.RFC3339), item.Kind())
 }
 
 type JSONItem struct {
@@ -183,6 +186,7 @@ type JSONItem struct {
 	Status     string
 	TimeString string
 	Tags       []string
+	Kind       string
 }
 
 func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
@@ -201,6 +205,7 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 		Status:     item.Status(),
 		TimeString: item.Time().Format(time.RFC3339),
 		Tags:       tagStrings,
+		Kind:       item.Kind().String(),
 	}
 	buf := bytes.Buffer{}
 	encoder := json.NewEncoder(&buf)
@@ -273,6 +278,10 @@ func (ip *ItemPrinter) tagColor(tagName string, params []int) string {
 
 func (ip *ItemPrinter) doneStatus(item *Item) string {
 	switch item.Status() {
+	case NoStatus:
+		baseColor := color.New(ip.noteColor)
+		baseColor.EnableColor()
+		return baseColor.Sprintf("⇒ %v", item.ID())
 	case BumpedStatus:
 		baseColor := color.New(ip.bumpedColor)
 		baseColor.EnableColor()

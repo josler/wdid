@@ -20,6 +20,7 @@ type StormItem struct {
 	Data       string
 	Status     string
 	Datetime   int64 `storm:"index"`
+	Kind       int64 `storm:"index"`
 }
 
 type StormTag struct {
@@ -350,6 +351,7 @@ func (s *BoltStore) itemToNewStorm(input *Item) *StormItem {
 		Data:       input.Data(),
 		Status:     input.Status(),
 		Datetime:   input.Time().Unix(),
+		Kind:       int64(input.Kind()),
 	}
 }
 
@@ -363,6 +365,7 @@ func (s *BoltStore) stormToItem(input *StormItem) (*Item, error) {
 		data:       input.Data,
 		status:     input.Status,
 		datetime:   parsedTime,
+		kind:       Kind(input.Kind),
 	}, nil
 }
 
