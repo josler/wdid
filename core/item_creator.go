@@ -13,9 +13,19 @@ type ItemCreator struct {
 	ctx context.Context
 }
 
-func (ic *ItemCreator) Create(data string, at time.Time) (*Item, error) {
+func (ic *ItemCreator) CreateTask(data string, at time.Time) (*Item, error) {
 	store := ic.ctx.Value("store").(Store)
 	item := NewTask(data, at)
+	return ic.persistItem(item, store)
+}
+
+func (ic *ItemCreator) CreateNote(data string, at time.Time) (*Item, error) {
+	store := ic.ctx.Value("store").(Store)
+	item := NewNote(data, at)
+	return ic.persistItem(item, store)
+}
+
+func (ic *ItemCreator) persistItem(item *Item, store Store) (*Item, error) {
 	err := ic.GenerateAndSaveMetadata(item)
 	if err != nil {
 		return nil, err

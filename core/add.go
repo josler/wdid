@@ -5,10 +5,12 @@ import (
 	"context"
 	"errors"
 	"io"
+	"time"
 )
 
 func Add(ctx context.Context, description io.Reader, timeString string) error {
-	item, err := addCreate(ctx, description, timeString)
+	itemCreator := &ItemCreator{ctx: ctx}
+	item, err := addCreate(description, timeString, itemCreator.CreateTask)
 	if err != nil {
 		return err
 	}
@@ -18,7 +20,8 @@ func Add(ctx context.Context, description io.Reader, timeString string) error {
 }
 
 func AddDone(ctx context.Context, description io.Reader, timeString string) error {
-	item, err := addCreate(ctx, description, timeString)
+	itemCreator := &ItemCreator{ctx: ctx}
+	item, err := addCreate(description, timeString, itemCreator.CreateTask)
 	if err != nil {
 		return err
 	}
@@ -26,7 +29,20 @@ func AddDone(ctx context.Context, description io.Reader, timeString string) erro
 	return nil
 }
 
-func addCreate(ctx context.Context, description io.Reader, timeString string) (*Item, error) {
+func AddNote(ctx context.Context, description io.Reader, timeString string) error {
+	itemCreator := &ItemCreator{ctx: ctx}
+	item, err := addCreate(description, timeString, itemCreator.CreateNote)
+	if err != nil {
+		return err
+	}
+
+	NewItemPrinter(ctx).Print(item)
+	return nil
+}
+
+type itemCreateFn func(data string, at time.Time) (*Item, error)
+
+func addCreate(description io.Reader, timeString string, creator itemCreateFn) (*Item, error) {
 	at, err := TimeParser{Input: timeString}.Parse()
 	if err != nil {
 		return nil, err
@@ -38,10 +54,5 @@ func addCreate(ctx context.Context, description io.Reader, timeString string) (*
 	if stringDescription == "" {
 		return nil, errors.New("description missing")
 	}
-	itemCreator := &ItemCreator{ctx: ctx}
-	item, err := itemCreator.Create(stringDescription, at.Start)
-	if err != nil {
-		return nil, err
-	}
-	return item, nil
+	return creator(stringDescription, at.Start)
 }
