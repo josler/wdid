@@ -1,9 +1,8 @@
 package parser
 
 import (
+	"regexp"
 	"strings"
-
-	prose "gopkg.in/jdkato/prose.v2"
 )
 
 type TokenResult struct {
@@ -16,69 +15,47 @@ type Tokenizer struct {
 }
 
 func (t *Tokenizer) Tokenize(text string) (*TokenResult, error) {
-	doc, err := prose.NewDocument(text, prose.WithExtraction(false), prose.WithSegmentation(false), prose.WithTagging(false))
-	if err != nil {
-		return nil, err
+	return &TokenResult{
+		Tags:        t.getTags(text),
+		Connections: t.getConnections(text),
+		Raw:         text,
+	}, nil
+}
+
+func (t *Tokenizer) getConnections(text string) []string {
+	re := regexp.MustCompile(`\[\[([^\s\[\]]+)\]\]`)
+	found := re.FindAllStringSubmatch(text, -1)
+	connections := []string{}
+	for _, f := range found {
+		connections = append(connections, f[1])
 	}
+	return connections
+}
 
-	result := TokenResult{Tags: []string{}, Connections: []string{}, Raw: text}
-	tagMap := map[string]bool{}
-	startConnectionCounter := 0
-	endConnectionCounter := 0
+func (t *Tokenizer) getTags(text string) []string {
+	tagExp := regexp.MustCompile(`(^|[^\w#])(#[\w]+)`)
+	tags := tagExp.FindAllStringSubmatch(text, -1)
 
-	var capturedBrackets strings.Builder
+	mentionExp := regexp.MustCompile(`(^|[^\w@])(@[\w]+)`)
+	mentions := mentionExp.FindAllStringSubmatch(text, -1)
 
-	for _, tok := range doc.Tokens() {
-		if t.isTagPrefix(tok.Text) {
-			tagMap[tok.Text] = true
-		} else if tok.Text == "[" {
-			if startConnectionCounter >= 2 {
-				startConnectionCounter = 0
-				endConnectionCounter = 0
-				capturedBrackets.Reset()
-			}
-			// add one to starting counter if we see
-			startConnectionCounter += 1
-			endConnectionCounter = 0
-		} else if tok.Text == "]" {
-			// ignore a closing bracket and reset everything unless the starting counter
-			// is complete (at 2)
-			if startConnectionCounter != 2 {
-				startConnectionCounter = 0
-				endConnectionCounter = 0
-				capturedBrackets.Reset()
-				continue
-			}
-			// otherwise, add one to the counter
-			endConnectionCounter += 1
+	tagMentionsMap := map[string]bool{}
+	result := []string{}
 
-			// don't do anything else unless we've 2 end counters (and 2 start counters)
-			if endConnectionCounter != 2 {
-				continue
-			}
-
-			// parse and store
-			trimmed := strings.Trim(capturedBrackets.String(), " ")
-			if trimmed != "" {
-				result.Connections = append(result.Connections, trimmed)
-			}
-
-			// reset
-			startConnectionCounter = 0
-			endConnectionCounter = 0
-			capturedBrackets.Reset()
-		} else if startConnectionCounter == 2 && endConnectionCounter == 0 {
-			// if we're in an "open" state, then capture things
-			capturedBrackets.WriteString(tok.Text)
+	for _, tag := range tags {
+		if _, ok := tagMentionsMap[tag[2]]; !ok {
+			tagMentionsMap[tag[2]] = true
+			result = append(result, tag[2])
 		}
-
+	}
+	for _, mention := range mentions {
+		if _, ok := tagMentionsMap[mention[2]]; !ok {
+			tagMentionsMap[mention[2]] = true
+			result = append(result, mention[2])
+		}
 	}
 
-	for key := range tagMap {
-		result.Tags = append(result.Tags, key)
-	}
-
-	return &result, nil
+	return result
 }
 
 func (t *Tokenizer) isTagPrefix(text string) bool {

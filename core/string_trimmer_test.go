@@ -15,3 +15,8 @@ func TestStringTrimmerPreservesNoEllipsisIfInputSmaller(t *testing.T) {
 	trimmed := TrimString("small", DefaultTrimAtLength-20)
 	assert.Equal(t, trimmed, "small")
 }
+
+func TestStringTrimmerNegative(t *testing.T) {
+	trimmed := TrimString("", DefaultTrimAtLength+5)
+	assert.Equal(t, trimmed, "…")
+}

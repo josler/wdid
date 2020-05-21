@@ -14,6 +14,9 @@ func TrimString(input string, extraCharacterLength int) string {
 		trimAt = DefaultTrimAtLength
 	}
 	trimAt = trimAt - extraCharacterLength
+	if trimAt < 0 {
+		trimAt = 0
+	}
 	if len(input) < trimAt {
 		return input
 	}

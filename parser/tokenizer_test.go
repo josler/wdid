@@ -34,20 +34,27 @@ func TestTokenize(t *testing.T) {
 	}
 }
 
+func TestTokenizeStartEnd(t *testing.T) {
+	result := getResult("#foo ##nope #bar")
+	assert.DeepEqual(t, []string{"#foo", "#bar"}, result.Tags)
+
+	result = getResult("@foo @@nope @bar")
+	assert.DeepEqual(t, []string{"@foo", "@bar"}, result.Tags)
+}
+
 func TestTokenizeDoubleSquareBrackets(t *testing.T) {
 	result := getResult("[[connection_to]] whatever [not conn]")
-	if len(result.Connections) != 1 {
-		t.Errorf("failed to parse double square bracket tags")
-	}
 	assert.DeepEqual(t, []string{"connection_to"}, result.Connections)
 }
 
 func TestTokenizeDoubleSquareBracketsBroken(t *testing.T) {
-	result := getResult("[[[connection_to]] whatever [not conn] [[realconn]] [[foo]bar] [[bax]]")
-	if len(result.Connections) != 2 {
-		t.Errorf("failed to parse double square bracket tags")
-	}
-	assert.DeepEqual(t, []string{"realconn", "bax"}, result.Connections)
+	result := getResult("[[[connection_to]] whatever [not conn] [[realconn]] [[foo]bar] [[bax]] [[connection:title]]")
+	assert.DeepEqual(t, []string{"connection_to", "realconn", "bax", "connection:title"}, result.Connections)
+}
+
+func TestTokenizeTextAfterConnections(t *testing.T) {
+	result := getResult("[[connection_to]](comment)")
+	assert.DeepEqual(t, []string{"connection_to"}, result.Connections)
 }
 
 func TestTokenizeDuplicates(t *testing.T) {

@@ -27,6 +27,8 @@ const (
 	ColMinWidth    int = 2  // minimum column width
 	ColSpacesLen   int = 3  // how many spaces between columns (inc newline col)
 	LargestDateLen int = 12 // length of "- Wed Sep 23"
+
+	PrintTagLimit int = 4
 )
 
 func GetPrintFormatFromContext(ctx context.Context) PrintFormat {
@@ -232,8 +234,8 @@ func (ip *ItemPrinter) itemTags(item *Item, showAll bool) string {
 
 	tagStrings := []string{}
 	for i, tag := range item.Tags() {
-		if i > 5 && !showAll {
-			tagStrings = append(tagStrings, "...")
+		if i > PrintTagLimit && !showAll {
+			tagStrings = append(tagStrings, "\u2026")
 			break
 		}
 		ip.hasher.Write([]byte(tag.Name()))
@@ -253,8 +255,8 @@ func (ip *ItemPrinter) itemTags(item *Item, showAll bool) string {
 func (ip *ItemPrinter) maxTagStringLength(items []*Item) int {
 	maxLength := 0
 	for i, item := range items {
-		if i > 5 {
-			maxLength += len("...")
+		if i > PrintTagLimit {
+			maxLength += len("\u2026")
 			break
 		}
 		if len(ip.rawItemTagsString(item)) > maxLength {
