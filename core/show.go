@@ -9,10 +9,8 @@ func Show(ctx context.Context, idString string, showConnected bool) error {
 	if err != nil {
 		return err
 	}
-	printFormat := GetPrintFormatFromContext(ctx)
-	shouldShowConnected := (showConnected || printFormat == HumanPrintFormat)
 
-	if len(items) == 1 && shouldShowConnected {
+	if len(items) == 1 && showConnected {
 		connectedItems := getValidConnections(ctx, items[0])
 		if len(connectedItems) > 0 {
 			NewItemPrinter(ctx).PrintSingleWithConnected(items[0], connectedItems...)

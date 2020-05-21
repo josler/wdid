@@ -162,6 +162,9 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 	if len(item.Tags()) != 0 {
 		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", ip.itemTags(item, true)))
 	}
+	if len(item.Connections()) != 0 {
+		fmt.Fprintf(w, "Connections: %v\n", baseColor.Sprintf("%s", item.Connections()))
+	}
 	fmt.Fprintf(w, "Data:\n%s\n\n", item.Data())
 }
 

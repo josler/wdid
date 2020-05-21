@@ -24,7 +24,7 @@ func withFreshBoltStore(boltStore *core.BoltStore, f func()) {
 }
 
 func TestAddKinds(t *testing.T) {
-	store, err := core.NewBoltStore("/tmp/test123.db")
+	store, err := core.NewBoltStore("/tmp/test124.db")
 	if err != nil {
 		os.Exit(1)
 	}

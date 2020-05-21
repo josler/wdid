@@ -45,7 +45,10 @@ type BoltStore struct {
 func NewBoltStore(path string) (*BoltStore, error) {
 	store := &BoltStore{path: path}
 	db, err := storm.Open(store.path)
-	db.Close()
+	if err != nil {
+		return nil, err
+	}
+	err = db.Close()
 	return store, err
 }
 
