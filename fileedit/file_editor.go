@@ -1,10 +1,14 @@
 package fileedit
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+
+	"github.com/google/uuid"
 
 	"github.com/josler/wdid/config"
 )
@@ -17,7 +21,7 @@ func NewWithNoContent() (io.Reader, error) {
 }
 
 func EditExisting(data string) (io.Reader, error) {
-	filePath := config.ConfigDir() + "/WDID_TEMP"
+	filePath := filepath.Join(config.ConfigDir(), fmt.Sprintf("WDID_TEMP_%s", uuid.New().String()))
 	return editWithContent(filePath, strings.NewReader(data))
 }
 

@@ -160,7 +160,7 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 		fmt.Fprintf(w, "Bumped from: %s\n", baseColor.Sprintf("%s", item.PreviousID()))
 	}
 	if len(item.Tags()) != 0 {
-		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", ip.itemTags(item)))
+		fmt.Fprintf(w, "Tags: %v\n", baseColor.Sprintf("%s", ip.itemTags(item, true)))
 	}
 	fmt.Fprintf(w, "Data:\n%s\n\n", item.Data())
 }
@@ -219,16 +219,20 @@ func (ip *ItemPrinter) fPrintItemJSON(w io.Writer, item *Item) {
 
 func (ip *ItemPrinter) fPrintItemHuman(w io.Writer, item *Item, maxTagStringLength int) {
 	dataString := TrimString(strings.Split(item.Data(), "\n")[0], LargestDateLen+ColSpacesLen+ColMinWidth+maxTagStringLength)
-	fmt.Fprintf(w, "%s\t%s\t%s\t\n", ip.doneStatus(item), dataString, ip.itemTags(item))
+	fmt.Fprintf(w, "%s\t%s\t%s\t\n", ip.doneStatus(item), dataString, ip.itemTags(item, false))
 }
 
-func (ip *ItemPrinter) itemTags(item *Item) string {
+func (ip *ItemPrinter) itemTags(item *Item, showAll bool) string {
 	if len(item.Tags()) == 0 {
 		return ""
 	}
 
 	tagStrings := []string{}
-	for _, tag := range item.Tags() {
+	for i, tag := range item.Tags() {
+		if i > 5 && !showAll {
+			tagStrings = append(tagStrings, "...")
+			break
+		}
 		ip.hasher.Write([]byte(tag.Name()))
 		num := int(ip.hasher.Sum32())
 
@@ -245,7 +249,11 @@ func (ip *ItemPrinter) itemTags(item *Item) string {
 
 func (ip *ItemPrinter) maxTagStringLength(items []*Item) int {
 	maxLength := 0
-	for _, item := range items {
+	for i, item := range items {
+		if i > 5 {
+			maxLength += len("...")
+			break
+		}
 		if len(ip.rawItemTagsString(item)) > maxLength {
 			maxLength = len(ip.rawItemTagsString(item))
 		}
