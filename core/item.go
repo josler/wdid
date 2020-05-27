@@ -142,7 +142,7 @@ func (i *Item) ResetInternalID() {
 	i.internalID = ""
 }
 
-// manually set the ID, useful for testing!
+// SetID manually sets the item ID, useful for testing!
 func (i *Item) SetID(id string) {
 	i.id = id[:MaxIDLength]
 }

@@ -2,7 +2,6 @@ package parser
 
 import (
 	"regexp"
-	"strings"
 )
 
 type TokenResult struct {
@@ -56,10 +55,4 @@ func (t *Tokenizer) getTags(text string) []string {
 	}
 
 	return result
-}
-
-func (t *Tokenizer) isTagPrefix(text string) bool {
-	hasAtPrefix := strings.HasPrefix(text, "@") && !strings.HasPrefix(text, "@@")
-	hasHashPrefix := strings.HasPrefix(text, "#") && !strings.HasPrefix(text, "##")
-	return hasAtPrefix || hasHashPrefix
 }

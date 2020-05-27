@@ -141,7 +141,7 @@ func GenerateID(at time.Time) string {
 	return fmt.Sprintf("%c%c%c%s", Base36(r1.Intn(35)), Base36(r1.Intn(35)), Base36(r1.Intn(35)), IDSuffixForDate(at))
 }
 
-// numbers above 35 translate to the value of remainder. i.e. 36 is 0, 71 is z, 72 is 0...
+// Base36 converts numbers to a rune. Numbers above 35 translate to the value of remainder. i.e. 36 is 0, 71 is z, 72 is 0...
 func Base36(in int) rune {
 	charMap := []rune("0123456789abcdefghijklmnopqrstuvwxyz")
 	return charMap[(in % 36)]

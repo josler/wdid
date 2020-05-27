@@ -11,7 +11,7 @@ import (
 	"github.com/josler/wdid/fileedit"
 )
 
-// edit description and time, not status
+// Edit description and time, not status
 func Edit(ctx context.Context, idString string, description io.Reader, timeString string) error {
 	store := ctx.Value("store").(Store)
 	items, err := store.FindAll(idString)

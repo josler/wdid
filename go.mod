@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
-	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
 	google.golang.org/appengine v1.0.0 // indirect

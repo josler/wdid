@@ -99,9 +99,9 @@ func (ip *ItemPrinter) PrintSingleWithConnected(item *Item, connections ...*Item
 	case HumanPrintFormat:
 		baseColor := color.New(color.Bold)
 		baseColor.EnableColor()
-		fmt.Fprintf(os.Stdout, baseColor.Sprintf("Main Item:\n\n"))
+		fmt.Fprint(os.Stdout, baseColor.Sprintf("Main Item:\n\n"))
 		ip.FPrint(os.Stdout, item)
-		fmt.Fprintf(os.Stdout, baseColor.Sprintln("Connected Items:"))
+		fmt.Fprint(os.Stdout, baseColor.Sprintln("Connected Items:"))
 		ip.FPrint(os.Stdout, connections...)
 	default:
 		ip.FPrint(os.Stdout, item)
@@ -254,11 +254,7 @@ func (ip *ItemPrinter) itemTags(item *Item, showAll bool) string {
 
 func (ip *ItemPrinter) maxTagStringLength(items []*Item) int {
 	maxLength := 0
-	for i, item := range items {
-		if i > PrintTagLimit {
-			maxLength += len("\u2026")
-			break
-		}
+	for _, item := range items {
 		if len(ip.rawItemTagsString(item)) > maxLength {
 			maxLength = len(ip.rawItemTagsString(item))
 		}
@@ -272,7 +268,11 @@ func (ip *ItemPrinter) rawItemTagsString(item *Item) string {
 	}
 
 	tagStrings := []string{}
-	for _, tag := range item.Tags() {
+	for i, tag := range item.Tags() {
+		if i > PrintTagLimit {
+			tagStrings = append(tagStrings, "\u2026")
+			break
+		}
 		tagStrings = append(tagStrings, tag.Name())
 	}
 

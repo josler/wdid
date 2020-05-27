@@ -15,6 +15,7 @@ func DefaultParser(store Store) *parser.Parser {
 	p.RegisterToFilter("status", StatusFilterFn)
 	p.RegisterToFilter("time", DateFilterFn)
 	p.RegisterToFilter("group", GroupFilterFn(store))
+	p.RegisterToFilter("kind", KindFilterFn)
 	return p
 }
 
@@ -67,7 +68,7 @@ func StatusFilterFn(comparison filter.FilterComparison, val string) (filter.Filt
 		return nil, errors.New("status filter does not support comparison > or <")
 	}
 
-	validStatuses := map[string]struct{}{WaitingStatus: struct{}{}, SkippedStatus: struct{}{}, DoneStatus: struct{}{}, BumpedStatus: struct{}{}}
+	validStatuses := map[string]struct{}{WaitingStatus: {}, SkippedStatus: {}, DoneStatus: {}, BumpedStatus: {}}
 	// allow usage of OR split - beta feature
 	statusValues := strings.Split(val, "|")
 	for _, val := range statusValues {
@@ -230,4 +231,45 @@ func (groupFilter *GroupFilter) Match(i interface{}) (bool, error) {
 
 func (groupFilter *GroupFilter) String() string {
 	return fmt.Sprintf("Group %v %s", groupFilter.comparison, groupFilter.name)
+}
+
+type KindFilter struct {
+	comparison filter.FilterComparison
+	matchKind  Kind
+}
+
+func NewKindFilter(comparison filter.FilterComparison, matchKind Kind) *KindFilter {
+	return &KindFilter{
+		comparison: comparison,
+		matchKind:  matchKind,
+	}
+}
+
+func KindFilterFn(comparison filter.FilterComparison, matchKind string) (filter.Filter, error) {
+	switch comparison {
+	case filter.FilterGt, filter.FilterLt:
+		return nil, errors.New("kind filter does not support > or <")
+	}
+	kind := StringToKind(matchKind)
+	if kind <= 0 {
+		return nil, fmt.Errorf("kind %q not found", matchKind)
+	}
+	return NewKindFilter(comparison, StringToKind(matchKind)), nil
+}
+
+func (kindFilter *KindFilter) Match(i interface{}) (bool, error) {
+	stormItem := i.(StormItem)
+
+	kind := Kind(stormItem.Kind)
+	if kind <= 0 {
+		kind = Task
+	}
+
+	switch kindFilter.comparison {
+	case filter.FilterEq:
+		return (kind == kindFilter.matchKind), nil
+	case filter.FilterNe:
+		return (kind != kindFilter.matchKind), nil
+	}
+	return false, fmt.Errorf("failed to compare kind correctly")
 }

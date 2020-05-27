@@ -60,3 +60,14 @@ func TestGroupFilterFunction(t *testing.T) {
 		assert.Equal(t, groupFilter.(*GroupFilter).name, "my group")
 	})
 }
+
+func TestKindFilterFunction(t *testing.T) {
+	kindFilter, _ := KindFilterFn(filter.FilterEq, "note")
+	assert.DeepEqual(t, kindFilter.(*KindFilter).comparison, filter.FilterEq)
+	assert.DeepEqual(t, kindFilter.(*KindFilter).matchKind, Note)
+}
+
+func TestKindFilterFunctionError(t *testing.T) {
+	_, err := KindFilterFn(filter.FilterEq, "wrong")
+	assert.Error(t, err, "kind \"wrong\" not found")
+}

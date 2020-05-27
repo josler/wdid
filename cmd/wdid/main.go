@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -113,7 +112,8 @@ func main() {
 			err = core.Add(ctx, description, *addTime)
 		}
 	case addNote.FullCommand():
-		description, err := fileedit.EditExisting(fmt.Sprintf("%s", *newNoteThing))
+		var description io.Reader
+		description, err = fileedit.EditExisting(*newNoteThing)
 		if err != nil {
 			break
 		}
