@@ -44,9 +44,8 @@ func DateFilterFn(comparison filter.FilterComparison, val string) (filter.Filter
 	return NewDateFilter(comparison, from), nil
 }
 
-func (dateFilter *DateFilter) Match(i interface{}) (bool, error) {
-	stormItem := i.(StormItem)
-	return (stormItem.Datetime >= dateFilter.timespan.Start.Unix() && stormItem.Datetime <= dateFilter.timespan.End.Unix()), nil
+func (dateFilter *DateFilter) Match(matchable filter.Matchable) (bool, error) {
+	return (matchable.Datetime() >= dateFilter.timespan.Start.Unix() && matchable.Datetime() <= dateFilter.timespan.End.Unix()), nil
 }
 
 func (dateFilter *DateFilter) String() string {
@@ -79,14 +78,12 @@ func StatusFilterFn(comparison filter.FilterComparison, val string) (filter.Filt
 	return NewStatusFilter(comparison, statusValues...), nil
 }
 
-func (statusFilter *StatusFilter) Match(i interface{}) (bool, error) {
-	stormItem := i.(StormItem)
-
+func (statusFilter *StatusFilter) Match(matchable filter.Matchable) (bool, error) {
 	if statusFilter.comparison == filter.FilterEq {
 		for _, okStatus := range statusFilter.statuses {
 			// for an EQ comparison, always return true if any candidate statuses match
 			// the status of this item
-			if stormItem.Status == okStatus {
+			if matchable.Status() == okStatus {
 				return true, nil
 			}
 		}
@@ -97,7 +94,7 @@ func (statusFilter *StatusFilter) Match(i interface{}) (bool, error) {
 		for _, okStatus := range statusFilter.statuses {
 			// for an NE comparison, always return false if any candidate statuses match
 			// the status of this item
-			if stormItem.Status == okStatus {
+			if matchable.Status() == okStatus {
 				return false, nil
 			}
 		}
@@ -131,10 +128,9 @@ func TagFilterFn(store Store) parser.ToFilterFn {
 	}
 }
 
-func (tagFilter *TagFilter) Match(i interface{}) (bool, error) {
-	stormItem := i.(StormItem)
+func (tagFilter *TagFilter) Match(matchable filter.Matchable) (bool, error) {
 	tokenizer := &parser.Tokenizer{}
-	tokenResult, err := tokenizer.Tokenize(stormItem.Data)
+	tokenResult, err := tokenizer.Tokenize(matchable.Data())
 	if err != nil {
 		return false, err
 	}
@@ -200,12 +196,11 @@ func GroupFilterFn(store Store) parser.ToFilterFn {
 	}
 }
 
-func (groupFilter *GroupFilter) Match(i interface{}) (bool, error) {
-	stormItem := i.(StormItem)
+func (groupFilter *GroupFilter) Match(matchable filter.Matchable) (bool, error) {
 
 	if groupFilter.comparison == filter.FilterEq {
 		for _, filter := range groupFilter.groupFilters {
-			innerMatch, err := filter.Match(stormItem)
+			innerMatch, err := filter.Match(matchable)
 			// if doesn't match an inner filter or if error
 			// then we can't match EQ
 			if !innerMatch || err != nil {
@@ -217,7 +212,7 @@ func (groupFilter *GroupFilter) Match(i interface{}) (bool, error) {
 	}
 	if groupFilter.comparison == filter.FilterNe {
 		for _, filter := range groupFilter.groupFilters {
-			innerMatch, err := filter.Match(stormItem)
+			innerMatch, err := filter.Match(matchable)
 			if innerMatch || err != nil { // if matches inner or if error
 				// then we know we can't fully match NE
 				return false, err
@@ -257,10 +252,8 @@ func KindFilterFn(comparison filter.FilterComparison, matchKind string) (filter.
 	return NewKindFilter(comparison, StringToKind(matchKind)), nil
 }
 
-func (kindFilter *KindFilter) Match(i interface{}) (bool, error) {
-	stormItem := i.(StormItem)
-
-	kind := Kind(stormItem.Kind)
+func (kindFilter *KindFilter) Match(matchable filter.Matchable) (bool, error) {
+	kind := Kind(matchable.Kind())
 	if kind <= 0 {
 		kind = Task
 	}

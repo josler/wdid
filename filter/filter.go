@@ -1,7 +1,14 @@
 package filter
 
 type Filter interface {
-	Match(i interface{}) (bool, error)
+	Match(i Matchable) (bool, error)
+}
+
+type Matchable interface {
+	Data() string
+	Status() string
+	Datetime() int64
+	Kind() int64
 }
 
 type FilterComparison int

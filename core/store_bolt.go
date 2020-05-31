@@ -23,6 +23,28 @@ type StormItem struct {
 	Kind       int64 `storm:"index"`
 }
 
+// MatchableStormItem wraps a StormItem in order to implement the interface methods with
+// the same names as those of underlying struct
+type MatchableStormItem struct {
+	*StormItem
+}
+
+func (s MatchableStormItem) Data() string {
+	return s.StormItem.Data
+}
+
+func (s MatchableStormItem) Status() string {
+	return s.StormItem.Status
+}
+
+func (s MatchableStormItem) Datetime() int64 {
+	return s.StormItem.Datetime
+}
+
+func (s MatchableStormItem) Kind() int64 {
+	return s.StormItem.Kind
+}
+
 type StormTag struct {
 	RowID     uint64 `storm:"id,increment"`
 	Name      string `storm:"index,unique"`
@@ -180,7 +202,7 @@ func (s *BoltStore) ListFilters(filters []filter.Filter) ([]*Item, error) {
 	for _, stormItem := range stormItems {
 		match := true
 		for _, filter := range rest {
-			ok, err := filter.Match(*stormItem)
+			ok, err := filter.Match(MatchableStormItem{StormItem: stormItem})
 			if !ok || err != nil {
 				match = false
 				break
