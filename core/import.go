@@ -63,7 +63,7 @@ func ReadToStore(ctx context.Context, f io.Reader) error {
 	}
 
 	for _, item := range items {
-		found, err := store.Find(item.ID())
+		found, err := FindOneOrPrint(ctx, item.ID())
 		if err != nil { // not found, issue regular save
 			item.ResetInternalID() // we want to re-issue this
 		} else { // we have a match on the ID

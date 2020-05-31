@@ -29,29 +29,28 @@ type storeTest func(t *testing.T, store core.Store)
 // subtests for the store
 func tests() map[string]storeTest {
 	return map[string]storeTest{
-		"saveAlreadyExists":             saveAlreadyExists,
-		"saveUpdate":                    saveUpdate,
-		"list":                          list,
-		"saveListNote":                  saveListNote,
-		"listEmptyShouldNotError":       listEmptyShouldNotError,
-		"listDate":                      listDate,
-		"listStatus":                    listStatus,
-		"listFilters":                   listFilters,
-		"listFiltersNe":                 listFiltersNe,
-		"listFiltersStatusOr":           listFiltersStatusOr,
-		"listFiltersGroup":              listFiltersGroup,
-		"listFiltersGroupNe":            listFiltersGroupNe,
-		"find":                          find,
-		"findMultipleReturnsMostRecent": findMultipleReturnsMostRecent,
-		"findAll":                       findAll,
-		"showPartialID":                 showPartialID,
-		"doDelete":                      doDelete,
-		"saveTag":                       saveTag,
-		"findTag":                       findTag,
-		"listTags":                      listTags,
-		"saveGroup":                     saveGroup,
-		"deleteGroup":                   deleteGroup,
-		"listGroups":                    listGroups,
+		"saveAlreadyExists":       saveAlreadyExists,
+		"saveUpdate":              saveUpdate,
+		"list":                    list,
+		"saveListNote":            saveListNote,
+		"listEmptyShouldNotError": listEmptyShouldNotError,
+		"listDate":                listDate,
+		"listStatus":              listStatus,
+		"listFilters":             listFilters,
+		"listFiltersNe":           listFiltersNe,
+		"listFiltersStatusOr":     listFiltersStatusOr,
+		"listFiltersGroup":        listFiltersGroup,
+		"listFiltersGroupNe":      listFiltersGroupNe,
+		"find":                    find,
+		"findAll":                 findAll,
+		"showPartialID":           showPartialID,
+		"doDelete":                doDelete,
+		"saveTag":                 saveTag,
+		"findTag":                 findTag,
+		"listTags":                listTags,
+		"saveGroup":               saveGroup,
+		"deleteGroup":             deleteGroup,
+		"listGroups":              listGroups,
 	}
 }
 
@@ -316,29 +315,12 @@ func listFiltersGroupNe(t *testing.T, store core.Store) {
 func find(t *testing.T, store core.Store) {
 	item := core.NewTask("some data", time.Now())
 	store.Save(item)
-	found, err := store.Find(item.ID())
-	if err != nil || found.ID() != item.ID() {
+	found, err := store.FindAll(item.ID())
+	if len(found) != 1 {
+		t.Errorf("found wrong number of items")
+	}
+	if err != nil || found[0].ID() != item.ID() {
 		t.Errorf("error item not found correctly")
-	}
-}
-
-func findMultipleReturnsMostRecent(t *testing.T, store core.Store) {
-	item := core.NewTask("to be saved twice", time.Now().Add(-5*time.Second))
-	firstID := item.ID()
-	store.Save(item)
-
-	item = core.NewTask("to be saved twice", time.Now())
-	item.SetID(fmt.Sprintf("%s%s", firstID[:3], "yyy"))
-	err := store.Save(item) // save a copy
-	if err != nil {
-		t.Fatalf("error: %s", err)
-	}
-	found, err := store.Find(item.ID()[:2])
-	if err != nil {
-		t.Errorf("error item not found correctly")
-	}
-	if found.ID() != item.ID() {
-		t.Errorf("didnt return most recent item %s %s", found.ID(), item.ID())
 	}
 }
 
@@ -360,8 +342,11 @@ func findAll(t *testing.T, store core.Store) {
 func showPartialID(t *testing.T, store core.Store) {
 	item := core.NewTask("some data", time.Now())
 	store.Save(item)
-	found, err := store.Find(item.ID()[:2])
-	if err != nil || found.ID() != item.ID() {
+	found, err := store.FindAll(item.ID()[:2])
+	if len(found) != 1 {
+		t.Errorf("found wrong number of items")
+	}
+	if err != nil || found[0].ID() != item.ID() {
 		t.Errorf("error item not found correctly")
 	}
 }
@@ -370,7 +355,7 @@ func doDelete(t *testing.T, store core.Store) {
 	item := core.NewTask("some data", time.Now())
 	store.Save(item)
 	store.Delete(item)
-	_, err := store.Find(item.ID())
+	_, err := store.FindAll(item.ID())
 	if err != storm.ErrNotFound {
 		t.Errorf("error item not found correctly")
 	}

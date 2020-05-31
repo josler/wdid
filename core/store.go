@@ -19,7 +19,6 @@ type Store interface {
 }
 
 type ItemStore interface {
-	Find(id string) (*Item, error)
 	FindAll(id string) ([]*Item, error)
 	Delete(item *Item) error
 	Save(item *Item) error

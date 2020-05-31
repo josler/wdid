@@ -2,9 +2,10 @@ package core
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"testing"
+
+	"gotest.tools/assert"
 )
 
 func TestListFromFiltersTag(t *testing.T) {
@@ -23,15 +24,17 @@ func TestListFromFiltersTag(t *testing.T) {
 
 func TestListFromFiltersStatus(t *testing.T) {
 	contextWithStore(func(ctx context.Context, store Store) {
-		Add(ctx, strings.NewReader("my item #hashtag"), "now")
-		Add(ctx, strings.NewReader("same #hashtag"), "2018-08-10")
+		err := Add(ctx, strings.NewReader("my item #hashtag"), "now")
+		assert.NilError(t, err)
+		err = Add(ctx, strings.NewReader("same #hashtag"), "2018-08-10")
+		assert.NilError(t, err)
 		item := mostRecentItem(store)
-		Do(ctx, item.ID())
+		err = Do(ctx, item.ID())
+		assert.NilError(t, err)
 
 		filterString := "status=done"
 		items := getItemsFromFilters(t, store, filterString)
 		if len(items) != 1 || items[0].Data() != "my item #hashtag" {
-			fmt.Println(items[0].Data())
 			t.Errorf("item not found")
 		}
 	})

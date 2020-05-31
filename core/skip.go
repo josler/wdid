@@ -4,7 +4,7 @@ import "context"
 
 func Skip(ctx context.Context, id string) error {
 	store := ctx.Value("store").(Store)
-	item, err := store.WithContext(ctx).Find(id)
+	item, err := FindOneOrPrint(ctx, id)
 	if err != nil {
 		return err
 	}

@@ -3,8 +3,6 @@ package core
 import (
 	"bytes"
 	"context"
-	"errors"
-	"fmt"
 	"io"
 	"strings"
 
@@ -13,21 +11,10 @@ import (
 
 // Edit description and time, not status
 func Edit(ctx context.Context, idString string, description io.Reader, timeString string) error {
-	store := ctx.Value("store").(Store)
-	items, err := store.FindAll(idString)
+	item, err := FindOneOrPrint(ctx, idString)
 	if err != nil {
 		return err
 	}
-	if len(items) > 1 {
-		printFormat := GetPrintFormatFromContext(ctx)
-		if printFormat == HumanPrintFormat {
-			fmt.Println("Error: Found multiple matching items:")
-			NewItemPrinter(ctx).Print(items...)
-		}
-		return errors.New("unable to find unique item")
-	}
-
-	item := items[0]
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(description)
@@ -45,21 +32,11 @@ func Edit(ctx context.Context, idString string, description io.Reader, timeStrin
 
 func EditDataFromFile(ctx context.Context, editID string) error {
 	// find the item in question
-	store := ctx.Value("store").(Store)
-	items, err := store.FindAll(editID)
+	item, err := FindOneOrPrint(ctx, editID)
 	if err != nil {
 		return err
 	}
-	if len(items) > 1 {
-		printFormat := GetPrintFormatFromContext(ctx)
-		if printFormat == HumanPrintFormat {
-			fmt.Println("Error: Found multiple matching items:")
-			NewItemPrinter(ctx).Print(items...)
-		}
-		return errors.New("unable to find unique item")
-	}
-
-	data, err := fileedit.EditExisting(items[0].Data())
+	data, err := fileedit.EditExisting(item.Data())
 	if err != nil {
 		return err
 	}

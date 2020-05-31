@@ -83,25 +83,6 @@ func (s *BoltStore) withOpenDB(f func(*storm.DB)) {
 	f(db)
 }
 
-func (s *BoltStore) Find(id string) (*Item, error) {
-	items, err := s.FindAll(id)
-	if err != nil {
-		return nil, err
-	}
-
-	// if there's no items, then we failed
-	if len(items) == 0 {
-		return nil, errors.New("not found")
-	}
-
-	// return most recent item
-	sort.Slice(items, func(i, j int) bool {
-		return items[i].Time().After(items[j].Time())
-	})
-
-	return items[0], nil
-}
-
 func (s *BoltStore) FindAll(id string) ([]*Item, error) {
 	stormItems := []*StormItem{}
 	var err error

@@ -22,10 +22,9 @@ func Show(ctx context.Context, idString string, showConnected bool) error {
 }
 
 func getValidConnections(ctx context.Context, item *Item) []*Item {
-	store := ctx.Value("store").(Store)
 	filteredConnections := []*Item{}
 	for _, connection := range item.Connections() {
-		found, err := store.Find(connection)
+		found, err := FindOneOrPrint(ctx, connection)
 		if err != nil {
 			continue // invalid connection
 		}

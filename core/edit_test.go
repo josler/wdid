@@ -14,7 +14,7 @@ func TestEdit(t *testing.T) {
 		found := mostRecentItem(store)
 		timespan, _ := TimeParser{Input: "2018-04-07"}.Parse()
 		Edit(ctx, found.ID(), strings.NewReader("change the message"), "2018-04-07")
-		found, err := store.Find(found.ID())
+		found, err := FindOneOrPrint(ctx, found.ID())
 		if err != nil || found.Data() != "change the message" {
 			t.Errorf("item not edited")
 		}
@@ -52,7 +52,7 @@ func TestEditTrimsNewlines(t *testing.T) {
 		if err != nil {
 			t.Errorf("item not edited")
 		}
-		found, err = store.Find(found.ID())
+		found, err = FindOneOrPrint(ctx, found.ID())
 		assert.NilError(t, err)
 		assert.Equal(t, found.Data(), "change the message", "doesn't trim newlines correctly")
 	})

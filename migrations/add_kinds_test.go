@@ -43,13 +43,13 @@ func TestAddKinds(t *testing.T) {
 		AddKinds(ctx, "10")
 		assert.NilError(t, err)
 
-		foundTask, _ := store.Find(task.ID())
+		foundTask, _ := core.FindOneOrPrint(ctx, task.ID())
 		assert.Equal(t, foundTask.Kind(), core.Task)
 
-		foundNote, _ := store.Find(note.ID())
+		foundNote, _ := core.FindOneOrPrint(ctx, note.ID())
 		assert.Equal(t, foundNote.Kind(), core.Note)
 
-		foundTaskToNote, _ := store.Find(taskToNote.ID())
+		foundTaskToNote, _ := core.FindOneOrPrint(ctx, taskToNote.ID())
 		assert.Equal(t, foundTaskToNote.Kind(), core.Note)
 		assert.Equal(t, foundTaskToNote.Status(), core.NoStatus)
 	})
