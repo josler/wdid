@@ -130,13 +130,29 @@ func (ip *ItemPrinter) FPrint(w io.Writer, items ...*Item) {
 	}
 
 	currDay := items[0].Time().Day() - 1 // set to something different
+	currYear := items[0].Time().Year()
+	showYear := false
 	maxTagStringLength := ip.maxTagStringLength(items)
+
+	for _, item := range items {
+		if item.Time().Year() != currYear {
+			showYear = true
+			currYear = 1990 // reset so we can always print first header
+			break
+		}
+	}
 
 	for _, item := range items {
 		switch ip.PrintFormat {
 		case TextPrintFormat:
 			ip.fPrintItemCompact(w, item)
 		case HumanPrintFormat:
+			// new year so print header if we should
+			if showYear && (currYear != item.Time().Year()) {
+				fmt.Fprintf(tw, "\t\t\n")
+				fmt.Fprintf(tw, "### %s\t\t\n", item.Time().Format("2006"))
+				currYear = item.Time().Year()
+			}
 			// new day so print header
 			if currDay != item.Time().Day() {
 				fmt.Fprintf(tw, "\t\t\n")
