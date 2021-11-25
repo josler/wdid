@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/fatih/color"
 	"github.com/juju/ansiterm"
 )
@@ -183,7 +184,8 @@ func (ip *ItemPrinter) fPrintItemDetail(w io.Writer, item *Item) {
 	if len(item.Connections()) != 0 {
 		fmt.Fprintf(w, "Connections: %v\n", baseColor.Sprintf("%s", item.Connections()))
 	}
-	fmt.Fprintf(w, "Data:\n%s\n\n", item.Data())
+	out, _ := glamour.Render(item.Data(), "dark")
+	fmt.Fprintf(w, "Data:\n%s\n\n", out)
 }
 
 func (ip *ItemPrinter) fPrintItemCompact(w io.Writer, item *Item) {
